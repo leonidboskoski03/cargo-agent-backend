@@ -1,0 +1,512 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum CompanyType {
+  SHIPPER
+  CARRIER
+  BOTH
+}
+
+enum UserRole {
+  COMPANY_ADMIN
+  DISPATCHER
+  DRIVER
+  FINANCE
+}
+
+enum VehicleType {
+  TRUCK
+  TRAILER
+  VAN
+}
+
+enum VehicleBodyType {
+  TILT
+  BOX
+  FLATBED
+  REEFER
+  TANKER
+}
+
+enum PostPriceType {
+  FIXED
+  NEGOTIABLE
+  REQUEST_QUOTE
+}
+
+enum PostStatus {
+  OPEN
+  ASSIGNED
+  CANCELLED
+  EXPIRED
+}
+
+enum BidStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+enum ContractStatus {
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  DISPUTED
+}
+
+enum PlanCode {
+  FREE
+  PRO
+}
+
+enum BillingInterval {
+  MONTHLY
+  YEARLY
+}
+
+enum SubscriptionStatus {
+  FREE
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  INCOMPLETE
+  UNPAID
+}
+
+enum CheckoutSessionStatus {
+  CREATED
+  COMPLETED
+  EXPIRED
+  FAILED
+}
+
+enum BillingProvider {
+  STRIPE
+}
+
+enum BillingEventType {
+  CHECKOUT_COMPLETED
+  INVOICE_PAID
+  INVOICE_PAYMENT_FAILED
+  SUBSCRIPTION_CREATED
+  SUBSCRIPTION_UPDATED
+  SUBSCRIPTION_CANCELED
+}
+
+enum BillingEventStatus {
+  SUCCEEDED
+  FAILED
+  PENDING
+}
+
+enum UsageMetric {
+  ACTIVE_POSTS
+  BIDS_PER_MONTH
+  TEAM_MEMBERS
+  PROMOTED_POSTS_PER_MONTH
+}
+
+model Company {
+  id                 String              @id @default(cuid())
+  companyType        CompanyType
+  name               String
+  registrationNumber String
+  vatNumber          String?
+  countryCode        String
+  city               String
+  address            String?
+  phone              String?
+  email              String?
+  website            String?
+  logoUrl            String?
+  bannerUrl          String?
+  bio                String?
+  foundedAt          DateTime?           @db.Date
+  employeeCount      Int?
+  isVerified         Boolean             @default(false)
+  stripeCustomerId   String?             @unique
+  currentPlanId      String?
+  subscriptionStatus SubscriptionStatus? @default(FREE)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  currentPlan       Plan?              @relation("CompanyCurrentPlan", fields: [currentPlanId], references: [id])
+  users             User[]
+  vehicles          Vehicle[]
+  posts             Post[]
+  carrierBids       Bid[]              @relation("CarrierCompanyBids")
+  shipperContracts  Contract[]         @relation("ShipperCompanyContracts")
+  carrierContracts  Contract[]         @relation("CarrierCompanyContracts")
+  writtenReviews    Review[]           @relation("ReviewerCompanyReviews")
+  targetReviews     Review[]           @relation("TargetCompanyReviews")
+  subscriptions     Subscription[]
+  checkoutSessions  CheckoutSession[]
+  billingEvents     BillingEvent[]
+  usageCounters     UsageCounter[]
+}
+
+model User {
+  id             String              @id @default(cuid())
+  companyId      String
+  role           UserRole
+  firstName      String
+  lastName       String
+  email          String
+  phone          String?
+  passwordHash   String
+  isActive       Boolean             @default(true)
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  company            Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  licenses           License[]
+  vehicleAssignments VehicleAssignment[] @relation("DriverUserVehicleAssignments")
+  createdPosts       Post[]              @relation("PostCreatedByUser")
+  createdBids        Bid[]               @relation("BidCreatedByUser")
+  writtenReviews     Review[]            @relation("ReviewerUserReviews")
+
+  @@unique([companyId, email])
+  @@index([companyId])
+}
+
+model License {
+  id          String    @id @default(cuid())
+  userId      String
+  licenseType String
+  issuedAt    DateTime? @db.Date
+  expiresAt   DateTime? @db.Date
+  isValid     Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, licenseType])
+  @@index([userId])
+}
+
+model Vehicle {
+  id                    String          @id @default(cuid())
+  companyId             String
+  vehicleType           VehicleType
+  plateNumber           String
+  countryOfRegistration String
+  brand                 String?
+  model                 String?
+  year                  Int?
+  capacityKg            Int?
+  volumeM3              Decimal?        @db.Decimal(10, 3)
+  bodyType              VehicleBodyType?
+  refrigerated          Boolean         @default(false)
+  hazmatCertified       Boolean         @default(false)
+  isActive              Boolean         @default(true)
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+
+  company            Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  vehicleAssignments VehicleAssignment[]
+
+  @@unique([plateNumber, countryOfRegistration])
+  @@index([companyId])
+}
+
+model VehicleAssignment {
+  id           String   @id @default(cuid())
+  vehicleId    String
+  driverUserId String
+  startsAt     DateTime
+  endsAt       DateTime?
+  createdAt    DateTime @default(now())
+
+  vehicle    Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  driverUser User    @relation("DriverUserVehicleAssignments", fields: [driverUserId], references: [id], onDelete: Cascade)
+
+  @@index([vehicleId])
+  @@index([driverUserId])
+}
+
+model Location {
+  id          String   @id @default(cuid())
+  countryCode String
+  city        String
+  region      String?
+  postalCode  String?
+  lat         Decimal? @db.Decimal(10, 7)
+  lng         Decimal? @db.Decimal(10, 7)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  originRoutes      Route[] @relation("OriginLocationRoutes")
+  destinationRoutes Route[] @relation("DestinationLocationRoutes")
+
+  @@index([countryCode, city])
+}
+
+model Route {
+  id                       String    @id @default(cuid())
+  originLocationId         String
+  destinationLocationId    String
+  distanceKm               Int?
+  estimatedDurationMinutes Int?
+  isActive                 Boolean   @default(true)
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+
+  originLocation      Location   @relation("OriginLocationRoutes", fields: [originLocationId], references: [id])
+  destinationLocation Location   @relation("DestinationLocationRoutes", fields: [destinationLocationId], references: [id])
+  posts               Post[]
+  contracts           Contract[]
+
+  @@unique([originLocationId, destinationLocationId])
+  @@index([originLocationId])
+  @@index([destinationLocationId])
+}
+
+model Post {
+  id                         String        @id @default(cuid())
+  companyId                  String
+  createdByUserId            String
+  routeId                    String
+  title                      String?
+  description                String?
+  pickupEarliestAt           DateTime
+  pickupLatestAt             DateTime?
+  deliveryDeadlineAt         DateTime?
+  expiresAt                  DateTime?
+  cargoDescription           String?
+  cargoType                  String?
+  weightKg                   Int?
+  palletCount                Int?
+  volumeM3                   Decimal?      @db.Decimal(10, 3)
+  requiredBodyType           VehicleBodyType?
+  hazmat                     Boolean       @default(false)
+  temperatureControlRequired Boolean       @default(false)
+  temperatureMinC            Int?
+  temperatureMaxC            Int?
+  priceType                  PostPriceType
+  priceAmount                Decimal?      @db.Decimal(12, 2)
+  currency                   String
+  status                     PostStatus    @default(OPEN)
+  isPromoted                 Boolean       @default(false)
+  promotedUntil              DateTime?
+  createdAt                  DateTime      @default(now())
+  updatedAt                  DateTime      @updatedAt
+
+  company       Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdByUser User       @relation("PostCreatedByUser", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  route         Route      @relation(fields: [routeId], references: [id])
+  bids          Bid[]
+  contract      Contract?
+
+  @@index([companyId])
+  @@index([createdByUserId])
+  @@index([routeId])
+  @@index([status])
+  @@index([isPromoted])
+}
+
+model Bid {
+  id                  String     @id @default(cuid())
+  postId              String
+  carrierCompanyId    String
+  createdByUserId     String
+  message             String?
+  offeredPriceAmount  Decimal?   @db.Decimal(12, 2)
+  currency            String
+  estimatedPickupAt   DateTime?
+  estimatedDeliveryAt DateTime?
+  status              BidStatus  @default(PENDING)
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+
+  post           Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  carrierCompany Company   @relation("CarrierCompanyBids", fields: [carrierCompanyId], references: [id], onDelete: Cascade)
+  createdByUser  User      @relation("BidCreatedByUser", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  contract       Contract?
+
+  @@unique([postId, carrierCompanyId])
+  @@index([postId])
+  @@index([carrierCompanyId])
+  @@index([createdByUserId])
+  @@index([status])
+}
+
+model Contract {
+  id                 String         @id @default(cuid())
+  postId             String         @unique
+  acceptedBidId      String         @unique
+  routeId            String
+  shipperCompanyId   String
+  carrierCompanyId   String
+  agreedPriceAmount  Decimal        @db.Decimal(12, 2)
+  currency           String
+  status             ContractStatus @default(CONFIRMED)
+  pickupPlannedAt    DateTime?
+  deliveryPlannedAt  DateTime?
+  pickupActualAt     DateTime?
+  deliveryActualAt   DateTime?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  post           Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  acceptedBid    Bid       @relation(fields: [acceptedBidId], references: [id], onDelete: Cascade)
+  route          Route     @relation(fields: [routeId], references: [id])
+  shipperCompany Company   @relation("ShipperCompanyContracts", fields: [shipperCompanyId], references: [id], onDelete: Cascade)
+  carrierCompany Company   @relation("CarrierCompanyContracts", fields: [carrierCompanyId], references: [id], onDelete: Cascade)
+  reviews        Review[]
+
+  @@index([routeId])
+  @@index([shipperCompanyId])
+  @@index([carrierCompanyId])
+  @@index([status])
+}
+
+model Review {
+  id                String   @id @default(cuid())
+  contractId        String
+  reviewerCompanyId String
+  reviewerUserId    String
+  targetCompanyId   String
+  rating            Int
+  comment           String?
+  createdAt         DateTime @default(now())
+
+  contract        Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  reviewerCompany Company  @relation("ReviewerCompanyReviews", fields: [reviewerCompanyId], references: [id], onDelete: Cascade)
+  reviewerUser    User     @relation("ReviewerUserReviews", fields: [reviewerUserId], references: [id], onDelete: Cascade)
+  targetCompany   Company  @relation("TargetCompanyReviews", fields: [targetCompanyId], references: [id], onDelete: Cascade)
+
+  @@unique([contractId, reviewerCompanyId])
+  @@index([reviewerCompanyId])
+  @@index([targetCompanyId])
+}
+
+model Plan {
+  id                 String           @id @default(cuid())
+  code               PlanCode         @unique
+  name               String
+  billingInterval    BillingInterval?
+  priceAmount        Decimal          @default(0) @db.Decimal(10, 2)
+  currency           String?
+  stripePriceId      String?          @unique
+  stripeProductId    String?          @unique
+  maxActivePosts     Int?
+  maxBidsPerMonth    Int?
+  maxTeamMembers     Int?
+  hasPromotedPosts   Boolean          @default(false)
+  hasAnalytics       Boolean          @default(false)
+  hasRouteAlerts     Boolean          @default(false)
+  hasPrioritySupport Boolean          @default(false)
+  isActive           Boolean          @default(true)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  subscriptions Subscription[]
+  companies     Company[]          @relation("CompanyCurrentPlan")
+}
+
+model Subscription {
+  id                      String             @id @default(cuid())
+  companyId               String
+  planId                  String
+  status                  SubscriptionStatus
+  stripeSubscriptionId    String?            @unique
+  stripeCustomerId        String?
+  stripeCheckoutSessionId String?
+  currentPeriodStart      DateTime?
+  currentPeriodEnd        DateTime?
+  startsAt                DateTime?
+  endsAt                  DateTime?
+  trialEndsAt             DateTime?
+  cancelAtPeriodEnd       Boolean            @default(false)
+  canceledAt              DateTime?
+  isCurrent               Boolean            @default(true)
+  version                 Int                @default(1)
+  createdAt               DateTime           @default(now())
+  updatedAt               DateTime           @updatedAt
+
+  company          Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  plan             Plan              @relation(fields: [planId], references: [id])
+  checkoutSessions CheckoutSession[]
+  billingEvents    BillingEvent[]
+
+  @@index([companyId])
+  @@index([companyId, status])
+  @@index([planId])
+  @@index([status])
+  @@index([stripeCustomerId])
+  @@index([stripeCheckoutSessionId])
+  @@unique([companyId, isCurrent])
+}
+
+model CheckoutSession {
+  id                      String                @id @default(cuid())
+  companyId               String
+  subscriptionId          String?
+  provider                BillingProvider       @default(STRIPE)
+  status                  CheckoutSessionStatus @default(CREATED)
+  stripeCheckoutSessionId String                @unique
+  planCode                PlanCode
+  expiresAt               DateTime?
+  completedAt             DateTime?
+  createdAt               DateTime              @default(now())
+  updatedAt               DateTime              @updatedAt
+
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  subscription Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+
+  @@index([companyId])
+  @@index([status])
+  @@index([expiresAt])
+}
+
+model BillingEvent {
+  id                    String             @id @default(cuid())
+  companyId             String
+  subscriptionId        String?
+  eventType             BillingEventType
+  provider              BillingProvider    @default(STRIPE)
+  providerEventId       String             @unique
+  stripeInvoiceId       String?
+  stripePaymentIntentId String?
+  amount                Decimal?           @db.Decimal(10, 2)
+  currency              String?
+  status                BillingEventStatus?
+  payloadJson           Json?
+  createdAt             DateTime           @default(now())
+
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  subscription Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+
+  @@index([companyId])
+  @@index([subscriptionId])
+  @@index([eventType])
+}
+
+model UsageCounter {
+  id               String      @id @default(cuid())
+  companyId        String
+  metric           UsageMetric
+  periodStart      DateTime
+  used             Int         @default(0)
+  limitSnapshot    Int?
+  planCodeSnapshot PlanCode
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, metric, periodStart])
+  @@index([companyId])
+  @@index([metric, periodStart])
+}
+

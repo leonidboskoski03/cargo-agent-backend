@@ -1,0 +1,38 @@
+node_modules/
+dist/
+coverage/
+.nyc_output/
+
+# Env files (keep examples committed)
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime/process files
+*.pid
+*.seed
+*.pid.lock
+
+# Editor / IDE
+.vscode/
+.idea/
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Misc caches
+.cache/
+tmp/
+temp/
+
+

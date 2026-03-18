@@ -1,0 +1,41 @@
+import { Router } from "express";
+import { authRouter } from "../modules/auth/auth.routes.js";
+import { companiesRouter } from "../modules/companies/companies.routes.js";
+import { usersRouter } from "../modules/users/users.routes.js";
+import { licensesRouter } from "../modules/licenses/licenses.routes.js";
+import { vehiclesRouter } from "../modules/vehicles/vehicles.routes.js";
+import { vehicleAssignmentsRouter } from "../modules/vehicleAssignments/vehicleAssignments.routes.js";
+import { locationsRouter } from "../modules/locations/locations.routes.js";
+import { routesRouter } from "../modules/routes/routes.routes.js";
+import { postsRouter } from "../modules/posts/posts.routes.js";
+import { bidsRouter } from "../modules/bids/bids.routes.js";
+import { contractsRouter } from "../modules/contracts/contracts.routes.js";
+import { reviewsRouter } from "../modules/reviews/reviews.routes.js";
+import { documentsRouter } from "../modules/documents/documents.routes.js";
+import { notificationsRouter } from "../modules/notifications/notifications.routes.js";
+import { auditLogsRouter } from "../modules/auditLogs/auditLogs.routes.js";
+import { plansRouter } from "../modules/plans/plans.routes.js";
+import { subscriptionsRouter } from "../modules/subscriptions/subscriptions.routes.js";
+import { billingRouter } from "../modules/billing/billing.routes.js";
+
+export const v1Router = Router();
+
+v1Router.use("/auth", authRouter);
+v1Router.use("/companies", companiesRouter);
+v1Router.use("/users", usersRouter);
+v1Router.use("/licenses", licensesRouter);
+v1Router.use("/vehicles", vehiclesRouter);
+v1Router.use("/vehicle-assignments", vehicleAssignmentsRouter);
+v1Router.use("/locations", locationsRouter);
+v1Router.use("/routes", routesRouter);
+v1Router.use("/posts", postsRouter);
+v1Router.use("/bids", bidsRouter);
+v1Router.use("/contracts", contractsRouter);
+v1Router.use("/reviews", reviewsRouter);
+v1Router.use("/documents", documentsRouter);
+v1Router.use("/notifications", notificationsRouter);
+v1Router.use("/audit-logs", auditLogsRouter);
+v1Router.use("/plans", plansRouter);
+v1Router.use("/subscriptions", subscriptionsRouter);
+v1Router.use("/billing", billingRouter);
+
