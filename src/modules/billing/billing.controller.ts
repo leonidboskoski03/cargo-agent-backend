@@ -5,7 +5,10 @@ import { BillingService } from "./billing.service.js";
 const service = new BillingService();
 
 export async function listMyBillingEvents(req: Request, res: Response) {
-  const data = await service.listEvents(req.auth?.companyId);
+  const data = await service.listEvents(req.auth?.companyId, {
+    page: Number(req.query.page ?? 1),
+    pageSize: Number(req.query.pageSize ?? 20),
+  });
   return ok(res, data);
 }
 

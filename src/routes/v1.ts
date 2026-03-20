@@ -17,6 +17,8 @@ import { auditLogsRouter } from "../modules/auditLogs/auditLogs.routes.js";
 import { plansRouter } from "../modules/plans/plans.routes.js";
 import { subscriptionsRouter } from "../modules/subscriptions/subscriptions.routes.js";
 import { billingRouter } from "../modules/billing/billing.routes.js";
+import { jobApplicationsRouter } from "../modules/jobApplications/jobApplications.routes.js";
+import { jobSeekerBillingRouter } from "../modules/jobSeekerBilling/jobSeekerBilling.routes.js";
 
 export const v1Router = Router();
 
@@ -38,4 +40,6 @@ v1Router.use("/audit-logs", auditLogsRouter);
 v1Router.use("/plans", plansRouter);
 v1Router.use("/subscriptions", subscriptionsRouter);
 v1Router.use("/billing", billingRouter);
+v1Router.use("/job-applications", jobApplicationsRouter);
+v1Router.use("/job-seeker-billing", jobSeekerBillingRouter);
 

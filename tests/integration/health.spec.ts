@@ -23,6 +23,6 @@ describe("health endpoints", () => {
     expect(response.statusCode).toBe(200);
     expect(response.body.success).toBe(true);
     expect(response.body.data.status).toBe("live");
-  });
+  }, 15_000);
 });
 

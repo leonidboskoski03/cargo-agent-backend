@@ -15,3 +15,14 @@ export function clearAccessCookie(res: Response) {
   res.clearCookie(env.JWT_COOKIE_NAME, baseCookieOptions);
 }
 
+export function setRefreshCookie(res: Response, token: string) {
+  res.cookie(env.JWT_REFRESH_COOKIE_NAME, token, {
+    ...baseCookieOptions,
+    maxAge: env.JWT_REFRESH_SESSION_DAYS * 24 * 60 * 60 * 1000,
+  });
+}
+
+export function clearRefreshCookie(res: Response) {
+  res.clearCookie(env.JWT_REFRESH_COOKIE_NAME, baseCookieOptions);
+}
+

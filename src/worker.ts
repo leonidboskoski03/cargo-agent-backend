@@ -3,6 +3,7 @@ import { logger } from "./config/logger.js";
 import { prisma } from "./shared/prisma/prismaClient.js";
 import { closeRedisConnection } from "./shared/queue/redisConnection.js";
 import { startBillingWebhookWorker } from "./workers/billingWebhook.worker.js";
+import { startNotificationEventsWorker } from "./workers/notificationEvents.worker.js";
 
 if (!env.BULLMQ_ENABLED) {
   logger.warn("BULLMQ_ENABLED is false; worker process will exit");
@@ -10,11 +11,14 @@ if (!env.BULLMQ_ENABLED) {
 }
 
 const billingWebhookWorker = startBillingWebhookWorker();
+const notificationEventsWorker = startNotificationEventsWorker();
 logger.info("Billing webhook worker started");
+logger.info("Notification events worker started");
 
 async function shutdown(signal: string) {
   logger.info({ signal }, "Worker graceful shutdown started");
   await billingWebhookWorker.close();
+  await notificationEventsWorker.close();
   await closeRedisConnection();
   await prisma.$disconnect();
   logger.info("Worker graceful shutdown completed");

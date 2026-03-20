@@ -4,8 +4,18 @@ import { AuditLogsService } from "./auditLogs.service.js";
 
 const service = new AuditLogsService();
 
+function authFromRequest(req: Request) {
+  return req.auth ? { userId: req.auth.sub, role: req.auth.role, companyId: req.auth.companyId } : {};
+}
+
 export async function listAuditLogs(req: Request, res: Response) {
-  const data = await service.list(req.query);
+  const data = await service.list(authFromRequest(req), {
+    page: Number(req.query.page ?? 1),
+    pageSize: Number(req.query.pageSize ?? 20),
+    actorId: typeof req.query.actorId === "string" ? req.query.actorId : undefined,
+    action: typeof req.query.action === "string" ? req.query.action : undefined,
+  });
+
   return ok(res, data);
 }
 

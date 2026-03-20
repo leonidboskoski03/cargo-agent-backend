@@ -1,4 +1,5 @@
 import {
+  JobSeekerCreditTxType,
   Prisma,
   type BillingEventStatus,
   type BillingEventType,
@@ -35,6 +36,84 @@ type UpsertSubscriptionInput = {
 };
 
 export class WebhooksRepository {
+  async hasBillingEventByProviderEventId(providerEventId: string) {
+    const event = await prisma.billingEvent.findUnique({
+      where: { providerEventId },
+      select: { id: true },
+    });
+
+    return Boolean(event);
+  }
+
+  async getJobSeekerCheckoutSessionByStripeId(stripeCheckoutSessionId: string) {
+    return prisma.jobSeekerCheckoutSession.findUnique({
+      where: { stripeCheckoutSessionId },
+      include: { creditPack: true },
+    });
+  }
+
+  async markJobSeekerCheckoutCompleted(stripeCheckoutSessionId: string) {
+    return prisma.jobSeekerCheckoutSession.updateMany({
+      where: { stripeCheckoutSessionId },
+      data: { status: "COMPLETED", completedAt: new Date() },
+    });
+  }
+
+  async grantJobSeekerCreditsFromCheckout(input: {
+    checkoutSessionId: string;
+    stripeCheckoutSessionId: string;
+    userId: string;
+    amountCredits: number;
+  }) {
+    return prisma.$transaction(async (tx) => {
+      const existingCredit = await tx.jobSeekerCreditTransaction.findFirst({
+        where: {
+          type: JobSeekerCreditTxType.PURCHASE,
+          reasonCode: "CHECKOUT_TOPUP",
+          referenceType: "JOB_SEEKER_CHECKOUT",
+          referenceId: input.checkoutSessionId,
+        },
+      });
+
+      if (existingCredit) {
+        return { inserted: false, transactionId: existingCredit.id };
+      }
+
+      const wallet =
+        (await tx.jobSeekerWallet.findUnique({ where: { userId: input.userId } })) ??
+        (await tx.jobSeekerWallet.create({ data: { userId: input.userId } }));
+
+      const updatedWallet = await tx.jobSeekerWallet.update({
+        where: { id: wallet.id },
+        data: {
+          balanceCredits: { increment: input.amountCredits },
+          version: { increment: 1 },
+        },
+      });
+
+      const creditTx = await tx.jobSeekerCreditTransaction.create({
+        data: {
+          walletId: wallet.id,
+          userId: input.userId,
+          type: JobSeekerCreditTxType.PURCHASE,
+          amountCredits: input.amountCredits,
+          reasonCode: "CHECKOUT_TOPUP",
+          referenceType: "JOB_SEEKER_CHECKOUT",
+          referenceId: input.checkoutSessionId,
+          stripePaymentRef: input.stripeCheckoutSessionId,
+          balanceAfter: updatedWallet.balanceCredits,
+        },
+      });
+
+      await tx.jobSeekerCheckoutSession.updateMany({
+        where: { stripeCheckoutSessionId: input.stripeCheckoutSessionId },
+        data: { status: "COMPLETED", completedAt: new Date() },
+      });
+
+      return { inserted: true, transactionId: creditTx.id };
+    });
+  }
+
   async getCompanyByStripeCustomerId(stripeCustomerId: string) {
     return prisma.company.findUnique({ where: { stripeCustomerId } });
   }
@@ -52,7 +131,10 @@ export class WebhooksRepository {
   }
 
   async getCurrentSubscriptionByCompanyId(companyId: string) {
-    return prisma.subscription.findUnique({ where: { companyId_isCurrent: { companyId, isCurrent: true } } });
+    return prisma.subscription.findFirst({
+      where: { companyId, isCurrent: true },
+      orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
+    });
   }
 
   async markCheckoutCompleted(stripeCheckoutSessionId: string) {
@@ -92,13 +174,14 @@ export class WebhooksRepository {
 
   async upsertCurrentSubscription(input: UpsertSubscriptionInput) {
     return prisma.$transaction(async (tx) => {
-      const current = await tx.subscription.findUnique({
-        where: { companyId_isCurrent: { companyId: input.companyId, isCurrent: true } },
+      const current = await tx.subscription.findFirst({
+        where: { companyId: input.companyId, isCurrent: true },
+        orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
       });
 
       if (current && current.stripeSubscriptionId !== input.stripeSubscriptionId) {
-        await tx.subscription.update({
-          where: { id: current.id },
+        await tx.subscription.updateMany({
+          where: { companyId: input.companyId, isCurrent: true },
           data: { isCurrent: false },
         });
       }
@@ -141,6 +224,16 @@ export class WebhooksRepository {
               isCurrent: true,
             },
           });
+
+      // Keep a single active current subscription per company even without a DB unique constraint.
+      await tx.subscription.updateMany({
+        where: {
+          companyId: input.companyId,
+          isCurrent: true,
+          NOT: { id: subscription.id },
+        },
+        data: { isCurrent: false },
+      });
 
       await tx.company.update({
         where: { id: input.companyId },

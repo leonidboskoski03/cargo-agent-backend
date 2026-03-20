@@ -95,6 +95,12 @@ export class WebhooksService {
       return { received: true, ignored: true };
     }
 
+    const alreadyProcessed = await repo.hasBillingEventByProviderEventId(input.event.id);
+    if (alreadyProcessed) {
+      logger.info({ eventId: input.event.id, eventType }, "Skipping already processed Stripe event replay");
+      return { received: true, ignored: true };
+    }
+
     if (eventType === "checkout.session.completed") {
       await this.handleCheckoutCompleted(input.event, mappedType, input.payload);
       return { received: true, ignored: false };
@@ -111,6 +117,30 @@ export class WebhooksService {
 
   private async handleCheckoutCompleted(event: Stripe.Event, eventType: BillingEventType, payload: string) {
     const session = event.data.object as Stripe.Checkout.Session;
+    const lane = session.metadata?.lane;
+
+    if (lane === "JOB_SEEKER_CREDITS") {
+      if (!session.id) {
+        logger.warn({ eventId: event.id }, "Skipping job seeker checkout event without session id");
+        return;
+      }
+
+      const checkout = await repo.getJobSeekerCheckoutSessionByStripeId(session.id);
+      if (!checkout) {
+        logger.warn({ eventId: event.id, stripeSessionId: session.id }, "Job seeker checkout session not found");
+        return;
+      }
+
+      await repo.grantJobSeekerCreditsFromCheckout({
+        checkoutSessionId: checkout.id,
+        stripeCheckoutSessionId: session.id,
+        userId: checkout.userId,
+        amountCredits: checkout.amountCredits,
+      });
+
+      return;
+    }
+
     const companyId = session.client_reference_id ?? session.metadata?.companyId;
     if (!companyId || !session.id) {
       logger.warn({ eventId: event.id }, "Skipping checkout event without company/session identifiers");

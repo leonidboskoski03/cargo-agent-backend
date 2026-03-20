@@ -15,9 +15,8 @@ enum CompanyType {
 
 enum UserRole {
   COMPANY_ADMIN
-  DISPATCHER
-  DRIVER
-  FINANCE
+  COMPANY_DRIVER
+  JOB_SEEKER
 }
 
 enum VehicleType {
@@ -60,6 +59,26 @@ enum ContractStatus {
   COMPLETED
   CANCELLED
   DISPUTED
+}
+
+enum ReviewStatus {
+  DRAFT
+  PUBLISHED
+  WITHDRAWN
+}
+
+enum NotificationType {
+  BID_ACCEPTED
+  CONTRACT_CREATED
+  REVIEW_PUBLISHED
+}
+
+enum DocumentKind {
+  COMPANY_LICENSE
+  VEHICLE_REGISTRATION
+  INSURANCE
+  CONTRACT_ATTACHMENT
+  OTHER
 }
 
 enum PlanCode {
@@ -115,17 +134,77 @@ enum UsageMetric {
   PROMOTED_POSTS_PER_MONTH
 }
 
+enum JobSeekerUsageMetric {
+  JOB_APPLICATIONS_PER_MONTH
+  ACTIVE_LOOKING_LISTINGS
+}
+
+enum JobSeekerCreditTxType {
+  PURCHASE
+  SPEND
+  REFUND
+  ADJUSTMENT
+}
+
+enum JobSeekerCheckoutSessionStatus {
+  CREATED
+  COMPLETED
+  EXPIRED
+  FAILED
+}
+
+enum JobApplicationStatus {
+  OPEN
+  PAUSED
+  CLOSED
+}
+
+enum JobApplicationSubmissionStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+enum CompanyInviteStatus {
+  PENDING
+  ACCEPTED
+  REVOKED
+  EXPIRED
+}
+
+enum OtpChannel {
+  EMAIL
+  SMS
+}
+
+enum OtpPurpose {
+  REGISTER_VERIFY
+  FORGOT_PASSWORD
+  CHANGE_PASSWORD
+  INVITE_ACCEPT
+  LOGIN_MFA
+}
+
+enum OtpStatus {
+  PENDING
+  VERIFIED
+  EXPIRED
+  LOCKED
+  CANCELED
+}
+
 model Company {
   id                 String              @id @default(cuid())
   companyType        CompanyType
   name               String
-  registrationNumber String
-  vatNumber          String?
+  registrationNumber String              @unique
+  vatNumber          String?             @unique
   countryCode        String
   city               String
   address            String?
-  phone              String?
-  email              String?
+  phone              String?             @unique
+  email              String?             @unique
   website            String?
   logoUrl            String?
   bannerUrl          String?
@@ -136,46 +215,308 @@ model Company {
   stripeCustomerId   String?             @unique
   currentPlanId      String?
   subscriptionStatus SubscriptionStatus? @default(FREE)
+  deletedAt          DateTime?
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
 
-  currentPlan       Plan?              @relation("CompanyCurrentPlan", fields: [currentPlanId], references: [id])
-  users             User[]
-  vehicles          Vehicle[]
-  posts             Post[]
-  carrierBids       Bid[]              @relation("CarrierCompanyBids")
-  shipperContracts  Contract[]         @relation("ShipperCompanyContracts")
-  carrierContracts  Contract[]         @relation("CarrierCompanyContracts")
-  writtenReviews    Review[]           @relation("ReviewerCompanyReviews")
-  targetReviews     Review[]           @relation("TargetCompanyReviews")
-  subscriptions     Subscription[]
-  checkoutSessions  CheckoutSession[]
-  billingEvents     BillingEvent[]
-  usageCounters     UsageCounter[]
+  currentPlan              Plan?                      @relation("CompanyCurrentPlan", fields: [currentPlanId], references: [id])
+  users                    User[]
+  vehicles                 Vehicle[]
+  posts                    Post[]
+  carrierBids              Bid[]                      @relation("CarrierCompanyBids")
+  shipperContracts         Contract[]                 @relation("ShipperCompanyContracts")
+  carrierContracts         Contract[]                 @relation("CarrierCompanyContracts")
+  writtenReviews           Review[]                   @relation("ReviewerCompanyReviews")
+  targetReviews            Review[]                   @relation("TargetCompanyReviews")
+  subscriptions            Subscription[]
+  checkoutSessions         CheckoutSession[]
+  billingEvents            BillingEvent[]
+  usageCounters            UsageCounter[]
+  auditLogs                AuditLog[]
+  ownedNotifications       Notification[]             @relation("CompanyOwnedNotifications")
+  ownerDocuments           Document[]                 @relation("CompanyOwnedDocuments")
+  createdJobApplications   JobApplication[]           @relation("CompanyCreatedJobApplications")
+  submittedJobApplications JobApplicationSubmission[] @relation("CompanyJobApplicationSubmissions")
+  invites                  CompanyInvite[]            @relation("CompanyInvites")
 }
 
 model User {
-  id             String              @id @default(cuid())
-  companyId      String
-  role           UserRole
-  firstName      String
-  lastName       String
-  email          String
-  phone          String?
-  passwordHash   String
-  isActive       Boolean             @default(true)
-  createdAt      DateTime            @default(now())
-  updatedAt      DateTime            @updatedAt
+  id           String   @id @default(cuid())
+  companyId    String?
+  role         UserRole
+  firstName    String
+  lastName     String
+  email        String   @unique
+  phone        String?
+  passwordHash String
+  tokenVersion Int      @default(1)
+  passwordChangedAt DateTime?
+  emailVerifiedAt DateTime?
+  phoneVerifiedAt DateTime?
+  isActive     Boolean  @default(true)
+  deletedAt    DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  company            Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  licenses           License[]
-  vehicleAssignments VehicleAssignment[] @relation("DriverUserVehicleAssignments")
-  createdPosts       Post[]              @relation("PostCreatedByUser")
-  createdBids        Bid[]               @relation("BidCreatedByUser")
-  writtenReviews     Review[]            @relation("ReviewerUserReviews")
+  company                  Company?                   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  licenses                 License[]
+  vehicleAssignments       VehicleAssignment[]        @relation("DriverUserVehicleAssignments")
+  createdPosts             Post[]                     @relation("PostCreatedByUser")
+  createdBids              Bid[]                      @relation("BidCreatedByUser")
+  writtenReviews           Review[]                   @relation("ReviewerUserReviews")
+  vehicles                 Vehicle[]                  @relation("VehicleDriverUser")
+  auditLogs                AuditLog[]
+  notifications            Notification[]             @relation("UserNotifications")
+  ownerDocuments           Document[]                 @relation("UserOwnedDocuments")
+  uploadedDocuments        Document[]                 @relation("DocumentUploadedByUser")
+  wallet                   JobSeekerWallet?
+  creditTransactions       JobSeekerCreditTransaction[]
+  usageCounters            JobSeekerUsageCounter[]
+  checkoutSessions         JobSeekerCheckoutSession[]
+  authSessions             AuthSession[]
+  passwordResetTokens      PasswordResetToken[]
+  otpChallenges            AuthOtpChallenge[]
+  sentCompanyInvites       CompanyInvite[]            @relation("SentCompanyInvites")
+  acceptedCompanyInvites   CompanyInvite[]            @relation("AcceptedCompanyInvites")
+  createdJobApplications   JobApplication[]           @relation("UserCreatedJobApplications")
+  submittedJobApplications JobApplicationSubmission[] @relation("UserJobApplicationSubmissions")
 
-  @@unique([companyId, email])
   @@index([companyId])
+}
+
+model PasswordResetToken {
+  id             String   @id @default(cuid())
+  userId         String
+  tokenHash      String   @unique
+  expiresAt      DateTime
+  usedAt         DateTime?
+  requestedIp    String?
+  requestedAgent String?
+  createdAt      DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([expiresAt])
+}
+
+model AuthOtpChallenge {
+  id                String     @id @default(cuid())
+  userId            String?
+  channel           OtpChannel
+  purpose           OtpPurpose
+  destination       String
+  codeHash          String
+  status            OtpStatus  @default(PENDING)
+  attemptCount      Int        @default(0)
+  maxAttempts       Int
+  resendCount       Int        @default(0)
+  nextResendAt      DateTime?
+  provider          String
+  providerMessageId String?
+  requestedIp       String?
+  requestedAgent    String?
+  expiresAt         DateTime
+  verifiedAt        DateTime?
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([destination, purpose, status])
+  @@index([expiresAt])
+}
+
+model AuthSession {
+  id                   String   @id @default(cuid())
+  userId               String
+  refreshTokenHash     String   @unique
+  tokenVersionSnapshot Int
+  ipAddress            String?
+  userAgent            String?
+  createdAt            DateTime @default(now())
+  lastUsedAt           DateTime @default(now())
+  expiresAt            DateTime
+  revokedAt            DateTime?
+  revokeReason         String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt])
+  @@index([expiresAt])
+}
+
+model CompanyInvite {
+  id               String             @id @default(cuid())
+  companyId        String
+  invitedByUserId  String
+  invitedEmail     String
+  targetRole       UserRole
+  token            String             @unique
+  status           CompanyInviteStatus @default(PENDING)
+  acceptedByUserId String?
+  acceptedAt       DateTime?
+  revokedAt        DateTime?
+  expiresAt        DateTime
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  company        Company @relation("CompanyInvites", fields: [companyId], references: [id], onDelete: Cascade)
+  invitedByUser  User    @relation("SentCompanyInvites", fields: [invitedByUserId], references: [id], onDelete: Cascade)
+  acceptedByUser User?   @relation("AcceptedCompanyInvites", fields: [acceptedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([companyId, status])
+  @@index([invitedEmail, status])
+  @@index([expiresAt])
+}
+
+model JobSeekerWallet {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  balanceCredits Int      @default(0)
+  version        Int      @default(1)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user         User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions JobSeekerCreditTransaction[]
+}
+
+model JobSeekerCreditTransaction {
+  id                 String                @id @default(cuid())
+  walletId           String
+  userId             String
+  type               JobSeekerCreditTxType
+  amountCredits      Int
+  reasonCode         String
+  referenceType      String?
+  referenceId        String?
+  stripePaymentRef   String?
+  balanceAfter       Int
+  createdAt          DateTime              @default(now())
+
+  wallet JobSeekerWallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  user   User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([walletId, createdAt])
+  @@index([referenceType, referenceId])
+  @@index([stripePaymentRef])
+}
+
+model JobSeekerCreditPack {
+  id            String   @id @default(cuid())
+  code          String   @unique
+  name          String
+  credits       Int
+  priceAmount   Decimal  @db.Decimal(10, 2)
+  currency      String
+  stripePriceId String?  @unique
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  checkoutSessions JobSeekerCheckoutSession[]
+}
+
+model JobSeekerUsageCounter {
+  id            String              @id @default(cuid())
+  userId        String
+  metric        JobSeekerUsageMetric
+  periodStart   DateTime
+  used          Int                 @default(0)
+  limitSnapshot Int?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, metric, periodStart])
+  @@index([userId, metric, periodStart])
+}
+
+model JobSeekerCheckoutSession {
+  id                      String                        @id @default(cuid())
+  userId                  String
+  creditPackId            String
+  status                  JobSeekerCheckoutSessionStatus @default(CREATED)
+  stripeCheckoutSessionId String                        @unique
+  amountCredits           Int
+  amountPaid              Decimal?                      @db.Decimal(10, 2)
+  currency                String
+  completedAt             DateTime?
+  expiresAt               DateTime?
+  createdAt               DateTime                      @default(now())
+  updatedAt               DateTime                      @updatedAt
+
+  user       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  creditPack JobSeekerCreditPack @relation(fields: [creditPackId], references: [id], onDelete: Restrict)
+
+  @@index([userId, createdAt])
+  @@index([status])
+  @@index([expiresAt])
+}
+
+model Notification {
+  id                 String           @id @default(cuid())
+  type               NotificationType
+  recipientUserId    String?
+  recipientCompanyId String?
+  title              String
+  body               String
+  payloadJson        Json?
+  readAt             DateTime?
+  createdAt          DateTime         @default(now())
+
+  recipientUser    User?    @relation("UserNotifications", fields: [recipientUserId], references: [id], onDelete: Cascade)
+  recipientCompany Company? @relation("CompanyOwnedNotifications", fields: [recipientCompanyId], references: [id], onDelete: Cascade)
+
+  @@index([recipientUserId, createdAt])
+  @@index([recipientCompanyId, createdAt])
+  @@index([type, createdAt])
+}
+
+model Document {
+  id             String       @id @default(cuid())
+  ownerUserId    String?
+  ownerCompanyId String?
+  uploadedByUserId String
+  kind           DocumentKind
+  name           String
+  mimeType       String
+  url            String
+  metadataJson   Json?
+  deletedAt      DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  ownerUser      User?    @relation("UserOwnedDocuments", fields: [ownerUserId], references: [id], onDelete: Cascade)
+  ownerCompany   Company? @relation("CompanyOwnedDocuments", fields: [ownerCompanyId], references: [id], onDelete: Cascade)
+  uploadedByUser User     @relation("DocumentUploadedByUser", fields: [uploadedByUserId], references: [id], onDelete: Cascade)
+
+  @@index([ownerUserId, createdAt])
+  @@index([ownerCompanyId, createdAt])
+  @@index([kind])
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  companyId   String
+  actorUserId String?
+  action      String
+  entityType  String?
+  entityId    String?
+  payloadJson Json?
+  createdAt   DateTime @default(now())
+
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  actorUser User?   @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([companyId])
+  @@index([companyId, action])
+  @@index([companyId, createdAt])
+  @@index([actorUserId])
 }
 
 model License {
@@ -185,6 +526,7 @@ model License {
   issuedAt    DateTime? @db.Date
   expiresAt   DateTime? @db.Date
   isValid     Boolean   @default(true)
+  deletedAt   DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
@@ -195,8 +537,9 @@ model License {
 }
 
 model Vehicle {
-  id                    String          @id @default(cuid())
-  companyId             String
+  id                    String           @id @default(cuid())
+  companyId             String?
+  userId                String?
   vehicleType           VehicleType
   plateNumber           String
   countryOfRegistration String
@@ -204,15 +547,17 @@ model Vehicle {
   model                 String?
   year                  Int?
   capacityKg            Int?
-  volumeM3              Decimal?        @db.Decimal(10, 3)
+  volumeM3              Decimal?         @db.Decimal(10, 3)
   bodyType              VehicleBodyType?
-  refrigerated          Boolean         @default(false)
-  hazmatCertified       Boolean         @default(false)
-  isActive              Boolean         @default(true)
-  createdAt             DateTime        @default(now())
-  updatedAt             DateTime        @updatedAt
+  refrigerated          Boolean?         @default(false)
+  hazmatCertified       Boolean?         @default(false)
+  isActive              Boolean          @default(true)
+  deletedAt             DateTime?
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
 
-  company            Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company            Company?            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user               User?               @relation("VehicleDriverUser", fields: [userId], references: [id], onDelete: Cascade)
   vehicleAssignments VehicleAssignment[]
 
   @@unique([plateNumber, countryOfRegistration])
@@ -220,18 +565,21 @@ model Vehicle {
 }
 
 model VehicleAssignment {
-  id           String   @id @default(cuid())
+  id           String    @id @default(cuid())
   vehicleId    String
   driverUserId String
   startsAt     DateTime
   endsAt       DateTime?
-  createdAt    DateTime @default(now())
+  deletedAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   vehicle    Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
   driverUser User    @relation("DriverUserVehicleAssignments", fields: [driverUserId], references: [id], onDelete: Cascade)
 
   @@index([vehicleId])
   @@index([driverUserId])
+  @@index([driverUserId, startsAt, endsAt])
 }
 
 model Location {
@@ -242,6 +590,7 @@ model Location {
   postalCode  String?
   lat         Decimal? @db.Decimal(10, 7)
   lng         Decimal? @db.Decimal(10, 7)
+  deletedAt   DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -252,14 +601,15 @@ model Location {
 }
 
 model Route {
-  id                       String    @id @default(cuid())
+  id                       String   @id @default(cuid())
   originLocationId         String
   destinationLocationId    String
   distanceKm               Int?
   estimatedDurationMinutes Int?
-  isActive                 Boolean   @default(true)
-  createdAt                DateTime  @default(now())
-  updatedAt                DateTime  @updatedAt
+  isActive                 Boolean  @default(true)
+  deletedAt                DateTime?
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
 
   originLocation      Location   @relation("OriginLocationRoutes", fields: [originLocationId], references: [id])
   destinationLocation Location   @relation("DestinationLocationRoutes", fields: [destinationLocationId], references: [id])
@@ -272,13 +622,13 @@ model Route {
 }
 
 model Post {
-  id                         String        @id @default(cuid())
+  id                         String           @id @default(cuid())
   companyId                  String
   createdByUserId            String
   routeId                    String
   title                      String?
   description                String?
-  pickupEarliestAt           DateTime
+  pickupEarliestAt           DateTime?
   pickupLatestAt             DateTime?
   deliveryDeadlineAt         DateTime?
   expiresAt                  DateTime?
@@ -286,24 +636,25 @@ model Post {
   cargoType                  String?
   weightKg                   Int?
   palletCount                Int?
-  volumeM3                   Decimal?      @db.Decimal(10, 3)
+  volumeM3                   Decimal?         @db.Decimal(10, 3)
   requiredBodyType           VehicleBodyType?
-  hazmat                     Boolean       @default(false)
-  temperatureControlRequired Boolean       @default(false)
+  hazmat                     Boolean?         @default(false)
+  temperatureControlRequired Boolean?         @default(false)
   temperatureMinC            Int?
   temperatureMaxC            Int?
   priceType                  PostPriceType
-  priceAmount                Decimal?      @db.Decimal(12, 2)
+  priceAmount                Decimal?         @db.Decimal(12, 2)
   currency                   String
-  status                     PostStatus    @default(OPEN)
-  isPromoted                 Boolean       @default(false)
+  status                     PostStatus       @default(OPEN)
+  isPromoted                 Boolean          @default(false)
   promotedUntil              DateTime?
-  createdAt                  DateTime      @default(now())
-  updatedAt                  DateTime      @updatedAt
+  deletedAt                  DateTime?
+  createdAt                  DateTime         @default(now())
+  updatedAt                  DateTime         @updatedAt
 
-  company       Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  createdByUser User       @relation("PostCreatedByUser", fields: [createdByUserId], references: [id], onDelete: Cascade)
-  route         Route      @relation(fields: [routeId], references: [id])
+  company       Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdByUser User      @relation("PostCreatedByUser", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  route         Route     @relation(fields: [routeId], references: [id])
   bids          Bid[]
   contract      Contract?
 
@@ -314,19 +665,65 @@ model Post {
   @@index([isPromoted])
 }
 
+model JobApplication {
+  id                   String               @id @default(cuid())
+  createdByUserId      String
+  createdByCompanyId   String?
+  title                String
+  description          String?
+  preferredCountryCode String?
+  preferredCity        String?
+  expectedPayAmount    Decimal?             @db.Decimal(12, 2)
+  currency             String?
+  status               JobApplicationStatus @default(OPEN)
+  deletedAt            DateTime?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+
+  createdByUser    User                       @relation("UserCreatedJobApplications", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  createdByCompany Company?                   @relation("CompanyCreatedJobApplications", fields: [createdByCompanyId], references: [id], onDelete: Cascade)
+  submissions      JobApplicationSubmission[]
+
+  @@index([createdByUserId])
+  @@index([createdByCompanyId])
+  @@index([status])
+  @@index([preferredCountryCode, preferredCity])
+}
+
+model JobApplicationSubmission {
+  id                   String                         @id @default(cuid())
+  jobApplicationId     String
+  submittedByUserId    String
+  submittedByCompanyId String?
+  message              String?
+  status               JobApplicationSubmissionStatus @default(PENDING)
+  deletedAt            DateTime?
+  createdAt            DateTime                       @default(now())
+  updatedAt            DateTime                       @updatedAt
+
+  jobApplication     JobApplication @relation(fields: [jobApplicationId], references: [id], onDelete: Cascade)
+  submittedByUser    User           @relation("UserJobApplicationSubmissions", fields: [submittedByUserId], references: [id], onDelete: Cascade)
+  submittedByCompany Company?       @relation("CompanyJobApplicationSubmissions", fields: [submittedByCompanyId], references: [id], onDelete: Cascade)
+
+  @@unique([jobApplicationId, submittedByUserId])
+  @@index([submittedByCompanyId])
+  @@index([status])
+}
+
 model Bid {
-  id                  String     @id @default(cuid())
+  id                  String    @id @default(cuid())
   postId              String
   carrierCompanyId    String
   createdByUserId     String
   message             String?
-  offeredPriceAmount  Decimal?   @db.Decimal(12, 2)
+  offeredPriceAmount  Decimal?  @db.Decimal(12, 2)
   currency            String
   estimatedPickupAt   DateTime?
   estimatedDeliveryAt DateTime?
-  status              BidStatus  @default(PENDING)
-  createdAt           DateTime   @default(now())
-  updatedAt           DateTime   @updatedAt
+  status              BidStatus @default(PENDING)
+  deletedAt           DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
   post           Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
   carrierCompany Company   @relation("CarrierCompanyBids", fields: [carrierCompanyId], references: [id], onDelete: Cascade)
@@ -341,27 +738,28 @@ model Bid {
 }
 
 model Contract {
-  id                 String         @id @default(cuid())
-  postId             String         @unique
-  acceptedBidId      String         @unique
-  routeId            String
-  shipperCompanyId   String
-  carrierCompanyId   String
-  agreedPriceAmount  Decimal        @db.Decimal(12, 2)
-  currency           String
-  status             ContractStatus @default(CONFIRMED)
-  pickupPlannedAt    DateTime?
-  deliveryPlannedAt  DateTime?
-  pickupActualAt     DateTime?
-  deliveryActualAt   DateTime?
-  createdAt          DateTime       @default(now())
-  updatedAt          DateTime       @updatedAt
+  id                String         @id @default(cuid())
+  postId            String         @unique
+  acceptedBidId     String         @unique
+  routeId           String
+  shipperCompanyId  String
+  carrierCompanyId  String
+  agreedPriceAmount Decimal        @db.Decimal(12, 2)
+  currency          String
+  status            ContractStatus @default(CONFIRMED)
+  pickupPlannedAt   DateTime?
+  deliveryPlannedAt DateTime?
+  pickupActualAt    DateTime?
+  deliveryActualAt  DateTime?
+  deletedAt         DateTime?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
 
-  post           Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
-  acceptedBid    Bid       @relation(fields: [acceptedBidId], references: [id], onDelete: Cascade)
-  route          Route     @relation(fields: [routeId], references: [id])
-  shipperCompany Company   @relation("ShipperCompanyContracts", fields: [shipperCompanyId], references: [id], onDelete: Cascade)
-  carrierCompany Company   @relation("CarrierCompanyContracts", fields: [carrierCompanyId], references: [id], onDelete: Cascade)
+  post           Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  acceptedBid    Bid      @relation(fields: [acceptedBidId], references: [id], onDelete: Cascade)
+  route          Route    @relation(fields: [routeId], references: [id])
+  shipperCompany Company  @relation("ShipperCompanyContracts", fields: [shipperCompanyId], references: [id], onDelete: Cascade)
+  carrierCompany Company  @relation("CarrierCompanyContracts", fields: [carrierCompanyId], references: [id], onDelete: Cascade)
   reviews        Review[]
 
   @@index([routeId])
@@ -378,7 +776,10 @@ model Review {
   targetCompanyId   String
   rating            Int
   comment           String?
+  status            ReviewStatus @default(PUBLISHED)
+  deletedAt         DateTime?
   createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   contract        Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
   reviewerCompany Company  @relation("ReviewerCompanyReviews", fields: [reviewerCompanyId], references: [id], onDelete: Cascade)
@@ -411,7 +812,7 @@ model Plan {
   updatedAt          DateTime         @updatedAt
 
   subscriptions Subscription[]
-  companies     Company[]          @relation("CompanyCurrentPlan")
+  companies     Company[]      @relation("CompanyCurrentPlan")
 }
 
 model Subscription {
@@ -439,13 +840,13 @@ model Subscription {
   checkoutSessions CheckoutSession[]
   billingEvents    BillingEvent[]
 
+  @@index([companyId, isCurrent])
   @@index([companyId])
   @@index([companyId, status])
   @@index([planId])
   @@index([status])
   @@index([stripeCustomerId])
   @@index([stripeCheckoutSessionId])
-  @@unique([companyId, isCurrent])
 }
 
 model CheckoutSession {
@@ -470,19 +871,19 @@ model CheckoutSession {
 }
 
 model BillingEvent {
-  id                    String             @id @default(cuid())
+  id                    String              @id @default(cuid())
   companyId             String
   subscriptionId        String?
   eventType             BillingEventType
-  provider              BillingProvider    @default(STRIPE)
-  providerEventId       String             @unique
+  provider              BillingProvider     @default(STRIPE)
+  providerEventId       String              @unique
   stripeInvoiceId       String?
   stripePaymentIntentId String?
-  amount                Decimal?           @db.Decimal(10, 2)
+  amount                Decimal?            @db.Decimal(10, 2)
   currency              String?
   status                BillingEventStatus?
   payloadJson           Json?
-  createdAt             DateTime           @default(now())
+  createdAt             DateTime            @default(now())
 
   company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
   subscription Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
@@ -509,4 +910,3 @@ model UsageCounter {
   @@index([companyId])
   @@index([metric, periodStart])
 }
-

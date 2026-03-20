@@ -1,0 +1,206 @@
+import type { UserRole } from "@prisma/client";
+import { z } from "zod";
+import { AppError } from "../../shared/errors/AppError.js";
+import { Roles } from "../../shared/auth/permissions.js";
+import { UsersRepository } from "./users.repository.js";
+import {
+  listUsersSchema,
+  updateMyProfileSchema,
+  updateUserMembershipSchema,
+} from "./users.validator.js";
+
+type AuthContext = {
+  userId?: string;
+  role?: UserRole;
+  companyId?: string;
+};
+
+type RequiredAuthContext = {
+  userId: string;
+  role: UserRole;
+  companyId?: string;
+};
+
+type ListUsersQuery = z.infer<typeof listUsersSchema>["query"];
+type UpdateMyProfileBody = z.infer<typeof updateMyProfileSchema>["body"];
+type UpdateUserMembershipBody = z.infer<typeof updateUserMembershipSchema>["body"];
+
+const repo = new UsersRepository();
+
+function requireAuth(auth: AuthContext): asserts auth is RequiredAuthContext {
+  if (!auth.userId || !auth.role) {
+    throw new AppError(401, "UNAUTHENTICATED", "Authentication required");
+  }
+}
+
+function assertCompanyAdmin(auth: RequiredAuthContext) {
+  if (auth.role !== Roles.COMPANY_ADMIN) {
+    throw new AppError(403, "FORBIDDEN", "Only company admins can perform this action");
+  }
+
+  if (!auth.companyId) {
+    throw new AppError(403, "COMPANY_REQUIRED", "Company admins must belong to a company");
+  }
+}
+
+function assertCanReadUser(auth: RequiredAuthContext, targetUser: { id: string; companyId: string | null }) {
+  if (targetUser.id === auth.userId) {
+    return;
+  }
+
+  if (auth.role === Roles.COMPANY_ADMIN && auth.companyId && targetUser.companyId === auth.companyId) {
+    return;
+  }
+
+  throw new AppError(403, "FORBIDDEN", "You do not have permission to access this user");
+}
+
+export class UsersService {
+  async getMe(auth: AuthContext) {
+    requireAuth(auth);
+
+    const user = await repo.findActiveById(auth.userId);
+
+    if (!user) {
+      throw new AppError(404, "USER_NOT_FOUND", "User not found");
+    }
+
+    return user;
+  }
+
+  async list(auth: AuthContext, query: ListUsersQuery) {
+    requireAuth(auth);
+
+    if (auth.role === Roles.COMPANY_ADMIN) {
+      assertCompanyAdmin(auth);
+      const companyId = auth.companyId;
+      if (!companyId) {
+        throw new AppError(403, "COMPANY_REQUIRED", "Company admins must belong to a company");
+      }
+
+      return repo.listForCompany(companyId, query.includeInactive);
+    }
+
+    return repo.listPersonalUser(auth.userId);
+  }
+
+  async getById(auth: AuthContext, userId: string) {
+    requireAuth(auth);
+
+    const user = await repo.findActiveById(userId);
+
+    if (!user) {
+      throw new AppError(404, "USER_NOT_FOUND", "User not found");
+    }
+
+    assertCanReadUser(auth, {
+      id: user.id,
+      companyId: user.companyId,
+    });
+
+    return user;
+  }
+
+  async updateMyProfile(auth: AuthContext, body: UpdateMyProfileBody) {
+    requireAuth(auth);
+
+    if (body.role !== undefined || body.companyId !== undefined) {
+      throw new AppError(403, "FORBIDDEN_ROLE_COMPANY_MUTATION", "Role and company linkage can only be changed by company admins");
+    }
+
+    const user = await repo.findActiveById(auth.userId);
+
+    if (!user) {
+      throw new AppError(404, "USER_NOT_FOUND", "User not found");
+    }
+
+    return repo.updateProfile(auth.userId, {
+      firstName: body.firstName,
+      lastName: body.lastName,
+      phone: body.phone,
+      isActive: body.isActive,
+    });
+  }
+
+  async updateMembership(auth: AuthContext, userId: string, body: UpdateUserMembershipBody) {
+    requireAuth(auth);
+    assertCompanyAdmin(auth);
+
+    const targetUser = await repo.findActiveById(userId);
+
+    if (!targetUser) {
+      throw new AppError(404, "USER_NOT_FOUND", "User not found");
+    }
+
+    if (targetUser.id === auth.userId) {
+      throw new AppError(400, "SELF_MEMBERSHIP_CHANGE_FORBIDDEN", "You cannot change your own role or company linkage");
+    }
+
+    if (targetUser.companyId && targetUser.companyId !== auth.companyId) {
+      throw new AppError(403, "FORBIDDEN", "You can only manage users from your company");
+    }
+
+    if (body.companyId && body.companyId !== auth.companyId) {
+      throw new AppError(403, "FORBIDDEN", "You can only assign users to your own company");
+    }
+
+    if (!body.companyId && body.role !== Roles.JOB_SEEKER) {
+      throw new AppError(400, "INVALID_ROLE_FOR_PERSONAL_USER", "Users without company must have JOB_SEEKER role");
+    }
+
+    if (body.companyId) {
+      const company = await repo.findCompanyById(body.companyId);
+      if (!company) {
+        throw new AppError(404, "COMPANY_NOT_FOUND", "Company not found");
+      }
+    }
+
+    return repo.updateMembership(userId, {
+      role: body.role,
+      companyId: body.companyId,
+    });
+  }
+
+  async remove(auth: AuthContext, userId: string) {
+    requireAuth(auth);
+
+    const targetUser = await repo.findActiveById(userId);
+
+    if (!targetUser) {
+      throw new AppError(404, "USER_NOT_FOUND", "User not found");
+    }
+
+    if (auth.userId !== userId) {
+      assertCompanyAdmin(auth);
+
+      if (targetUser.companyId !== auth.companyId) {
+        throw new AppError(403, "FORBIDDEN", "You can only delete users from your company");
+      }
+    }
+
+    return repo.softDelete(userId);
+  }
+
+  async restore(auth: AuthContext, userId: string) {
+    requireAuth(auth);
+    assertCompanyAdmin(auth);
+
+    const targetUser = await repo.findAnyById(userId);
+
+    if (!targetUser) {
+      throw new AppError(404, "USER_NOT_FOUND", "User not found");
+    }
+
+    if (!targetUser.deletedAt) {
+      throw new AppError(400, "USER_NOT_DELETED", "User is already active");
+    }
+
+    if (targetUser.companyId !== auth.companyId) {
+      throw new AppError(403, "FORBIDDEN", "You can only restore users from your company");
+    }
+
+    return repo.restore(userId);
+  }
+}
+
+

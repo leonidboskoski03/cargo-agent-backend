@@ -3,8 +3,9 @@ import { prisma } from "../../shared/prisma/prismaClient.js";
 
 export class SubscriptionsRepository {
   async findCurrentByCompany(companyId: string) {
-    return prisma.subscription.findUnique({
-      where: { companyId_isCurrent: { companyId, isCurrent: true } },
+    return prisma.subscription.findFirst({
+      where: { companyId, isCurrent: true },
+      orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
       include: { plan: true },
     });
   }
@@ -43,8 +44,9 @@ export class SubscriptionsRepository {
   }
 
   async setSubscriptionCancelAtPeriodEnd(companyId: string, value: boolean) {
-    const current = await prisma.subscription.findUnique({
-      where: { companyId_isCurrent: { companyId, isCurrent: true } },
+    const current = await prisma.subscription.findFirst({
+      where: { companyId, isCurrent: true },
+      orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
     });
 
     if (!current) {

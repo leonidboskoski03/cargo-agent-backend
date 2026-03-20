@@ -4,8 +4,9 @@ import { PlansService } from "./plans.service.js";
 
 const service = new PlansService();
 
-export async function listPlans(_req: Request, res: Response) {
-  const data = await service.listPublicPlans();
+export async function listPlans(req: Request, res: Response) {
+  const activeOnly = req.query.activeOnly === "true" || req.query.activeOnly === undefined;
+  const data = await service.listPublicPlans(activeOnly);
   return ok(res, data);
 }
 

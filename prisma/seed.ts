@@ -24,15 +24,15 @@ async function main() {
     },
   });
 
-  await prisma.plan.upsert({
+  const proPlan = await prisma.plan.upsert({
     where: { code: "PRO" },
     update: {
       name: "Pro",
       billingInterval: "MONTHLY",
       currency: "EUR",
       isActive: true,
-      maxActivePosts: null,
-      maxBidsPerMonth: null,
+      maxActivePosts: 10,
+      maxBidsPerMonth: 10,
       maxTeamMembers: 25,
       hasPromotedPosts: true,
       hasAnalytics: true,
@@ -45,8 +45,8 @@ async function main() {
       priceAmount: 49,
       currency: "EUR",
       isActive: true,
-      maxActivePosts: null,
-      maxBidsPerMonth: null,
+      maxActivePosts: 10,
+      maxBidsPerMonth: 10,
       maxTeamMembers: 25,
       hasPromotedPosts: true,
       hasAnalytics: true,
@@ -75,6 +75,87 @@ async function main() {
       email: "contact@seedlogistics.test",
       currentPlanId: freePlan.id,
       subscriptionStatus: "FREE",
+    },
+  });
+
+  await prisma.company.upsert({
+    where: { id: "seed-company-pro" },
+    update: {
+      companyType: "BOTH",
+      registrationNumber: "MK-SEED-002",
+      countryCode: "MK",
+      city: "Skopje",
+      email: "both@seed.io",
+      currentPlanId: proPlan.id,
+      subscriptionStatus: "ACTIVE",
+    },
+    create: {
+      id: "seed-company-pro",
+      companyType: "BOTH",
+      name: "BOTH Logistics",
+      registrationNumber: "MK-SEED-002",
+      countryCode: "MK",
+      city: "Skopje",
+      email: "both@seed.io",
+      currentPlanId: proPlan.id,
+      subscriptionStatus: "ACTIVE",
+    }
+  })
+
+  await prisma.jobSeekerCreditPack.upsert({
+    where: { code: "JS_CREDITS_10" },
+    update: {
+      name: "Starter 10",
+      credits: 10,
+      priceAmount: 4.99,
+      currency: "EUR",
+      isActive: true,
+    },
+    create: {
+      code: "JS_CREDITS_10",
+      name: "Starter 10",
+      credits: 10,
+      priceAmount: 4.99,
+      currency: "EUR",
+      isActive: true,
+    },
+  });
+
+  await prisma.jobSeekerCreditPack.upsert({
+    where: { code: "JS_CREDITS_30" },
+    update: {
+      name: "Growth 30",
+      credits: 30,
+      priceAmount: 12.99,
+      currency: "EUR",
+      isActive: true,
+    },
+    create: {
+      code: "JS_CREDITS_30",
+      name: "Growth 30",
+      credits: 30,
+      priceAmount: 12.99,
+      currency: "EUR",
+      isActive: true,
+    },
+  });
+
+  await prisma.jobSeekerCreditPack.upsert({
+    where: { code: "JS_CREDITS_70" },
+    update: {
+      name: "Pro 70",
+      credits: 70,
+      priceAmount: 24.99,
+      currency: "EUR",
+      isActive: true,
+    },
+    create: {
+      code: "JS_CREDITS_70",
+      name: "Pro 70",
+      credits: 70,
+      priceAmount: 24.99,
+      currency: "EUR",
+      isActive: true,
     },
   });
 }
