@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { authRouter } from "../modules/auth/auth.routes.js";
 import { companiesRouter } from "../modules/companies/companies.routes.js";
+import { companyInvitesRouter } from "../modules/companyInvites/companyInvites.routes.js";
 import { usersRouter } from "../modules/users/users.routes.js";
 import { licensesRouter } from "../modules/licenses/licenses.routes.js";
 import { vehiclesRouter } from "../modules/vehicles/vehicles.routes.js";
@@ -24,6 +25,7 @@ export const v1Router = Router();
 
 v1Router.use("/auth", authRouter);
 v1Router.use("/companies", companiesRouter);
+v1Router.use("/company-invites", companyInvitesRouter);
 v1Router.use("/users", usersRouter);
 v1Router.use("/licenses", licensesRouter);
 v1Router.use("/vehicles", vehiclesRouter);

@@ -31,6 +31,7 @@ export class SubscriptionsRepository {
     planCode: PlanCode;
     expiresAt?: Date | null;
     subscriptionId?: string | null;
+    idempotencyKey?: string;
   }) {
     return prisma.checkoutSession.create({
       data: {
@@ -39,7 +40,18 @@ export class SubscriptionsRepository {
         planCode: input.planCode,
         expiresAt: input.expiresAt ?? null,
         subscriptionId: input.subscriptionId ?? null,
+        idempotencyKey: input.idempotencyKey,
       },
+    });
+  }
+
+  async findCheckoutSessionByIdempotencyKey(companyId: string, idempotencyKey: string) {
+    return prisma.checkoutSession.findFirst({
+      where: {
+        companyId,
+        idempotencyKey,
+      },
+      orderBy: [{ createdAt: "desc" }],
     });
   }
 
@@ -57,6 +69,30 @@ export class SubscriptionsRepository {
       where: { id: current.id },
       data: {
         cancelAtPeriodEnd: value,
+        version: { increment: 1 },
+      },
+    });
+  }
+
+  async updateCurrentSubscriptionCancellation(input: {
+    companyId: string;
+    cancelAtPeriodEnd: boolean;
+    canceledAt?: Date | null;
+  }) {
+    const current = await prisma.subscription.findFirst({
+      where: { companyId: input.companyId, isCurrent: true },
+      orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
+    });
+
+    if (!current) {
+      return null;
+    }
+
+    return prisma.subscription.update({
+      where: { id: current.id },
+      data: {
+        cancelAtPeriodEnd: input.cancelAtPeriodEnd,
+        canceledAt: input.canceledAt ?? null,
         version: { increment: 1 },
       },
     });

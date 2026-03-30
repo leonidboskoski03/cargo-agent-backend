@@ -1,7 +1,238 @@
-import { OtpChannel, OtpPurpose, OtpStatus, Prisma, UserRole } from "@prisma/client";
+import { CompanyType, OtpChannel, OtpPurpose, OtpStatus, PlanCode, Prisma, RegistrationKind, SubscriptionStatus, UserRole } from "@prisma/client";
 import { prisma } from "../../shared/prisma/prismaClient.js";
 
 export class AuthRepository {
+  async createRegistrationDraft(input: {
+    kind: RegistrationKind;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone?: string;
+    passwordHash: string;
+    expiresAt: Date;
+    otpChallengeId: string;
+  }) {
+    return prisma.registrationDraft.create({
+      data: {
+        kind: input.kind,
+        firstName: input.firstName,
+        lastName: input.lastName,
+        email: input.email,
+        phone: input.phone,
+        passwordHash: input.passwordHash,
+        expiresAt: input.expiresAt,
+        otpChallengeId: input.otpChallengeId,
+      },
+      select: {
+        id: true,
+        kind: true,
+        otpChallengeId: true,
+        expiresAt: true,
+        completedAt: true,
+      },
+    });
+  }
+
+  async findRegistrationDraftById(draftId: string) {
+    return prisma.registrationDraft.findUnique({
+      where: { id: draftId },
+    });
+  }
+
+  async markRegistrationOtpVerified(draftId: string) {
+    return prisma.registrationDraft.update({
+      where: { id: draftId },
+      data: {
+        otpVerifiedAt: new Date(),
+      },
+      select: {
+        id: true,
+        kind: true,
+      },
+    });
+  }
+
+  async completeJobSeekerRegistration(input: {
+    draftId: string;
+    countryCode: string;
+    city: string;
+    headline?: string;
+    yearsExperience?: number;
+    availability?: string;
+    preferredRoutes?: string[];
+  }) {
+    return prisma.$transaction(async (tx) => {
+      const draft = await tx.registrationDraft.findUnique({ where: { id: input.draftId } });
+
+      if (!draft || draft.completedAt || draft.kind !== RegistrationKind.JOB_SEEKER || !draft.otpVerifiedAt || draft.expiresAt <= new Date()) {
+        return null;
+      }
+
+      const user = await tx.user.create({
+        data: {
+          firstName: draft.firstName,
+          lastName: draft.lastName,
+          email: draft.email,
+          phone: draft.phone ?? null,
+          passwordHash: draft.passwordHash,
+          role: UserRole.JOB_SEEKER,
+          companyId: null,
+          countryCode: input.countryCode,
+          city: input.city,
+          headline: input.headline,
+          yearsExperience: input.yearsExperience,
+          availability: input.availability,
+          preferredRoutes: input.preferredRoutes,
+          tokenVersion: 1,
+          emailVerifiedAt: draft.otpVerifiedAt,
+        },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          role: true,
+          companyId: true,
+          tokenVersion: true,
+        },
+      });
+
+      await tx.registrationDraft.update({
+        where: { id: draft.id },
+        data: {
+          countryCode: input.countryCode,
+          city: input.city,
+          headline: input.headline,
+          yearsExperience: input.yearsExperience,
+          availability: input.availability,
+          preferredRoutes: input.preferredRoutes,
+          completedAt: new Date(),
+        },
+      });
+
+      return { user };
+    });
+  }
+
+  async completeCompanyRegistration(input: {
+    draftId: string;
+    companyName: string;
+    companyType: CompanyType;
+    registrationNumber: string;
+    address: string;
+    countryCode: string;
+    city: string;
+    vatNumber?: string;
+    website?: string;
+    companyPhone?: string;
+    companyEmail?: string;
+    planCode: PlanCode;
+  }) {
+    return prisma.$transaction(async (tx) => {
+      const draft = await tx.registrationDraft.findUnique({ where: { id: input.draftId } });
+      if (!draft || draft.completedAt || draft.kind !== RegistrationKind.COMPANY || !draft.otpVerifiedAt || draft.expiresAt <= new Date()) {
+        return null;
+      }
+
+      const freePlan = await tx.plan.findFirst({
+        where: {
+          code: PlanCode.FREE,
+          isActive: true,
+        },
+        select: { id: true },
+      });
+
+      if (!freePlan) {
+        throw new Error("FREE_PLAN_NOT_FOUND");
+      }
+
+      const company = await tx.company.create({
+        data: {
+          companyType: input.companyType,
+          name: input.companyName,
+          registrationNumber: input.registrationNumber,
+          vatNumber: input.vatNumber,
+          countryCode: input.countryCode,
+          city: input.city,
+          address: input.address,
+          phone: input.companyPhone,
+          email: input.companyEmail,
+          website: input.website,
+          currentPlanId: freePlan.id,
+          subscriptionStatus: SubscriptionStatus.FREE,
+        },
+        select: {
+          id: true,
+          name: true,
+          companyType: true,
+          registrationNumber: true,
+          countryCode: true,
+          city: true,
+          address: true,
+          website: true,
+          phone: true,
+          email: true,
+          currentPlanId: true,
+          subscriptionStatus: true,
+        },
+      });
+
+      await tx.subscription.create({
+        data: {
+          companyId: company.id,
+          planId: freePlan.id,
+          status: SubscriptionStatus.FREE,
+          isCurrent: true,
+          startsAt: new Date(),
+          currentPeriodStart: new Date(),
+        },
+      });
+
+      const user = await tx.user.create({
+        data: {
+          firstName: draft.firstName,
+          lastName: draft.lastName,
+          email: draft.email,
+          phone: draft.phone ?? null,
+          passwordHash: draft.passwordHash,
+          role: UserRole.COMPANY_ADMIN,
+          companyId: company.id,
+          tokenVersion: 1,
+          emailVerifiedAt: draft.otpVerifiedAt,
+        },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          role: true,
+          companyId: true,
+          tokenVersion: true,
+        },
+      });
+
+      await tx.registrationDraft.update({
+        where: { id: draft.id },
+        data: {
+          companyName: input.companyName,
+          companyType: input.companyType,
+          companyRegistrationNumber: input.registrationNumber,
+          companyAddress: input.address,
+          companyCountryCode: input.countryCode,
+          companyCity: input.city,
+          companyVatNumber: input.vatNumber,
+          companyPhone: input.companyPhone,
+          companyEmail: input.companyEmail,
+          companyWebsite: input.website,
+          selectedPlanCode: input.planCode,
+          completedAt: new Date(),
+        },
+      });
+
+      return { user, company };
+    });
+  }
+
   async findActiveUserByEmail(email: string) {
     return prisma.user.findFirst({
       where: {

@@ -194,6 +194,11 @@ enum OtpStatus {
   CANCELED
 }
 
+enum RegistrationKind {
+  JOB_SEEKER
+  COMPANY
+}
+
 model Company {
   id                 String              @id @default(cuid())
   companyType        CompanyType
@@ -248,6 +253,12 @@ model User {
   lastName     String
   email        String   @unique
   phone        String?
+  countryCode  String?
+  city         String?
+  headline     String?
+  yearsExperience Int?
+  availability String?
+  preferredRoutes Json?
   passwordHash String
   tokenVersion Int      @default(1)
   passwordChangedAt DateTime?
@@ -282,6 +293,43 @@ model User {
   submittedJobApplications JobApplicationSubmission[] @relation("UserJobApplicationSubmissions")
 
   @@index([companyId])
+}
+
+model RegistrationDraft {
+  id                        String           @id @default(cuid())
+  kind                      RegistrationKind
+  firstName                 String
+  lastName                  String
+  email                     String
+  phone                     String?
+  passwordHash              String
+  countryCode               String?
+  city                      String?
+  headline                  String?
+  yearsExperience           Int?
+  availability              String?
+  preferredRoutes           Json?
+  companyName               String?
+  companyType               CompanyType?
+  companyRegistrationNumber String?
+  companyAddress            String?
+  companyCountryCode        String?
+  companyCity               String?
+  companyVatNumber          String?
+  companyPhone              String?
+  companyEmail              String?
+  companyWebsite            String?
+  selectedPlanCode          PlanCode?
+  otpChallengeId            String?
+  otpVerifiedAt             DateTime?
+  completedAt               DateTime?
+  expiresAt                 DateTime
+  createdAt                 DateTime         @default(now())
+  updatedAt                 DateTime         @updatedAt
+
+  @@index([email])
+  @@index([kind, completedAt])
+  @@index([expiresAt])
 }
 
 model PasswordResetToken {
@@ -440,6 +488,7 @@ model JobSeekerCheckoutSession {
   id                      String                        @id @default(cuid())
   userId                  String
   creditPackId            String
+  idempotencyKey          String?
   status                  JobSeekerCheckoutSessionStatus @default(CREATED)
   stripeCheckoutSessionId String                        @unique
   amountCredits           Int
@@ -456,6 +505,7 @@ model JobSeekerCheckoutSession {
   @@index([userId, createdAt])
   @@index([status])
   @@index([expiresAt])
+  @@unique([userId, idempotencyKey])
 }
 
 model Notification {
@@ -676,6 +726,8 @@ model JobApplication {
   expectedPayAmount    Decimal?             @db.Decimal(12, 2)
   currency             String?
   status               JobApplicationStatus @default(OPEN)
+  isPromoted           Boolean              @default(false)
+  promotedUntil        DateTime?
   deletedAt            DateTime?
   createdAt            DateTime             @default(now())
   updatedAt            DateTime             @updatedAt
@@ -687,6 +739,7 @@ model JobApplication {
   @@index([createdByUserId])
   @@index([createdByCompanyId])
   @@index([status])
+  @@index([isPromoted])
   @@index([preferredCountryCode, preferredCity])
 }
 
@@ -697,6 +750,8 @@ model JobApplicationSubmission {
   submittedByCompanyId String?
   message              String?
   status               JobApplicationSubmissionStatus @default(PENDING)
+  isPromoted           Boolean                         @default(false)
+  promotedUntil        DateTime?
   deletedAt            DateTime?
   createdAt            DateTime                       @default(now())
   updatedAt            DateTime                       @updatedAt
@@ -708,6 +763,7 @@ model JobApplicationSubmission {
   @@unique([jobApplicationId, submittedByUserId])
   @@index([submittedByCompanyId])
   @@index([status])
+  @@index([isPromoted])
 }
 
 model Bid {
@@ -853,6 +909,7 @@ model CheckoutSession {
   id                      String                @id @default(cuid())
   companyId               String
   subscriptionId          String?
+  idempotencyKey          String?
   provider                BillingProvider       @default(STRIPE)
   status                  CheckoutSessionStatus @default(CREATED)
   stripeCheckoutSessionId String                @unique
@@ -868,6 +925,7 @@ model CheckoutSession {
   @@index([companyId])
   @@index([status])
   @@index([expiresAt])
+  @@unique([companyId, idempotencyKey])
 }
 
 model BillingEvent {

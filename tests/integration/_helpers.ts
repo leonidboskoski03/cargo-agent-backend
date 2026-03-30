@@ -31,6 +31,11 @@ export function setTestEnv() {
   process.env.AUTH_RESET_PASSWORD_RATE_LIMIT_WINDOW_MS = "60000";
   process.env.AUTH_RESET_PASSWORD_RATE_LIMIT_MAX = "100";
   process.env.AUTH_LOGIN_MFA_REQUIRED_ROLES = "COMPANY_ADMIN";
+  process.env.JOB_SEEKER_FREE_APPLICATIONS_PER_MONTH = "10";
+  process.env.JOB_SEEKER_FREE_ACTIVE_LISTINGS = "1";
+  process.env.JOB_SEEKER_APPLICATION_CREDIT_COST = "1";
+  process.env.JOB_SEEKER_LISTING_PROMOTION_CREDIT_COST = "2";
+  process.env.JOB_SEEKER_SUBMISSION_PROMOTION_CREDIT_COST = "1";
   process.env.REDIS_URL = "redis://127.0.0.1:6379";
   process.env.BULLMQ_ENABLED = "false";
   process.env.CRON_ENABLED = "false";

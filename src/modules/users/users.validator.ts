@@ -9,6 +9,12 @@ export const getMeSchema = z.object({
   body: z.object({}),
 });
 
+export const getMyProfileCompletionSchema = z.object({
+  params: z.object({}),
+  query: z.object({}),
+  body: z.object({}),
+});
+
 export const listUsersSchema = z.object({
   params: z.object({}),
   query: z.object({

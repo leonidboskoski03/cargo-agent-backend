@@ -32,6 +32,8 @@ const envSchema = z.object({
   JOB_SEEKER_FREE_APPLICATIONS_PER_MONTH: z.coerce.number().int().min(0).default(10),
   JOB_SEEKER_FREE_ACTIVE_LISTINGS: z.coerce.number().int().min(0).default(1),
   JOB_SEEKER_APPLICATION_CREDIT_COST: z.coerce.number().int().min(1).default(1),
+  JOB_SEEKER_LISTING_PROMOTION_CREDIT_COST: z.coerce.number().int().min(1).default(2),
+  JOB_SEEKER_SUBMISSION_PROMOTION_CREDIT_COST: z.coerce.number().int().min(1).default(1),
   INTERNAL_ADMIN_ADJUSTMENTS_ENABLED: z
     .string()
     .default("false")

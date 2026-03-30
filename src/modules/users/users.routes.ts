@@ -3,6 +3,7 @@ import { requireAuth } from "../../shared/middleware/auth.middleware.js";
 import { validate } from "../../shared/middleware/validate.middleware.js";
 import {
   deleteUser,
+  getMyProfileCompletion,
   getMyUser,
   getUserById,
   listUsers,
@@ -13,6 +14,7 @@ import {
 import {
   deleteUserSchema,
   getMeSchema,
+  getMyProfileCompletionSchema,
   getUserByIdSchema,
   listUsersSchema,
   restoreUserSchema,
@@ -24,6 +26,7 @@ export const usersRouter = Router();
 
 usersRouter.get("/", requireAuth, validate(listUsersSchema), listUsers);
 usersRouter.get("/me", requireAuth, validate(getMeSchema), getMyUser);
+usersRouter.get("/me/profile-completion", requireAuth, validate(getMyProfileCompletionSchema), getMyProfileCompletion);
 usersRouter.get("/:userId", requireAuth, validate(getUserByIdSchema), getUserById);
 usersRouter.patch("/me", requireAuth, validate(updateMyProfileSchema), updateMyUser);
 usersRouter.patch("/:userId/membership", requireAuth, validate(updateUserMembershipSchema), updateUserMembership);

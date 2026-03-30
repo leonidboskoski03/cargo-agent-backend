@@ -9,6 +9,13 @@ const userSelect = {
   lastName: true,
   email: true,
   phone: true,
+  countryCode: true,
+  city: true,
+  headline: true,
+  yearsExperience: true,
+  availability: true,
+  preferredRoutes: true,
+  emailVerifiedAt: true,
   isActive: true,
   deletedAt: true,
   createdAt: true,
@@ -36,6 +43,27 @@ export class UsersRepository {
       },
       select: {
         id: true,
+      },
+    });
+  }
+
+  async findCompanyProfileById(companyId: string) {
+    return prisma.company.findFirst({
+      where: {
+        id: companyId,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        name: true,
+        companyType: true,
+        registrationNumber: true,
+        countryCode: true,
+        city: true,
+        address: true,
+        website: true,
+        phone: true,
+        email: true,
       },
     });
   }

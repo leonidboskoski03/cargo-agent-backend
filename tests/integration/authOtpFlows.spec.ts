@@ -158,6 +158,114 @@ describe("auth otp flows", () => {
     }
   }, 20_000);
 
+  it("completes JOB_SEEKER wizard registration flow", async () => {
+    const { prisma, buildApp } = await initRuntime();
+    if (!dbReady) {
+      return;
+    }
+
+    const app = buildApp();
+    const suffix = `${Date.now()}-wiz-js`;
+    const email = `wizard-js-${suffix}@test.local`;
+
+    try {
+      const startResponse = await request(app).post("/api/v1/auth/registration/start").send({
+        kind: "JOB_SEEKER",
+        firstName: "Wizard",
+        lastName: "Seeker",
+        email,
+        phone: "+38970111222",
+        password: "StrongPass123!",
+      });
+
+      expect(startResponse.statusCode).toBe(200);
+      const draftId = startResponse.body.data.draftId as string;
+      const code = startResponse.body.data.code as string;
+
+      const verifyResponse = await request(app).post("/api/v1/auth/registration/verify-otp").send({
+        draftId,
+        code,
+      });
+
+      expect(verifyResponse.statusCode).toBe(200);
+      expect(verifyResponse.body.data.kind).toBe("JOB_SEEKER");
+
+      const completeResponse = await request(app).post("/api/v1/auth/registration/complete-job-seeker").send({
+        draftId,
+        countryCode: "MK",
+        city: "Skopje",
+        headline: "Regional Driver",
+        yearsExperience: 3,
+      });
+
+      expect(completeResponse.statusCode).toBe(200);
+      expect(completeResponse.body.data.user.email).toBe(email);
+      expect(completeResponse.body.data.user.role).toBe(UserRole.JOB_SEEKER);
+    } finally {
+      await prisma.authSession.deleteMany({ where: { user: { email } } });
+      await prisma.authOtpChallenge.deleteMany({ where: { destination: email } });
+      await prisma.registrationDraft.deleteMany({ where: { email } });
+      await prisma.user.deleteMany({ where: { email } });
+    }
+  }, 20_000);
+
+  it("completes COMPANY wizard registration flow on FREE plan", async () => {
+    const { prisma, buildApp } = await initRuntime();
+    if (!dbReady) {
+      return;
+    }
+
+    const app = buildApp();
+    const suffix = `${Date.now()}-wiz-company`;
+    const email = `wizard-company-${suffix}@test.local`;
+    const registrationNumber = `MK-WIZ-${suffix}`;
+
+    try {
+      const startResponse = await request(app).post("/api/v1/auth/registration/start").send({
+        kind: "COMPANY",
+        firstName: "Wizard",
+        lastName: "Admin",
+        email,
+        password: "StrongPass123!",
+      });
+
+      expect(startResponse.statusCode).toBe(200);
+      const draftId = startResponse.body.data.draftId as string;
+      const code = startResponse.body.data.code as string;
+
+      const verifyResponse = await request(app).post("/api/v1/auth/registration/verify-otp").send({
+        draftId,
+        code,
+      });
+
+      expect(verifyResponse.statusCode).toBe(200);
+      expect(verifyResponse.body.data.kind).toBe("COMPANY");
+
+      const completeResponse = await request(app).post("/api/v1/auth/registration/complete-company").send({
+        draftId,
+        companyName: "Wizard Logistics",
+        companyType: "CARRIER",
+        registrationNumber,
+        address: "Main Street 1",
+        countryCode: "MK",
+        city: "Skopje",
+        planCode: "FREE",
+      });
+
+      expect(completeResponse.statusCode).toBe(200);
+      expect(completeResponse.body.data.user.email).toBe(email);
+      expect(completeResponse.body.data.user.role).toBe(UserRole.COMPANY_ADMIN);
+      expect(completeResponse.body.data.company.registrationNumber).toBe(registrationNumber);
+      expect(completeResponse.body.data.checkout).toBeNull();
+    } finally {
+      await prisma.authSession.deleteMany({ where: { user: { email } } });
+      await prisma.authOtpChallenge.deleteMany({ where: { destination: email } });
+      await prisma.registrationDraft.deleteMany({ where: { email } });
+      await prisma.user.deleteMany({ where: { email } });
+      await prisma.company.deleteMany({ where: { registrationNumber } });
+    }
+  }, 20_000);
+
   it("completes login with verified LOGIN_MFA OTP and rejects challenge reuse", async () => {
     const { prisma, buildApp } = await initRuntime();
     if (!dbReady) {

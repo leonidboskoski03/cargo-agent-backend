@@ -1,4 +1,4 @@
-import { OtpChannel, OtpPurpose, OtpStatus, UserRole } from "@prisma/client";
+import { CompanyType, OtpChannel, OtpPurpose, OtpStatus, PlanCode, RegistrationKind, UserRole } from "@prisma/client";
 import { createHash, randomBytes } from "crypto";
 import { env } from "../../config/env.js";
 import { AppError } from "../../shared/errors/AppError.js";
@@ -6,6 +6,7 @@ import { signAccessToken } from "../../shared/auth/jwt.js";
 import { hashPassword, verifyPassword } from "../../shared/auth/password.js";
 import { createOtpDeliveryProvider } from "./auth.otpDelivery.js";
 import { AuthRepository } from "./auth.repository.js";
+import { SubscriptionsService } from "../subscriptions/subscriptions.service.js";
 
 type LoginInput = {
   email: string;
@@ -25,6 +26,47 @@ type RegisterInput = {
   password: string;
   role: UserRole;
   otpChallengeId: string;
+};
+
+type RegistrationStartInput = {
+  kind: RegistrationKind;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  password: string;
+  ipAddress?: string;
+  userAgent?: string;
+};
+
+type VerifyRegistrationOtpInput = {
+  draftId: string;
+  code: string;
+};
+
+type CompleteJobSeekerRegistrationInput = {
+  draftId: string;
+  countryCode: string;
+  city: string;
+  headline?: string;
+  yearsExperience?: number;
+  availability?: string;
+  preferredRoutes?: string[];
+};
+
+type CompleteCompanyRegistrationInput = {
+  draftId: string;
+  companyName: string;
+  companyType: CompanyType;
+  registrationNumber: string;
+  address: string;
+  countryCode: string;
+  city: string;
+  vatNumber?: string;
+  website?: string;
+  contactPhone?: string;
+  companyEmail?: string;
+  planCode: PlanCode;
 };
 
 type SessionContext = {
@@ -81,6 +123,7 @@ type RevokeSessionInput = {
 
 const repo = new AuthRepository();
 const otpDelivery = createOtpDeliveryProvider();
+const subscriptionsService = new SubscriptionsService();
 
 function hashRefreshToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
@@ -116,6 +159,10 @@ function getOtpExpiresAt() {
   return new Date(Date.now() + env.AUTH_OTP_TTL_MINUTES * 60 * 1000);
 }
 
+function getRegistrationDraftExpiresAt() {
+  return new Date(Date.now() + env.AUTH_OTP_TTL_MINUTES * 60 * 1000);
+}
+
 function getNextResendAt() {
   return new Date(Date.now() + env.AUTH_OTP_RESEND_COOLDOWN_SECONDS * 1000);
 }
@@ -125,6 +172,196 @@ function shouldRequireLoginMfa(role: UserRole) {
 }
 
 export class AuthService {
+  async startRegistration(input: RegistrationStartInput) {
+    if (input.kind !== RegistrationKind.JOB_SEEKER && input.kind !== RegistrationKind.COMPANY) {
+      throw new AppError(400, "INVALID_REGISTRATION_KIND", "Invalid registration kind");
+    }
+
+    const email = normalizeEmail(input.email);
+    const phone = input.phone ? normalizePhone(input.phone) : undefined;
+    const passwordHash = await hashPassword(input.password);
+
+    const otp = await this.requestOtp({
+      purpose: OtpPurpose.REGISTER_VERIFY,
+      channel: OtpChannel.EMAIL,
+      email,
+      ipAddress: input.ipAddress,
+      userAgent: input.userAgent,
+    });
+
+    if (!otp.challengeId) {
+      throw new AppError(500, "OTP_CHALLENGE_NOT_CREATED", "Could not create registration OTP challenge");
+    }
+
+    const draft = await repo.createRegistrationDraft({
+      kind: input.kind,
+      firstName: input.firstName.trim(),
+      lastName: input.lastName.trim(),
+      email,
+      phone,
+      passwordHash,
+      expiresAt: getRegistrationDraftExpiresAt(),
+      otpChallengeId: otp.challengeId,
+    });
+
+    return {
+      draftId: draft.id,
+      challengeId: otp.challengeId,
+      expiresAt: otp.expiresAt,
+      previewCode: otp.previewCode,
+    };
+  }
+
+  async verifyRegistrationOtp(input: VerifyRegistrationOtpInput) {
+    const draft = await repo.findRegistrationDraftById(input.draftId);
+
+    if (!draft || draft.completedAt) {
+      throw new AppError(404, "REGISTRATION_DRAFT_NOT_FOUND", "Registration draft not found");
+    }
+
+    if (!draft.otpChallengeId) {
+      throw new AppError(400, "OTP_REQUIRED", "Registration OTP challenge not found");
+    }
+
+    if (draft.expiresAt.getTime() <= Date.now()) {
+      throw new AppError(400, "REGISTRATION_DRAFT_EXPIRED", "Registration draft expired");
+    }
+
+    await this.verifyOtp({
+      challengeId: draft.otpChallengeId,
+      code: input.code,
+    });
+
+    const updated = await repo.markRegistrationOtpVerified(draft.id);
+
+    return {
+      draftId: updated.id,
+      kind: updated.kind,
+    };
+  }
+
+  async completeJobSeekerRegistration(input: CompleteJobSeekerRegistrationInput, context: SessionContext = {}) {
+    const result = await repo.completeJobSeekerRegistration({
+      draftId: input.draftId,
+      countryCode: input.countryCode.toUpperCase(),
+      city: input.city.trim(),
+      headline: input.headline?.trim(),
+      yearsExperience: input.yearsExperience,
+      availability: input.availability?.trim(),
+      preferredRoutes: input.preferredRoutes,
+    });
+
+    if (!result) {
+      throw new AppError(400, "REGISTRATION_DRAFT_INVALID", "Registration draft is invalid or expired");
+    }
+
+    const refreshToken = createRefreshToken();
+    const refreshTokenHash = hashRefreshToken(refreshToken);
+    const session = await repo.createSession({
+      userId: result.user.id,
+      refreshTokenHash,
+      tokenVersionSnapshot: result.user.tokenVersion,
+      expiresAt: getRefreshExpiresAt(),
+      ipAddress: context.ipAddress,
+      userAgent: context.userAgent,
+    });
+
+    const accessToken = signAccessToken({
+      sub: result.user.id,
+      role: result.user.role,
+      companyId: undefined,
+      email: result.user.email,
+      sid: session.id,
+      sv: result.user.tokenVersion,
+    });
+
+    return {
+      accessToken,
+      refreshToken,
+      user: {
+        id: result.user.id,
+        email: result.user.email,
+        firstName: result.user.firstName,
+        lastName: result.user.lastName,
+        role: result.user.role,
+        companyId: result.user.companyId,
+      },
+    };
+  }
+
+  async completeCompanyRegistration(input: CompleteCompanyRegistrationInput, context: SessionContext = {}) {
+    const result = await repo.completeCompanyRegistration({
+      draftId: input.draftId,
+      companyName: input.companyName.trim(),
+      companyType: input.companyType,
+      registrationNumber: input.registrationNumber.trim(),
+      address: input.address.trim(),
+      countryCode: input.countryCode.toUpperCase(),
+      city: input.city.trim(),
+      vatNumber: input.vatNumber?.trim(),
+      website: input.website?.trim(),
+      companyPhone: input.contactPhone?.trim(),
+      companyEmail: input.companyEmail?.trim().toLowerCase(),
+      planCode: input.planCode,
+    });
+
+    if (!result) {
+      throw new AppError(400, "REGISTRATION_DRAFT_INVALID", "Registration draft is invalid or expired");
+    }
+
+    const refreshToken = createRefreshToken();
+    const refreshTokenHash = hashRefreshToken(refreshToken);
+    const session = await repo.createSession({
+      userId: result.user.id,
+      refreshTokenHash,
+      tokenVersionSnapshot: result.user.tokenVersion,
+      expiresAt: getRefreshExpiresAt(),
+      ipAddress: context.ipAddress,
+      userAgent: context.userAgent,
+    });
+
+    const accessToken = signAccessToken({
+      sub: result.user.id,
+      role: result.user.role,
+      companyId: result.user.companyId ?? undefined,
+      email: result.user.email,
+      sid: session.id,
+      sv: result.user.tokenVersion,
+    });
+
+    let checkout: { provider: string; planCode: PlanCode; checkoutSessionId: string; checkoutUrl: string | null; status: string } | null = null;
+
+    if (input.planCode === PlanCode.PRO) {
+      const createdCheckout = await subscriptionsService.createCheckoutSession({
+        companyId: result.company.id,
+        planCode: PlanCode.PRO,
+      });
+
+      checkout = {
+        provider: createdCheckout.provider,
+        planCode: createdCheckout.planCode,
+        checkoutSessionId: createdCheckout.checkoutSessionId,
+        checkoutUrl: createdCheckout.checkoutUrl ?? null,
+        status: createdCheckout.status,
+      };
+    }
+
+    return {
+      accessToken,
+      refreshToken,
+      user: {
+        id: result.user.id,
+        email: result.user.email,
+        firstName: result.user.firstName,
+        lastName: result.user.lastName,
+        role: result.user.role,
+        companyId: result.user.companyId,
+      },
+      company: result.company,
+      checkout,
+    };
+  }
+
   async login(input: LoginInput, context: SessionContext = {}) {
     const email = input.email.trim().toLowerCase();
     const user = await repo.findActiveUserByEmail(email);

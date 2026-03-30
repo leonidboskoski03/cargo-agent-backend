@@ -54,6 +54,7 @@ export class JobSeekerBillingRepository {
     amountCredits: number;
     amountPaid: number;
     currency: string;
+    idempotencyKey?: string;
     expiresAt?: Date | null;
   }) {
     return prisma.jobSeekerCheckoutSession.create({
@@ -64,8 +65,19 @@ export class JobSeekerBillingRepository {
         amountCredits: input.amountCredits,
         amountPaid: input.amountPaid,
         currency: input.currency,
+        idempotencyKey: input.idempotencyKey,
         expiresAt: input.expiresAt ?? null,
       },
+    });
+  }
+
+  async findCheckoutSessionByIdempotencyKey(userId: string, idempotencyKey: string) {
+    return prisma.jobSeekerCheckoutSession.findFirst({
+      where: {
+        userId,
+        idempotencyKey,
+      },
+      orderBy: [{ createdAt: "desc" }],
     });
   }
 

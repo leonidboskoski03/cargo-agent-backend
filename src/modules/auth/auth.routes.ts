@@ -5,6 +5,8 @@ import { validate } from "../../shared/middleware/validate.middleware.js";
 import { ok } from "../../shared/http/apiResponse.js";
 import {
   changePassword,
+  completeCompanyRegistration,
+  completeJobSeekerRegistration,
   forgotPassword,
   login,
   loginVerifyOtp,
@@ -12,15 +14,19 @@ import {
   logout,
   logoutAll,
   requestOtp,
+  startRegistration,
   refreshSession,
   register,
   revokeSession,
   resendOtp,
   resetPassword,
+  verifyRegistrationOtp,
   verifyOtp,
 } from "./auth.controller.js";
 import {
   changePasswordSchema,
+  completeCompanyRegistrationSchema,
+  completeJobSeekerRegistrationSchema,
   forgotPasswordSchema,
   listSessionsSchema,
   loginSchema,
@@ -28,6 +34,8 @@ import {
   logoutAllSchema,
   logoutSchema,
   requestOtpSchema,
+  registrationStartSchema,
+  registrationVerifyOtpSchema,
   refreshSessionSchema,
   registerSchema,
   revokeSessionSchema,
@@ -40,6 +48,10 @@ export const authRouter = Router();
 
 authRouter.get("/", (_req, res) => ok(res, { module: "auth", status: "ready" }));
 authRouter.post("/register", validate(registerSchema), register);
+authRouter.post("/registration/start", validate(registrationStartSchema), startRegistration);
+authRouter.post("/registration/verify-otp", validate(registrationVerifyOtpSchema), verifyRegistrationOtp);
+authRouter.post("/registration/complete-job-seeker", validate(completeJobSeekerRegistrationSchema), completeJobSeekerRegistration);
+authRouter.post("/registration/complete-company", validate(completeCompanyRegistrationSchema), completeCompanyRegistration);
 authRouter.post("/login", validate(loginSchema), login);
 authRouter.post("/login/verify-otp", validate(loginVerifyOtpSchema), loginVerifyOtp);
 authRouter.post("/refresh", validate(refreshSessionSchema), refreshSession);

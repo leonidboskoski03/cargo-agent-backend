@@ -9,7 +9,7 @@ describe("billing and plans endpoints", () => {
   beforeAll(async () => {
     const runtime = await initRuntime();
     dbReady = await isDatabaseAvailable(runtime.prisma);
-  });
+  }, 20_000);
 
   it("lists active plans by default and includes inactive when requested", async () => {
     const { prisma, buildApp } = await initRuntime();
@@ -111,6 +111,141 @@ describe("billing and plans endpoints", () => {
       expect(ids).toContain(event.id);
     } finally {
       await prisma.billingEvent.deleteMany({ where: { id: event.id } });
+      await prisma.user.deleteMany({ where: { id: admin.id } });
+      await prisma.company.deleteMany({ where: { id: company.id } });
+    }
+  }, 20_000);
+
+  it("returns provider-not-configured for billing portal when Stripe keys are missing", async () => {
+    const { prisma, buildApp, signAccessToken } = await initRuntime();
+    if (!dbReady) {
+      return;
+    }
+
+    const app = buildApp();
+    const suffix = `${Date.now()}-portal`;
+
+    const company = await prisma.company.create({
+      data: {
+        companyType: CompanyType.CARRIER,
+        name: `Portal Co ${suffix}`,
+        registrationNumber: `POR-${suffix}`,
+        countryCode: "RS",
+        city: "Novi Sad",
+      },
+    });
+
+    const admin = await prisma.user.create({
+      data: {
+        companyId: company.id,
+        role: UserRole.COMPANY_ADMIN,
+        firstName: "Portal",
+        lastName: "Admin",
+        email: `portal-admin-${suffix}@test.local`,
+        passwordHash: "hash",
+      },
+    });
+
+    const token = authHeader(signAccessToken, {
+      userId: admin.id,
+      role: admin.role,
+      companyId: company.id,
+      email: admin.email,
+    });
+
+    try {
+      const response = await request(app).post("/api/v1/subscriptions/portal-session").set("Authorization", token);
+      expect(response.statusCode).toBe(500);
+      expect(response.body.error.code).toBe("BILLING_PROVIDER_NOT_CONFIGURED");
+    } finally {
+      await prisma.user.deleteMany({ where: { id: admin.id } });
+      await prisma.company.deleteMany({ where: { id: company.id } });
+    }
+  }, 20_000);
+
+  it("supports cancel and cancel-revert for non-stripe current subscriptions", async () => {
+    const { prisma, buildApp, signAccessToken } = await initRuntime();
+    if (!dbReady) {
+      return;
+    }
+
+    const app = buildApp();
+    const suffix = `${Date.now()}-cancel`;
+
+    const freePlan = await prisma.plan.upsert({
+      where: { code: PlanCode.FREE },
+      update: { isActive: true },
+      create: {
+        code: PlanCode.FREE,
+        name: "Free",
+        priceAmount: 0,
+        currency: "EUR",
+        isActive: true,
+      },
+      select: { id: true },
+    });
+
+    const company = await prisma.company.create({
+      data: {
+        companyType: CompanyType.CARRIER,
+        name: `Cancel Co ${suffix}`,
+        registrationNumber: `CAN-${suffix}`,
+        countryCode: "RS",
+        city: "Nis",
+        currentPlanId: freePlan.id,
+        subscriptionStatus: "FREE",
+      },
+    });
+
+    const subscription = await prisma.subscription.create({
+      data: {
+        companyId: company.id,
+        planId: freePlan.id,
+        status: "FREE",
+        isCurrent: true,
+      },
+    });
+
+    const admin = await prisma.user.create({
+      data: {
+        companyId: company.id,
+        role: UserRole.COMPANY_ADMIN,
+        firstName: "Cancel",
+        lastName: "Admin",
+        email: `cancel-admin-${suffix}@test.local`,
+        passwordHash: "hash",
+      },
+    });
+
+    const token = authHeader(signAccessToken, {
+      userId: admin.id,
+      role: admin.role,
+      companyId: company.id,
+      email: admin.email,
+    });
+
+    try {
+      const cancelResponse = await request(app)
+        .post("/api/v1/subscriptions/cancel-at-period-end")
+        .set("Authorization", token)
+        .send({});
+      expect(cancelResponse.statusCode).toBe(200);
+      expect(cancelResponse.body.data.cancelAtPeriodEnd).toBe(true);
+
+      const revertResponse = await request(app)
+        .post("/api/v1/subscriptions/cancel-revert")
+        .set("Authorization", token)
+        .send({});
+      expect(revertResponse.statusCode).toBe(200);
+      expect(revertResponse.body.data.cancelAtPeriodEnd).toBe(false);
+
+      const updated = await prisma.subscription.findUnique({
+        where: { id: subscription.id },
+        select: { cancelAtPeriodEnd: true },
+      });
+      expect(updated?.cancelAtPeriodEnd).toBe(false);
+    } finally {
+      await prisma.subscription.deleteMany({ where: { id: subscription.id } });
       await prisma.user.deleteMany({ where: { id: admin.id } });
       await prisma.company.deleteMany({ where: { id: company.id } });
     }

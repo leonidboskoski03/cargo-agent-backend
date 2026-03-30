@@ -11,6 +11,8 @@
     "start": "node dist/server.js",
     "start:worker": "node dist/worker.js",
     "test": "vitest run",
+    "test:release": "vitest run tests/integration/releaseSmokeChain.spec.ts tests/integration/marketplaceEndToEnd.spec.ts tests/integration/billingWebhookLifecycle.spec.ts tests/integration/authOtpFlows.spec.ts",
+    "test:release:ci": "vitest run --maxWorkers=1 tests/integration/releaseSmokeChain.spec.ts tests/integration/marketplaceEndToEnd.spec.ts tests/integration/billingWebhookLifecycle.spec.ts tests/integration/authOtpFlows.spec.ts",
     "db:up": "docker compose up -d postgres",
     "db:down": "docker compose down",
     "db:logs": "docker compose logs -f postgres",

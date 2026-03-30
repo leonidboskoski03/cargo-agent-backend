@@ -36,6 +36,7 @@ export const createCheckoutSessionSchema = z.object({
   query: z.object({}),
   body: z.object({
     creditPackCode: z.string().trim().min(1).max(80),
+    idempotencyKey: z.string().trim().min(8).max(120).optional(),
   }),
 });
 

@@ -50,3 +50,24 @@ export async function listSubmissionsForMyListing(req: Request, res: Response) {
   return ok(res, data);
 }
 
+export async function promoteJobApplication(req: Request, res: Response) {
+  const data = await service.promoteJobApplication({
+    auth: authFromRequest(req),
+    jobApplicationId: getParam(req.params.jobApplicationId),
+    days: req.body.days,
+  });
+
+  return ok(res, data);
+}
+
+export async function promoteJobApplicationSubmission(req: Request, res: Response) {
+  const data = await service.promoteSubmission({
+    auth: authFromRequest(req),
+    jobApplicationId: getParam(req.params.jobApplicationId),
+    submissionId: getParam(req.params.submissionId),
+    days: req.body.days,
+  });
+
+  return ok(res, data);
+}
+

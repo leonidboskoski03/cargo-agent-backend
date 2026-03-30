@@ -30,6 +30,19 @@ type ApplyInput = {
   message?: ApplyJobApplicationBody["message"];
 };
 
+type PromoteListingInput = {
+  auth: AuthContext;
+  jobApplicationId: string;
+  days?: number;
+};
+
+type PromoteSubmissionInput = {
+  auth: AuthContext;
+  jobApplicationId: string;
+  submissionId: string;
+  days?: number;
+};
+
 const repo = new JobApplicationsRepository();
 
 function requireAuth(auth: AuthContext) {
@@ -169,5 +182,90 @@ export class JobApplicationsService {
     }
 
     return repo.listSubmissionsForJobApplication(jobApplicationId);
+  }
+
+  async promoteJobApplication(input: PromoteListingInput) {
+    requireAuth(input.auth);
+
+    if (input.auth.role !== Roles.JOB_SEEKER) {
+      throw new AppError(403, "FORBIDDEN", "Only job seekers can promote their listings");
+    }
+
+    const days = input.days ?? 7;
+    const promotedUntil = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+
+    try {
+      const result = await repo.promoteListingWithCredits({
+        jobApplicationId: input.jobApplicationId,
+        userId: input.auth.userId as string,
+        creditCost: jobSeekerBillingConfig.listingPromotionCreditCost,
+        promotedUntil,
+      });
+
+      return {
+        id: result.listing.id,
+        isPromoted: result.listing.isPromoted,
+        promotedUntil: result.listing.promotedUntil,
+        billing: {
+          mode: "CREDITS",
+          creditCost: jobSeekerBillingConfig.listingPromotionCreditCost,
+          walletBalanceCredits: result.walletBalanceCredits,
+        },
+      };
+    } catch (error) {
+      if (error instanceof Error && error.message === "LISTING_NOT_FOUND_OR_FORBIDDEN") {
+        throw new AppError(404, "JOB_APPLICATION_NOT_FOUND", "Job application not found");
+      }
+
+      if (error instanceof Error && error.message === "INSUFFICIENT_CREDITS") {
+        const details = (error as Error & { details?: unknown }).details;
+        throw new AppError(402, "INSUFFICIENT_CREDITS", "Not enough credits to promote this listing", details);
+      }
+
+      throw error;
+    }
+  }
+
+  async promoteSubmission(input: PromoteSubmissionInput) {
+    requireAuth(input.auth);
+
+    if (input.auth.role !== Roles.JOB_SEEKER) {
+      throw new AppError(403, "FORBIDDEN", "Only job seekers can promote their submissions");
+    }
+
+    const days = input.days ?? 7;
+    const promotedUntil = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+
+    try {
+      const result = await repo.promoteSubmissionWithCredits({
+        submissionId: input.submissionId,
+        jobApplicationId: input.jobApplicationId,
+        userId: input.auth.userId as string,
+        creditCost: jobSeekerBillingConfig.submissionPromotionCreditCost,
+        promotedUntil,
+      });
+
+      return {
+        id: result.submission.id,
+        isPromoted: result.submission.isPromoted,
+        promotedUntil: result.submission.promotedUntil,
+        billing: {
+          mode: "CREDITS",
+          creditCost: jobSeekerBillingConfig.submissionPromotionCreditCost,
+          walletBalanceCredits: result.walletBalanceCredits,
+        },
+      };
+    } catch (error) {
+      if (error instanceof Error && error.message === "SUBMISSION_NOT_FOUND_OR_FORBIDDEN") {
+        throw new AppError(404, "SUBMISSION_NOT_FOUND", "Submission not found");
+      }
+
+      if (error instanceof Error && error.message === "INSUFFICIENT_CREDITS") {
+        const details = (error as Error & { details?: unknown }).details;
+        throw new AppError(402, "INSUFFICIENT_CREDITS", "Not enough credits to promote this submission", details);
+      }
+
+      throw error;
+    }
   }
 }

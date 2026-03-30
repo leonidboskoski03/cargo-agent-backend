@@ -91,6 +91,104 @@ export async function register(req: Request, res: Response) {
   });
 }
 
+export async function startRegistration(req: Request, res: Response) {
+  const data = await service.startRegistration({
+    kind: req.body.kind,
+    firstName: req.body.firstName,
+    lastName: req.body.lastName,
+    email: req.body.email,
+    phone: req.body.phone,
+    password: req.body.password,
+    ipAddress: req.ip,
+    userAgent: req.header("user-agent") ?? undefined,
+  });
+
+  return ok(res, {
+    draftId: data.draftId,
+    challengeId: data.challengeId,
+    expiresAt: data.expiresAt,
+    code: data.previewCode,
+    nextAction: {
+      type: "VERIFY_OTP",
+      purpose: "REGISTER_VERIFY",
+    },
+  });
+}
+
+export async function verifyRegistrationOtp(req: Request, res: Response) {
+  const data = await service.verifyRegistrationOtp({
+    draftId: req.body.draftId,
+    code: req.body.code,
+  });
+
+  return ok(res, {
+    draftId: data.draftId,
+    kind: data.kind,
+    otpVerified: true,
+    nextAction: {
+      type: data.kind === "COMPANY" ? "COMPLETE_COMPANY_PROFILE" : "COMPLETE_JOB_SEEKER_PROFILE",
+    },
+  });
+}
+
+export async function completeJobSeekerRegistration(req: Request, res: Response) {
+  const data = await service.completeJobSeekerRegistration({
+    draftId: req.body.draftId,
+    countryCode: req.body.countryCode,
+    city: req.body.city,
+    headline: req.body.headline,
+    yearsExperience: req.body.yearsExperience,
+    availability: req.body.availability,
+    preferredRoutes: req.body.preferredRoutes,
+  }, {
+    ipAddress: req.ip,
+    userAgent: req.header("user-agent") ?? undefined,
+  });
+
+  setAccessCookie(res, data.accessToken);
+  setRefreshCookie(res, data.refreshToken);
+
+  return ok(res, {
+    user: data.user,
+    nextAction: {
+      type: "AUTHENTICATED",
+      message: "Job seeker registration completed",
+    },
+  });
+}
+
+export async function completeCompanyRegistration(req: Request, res: Response) {
+  const data = await service.completeCompanyRegistration({
+    draftId: req.body.draftId,
+    companyName: req.body.companyName,
+    companyType: req.body.companyType,
+    registrationNumber: req.body.registrationNumber,
+    address: req.body.address,
+    countryCode: req.body.countryCode,
+    city: req.body.city,
+    vatNumber: req.body.vatNumber,
+    website: req.body.website,
+    contactPhone: req.body.contactPhone,
+    companyEmail: req.body.companyEmail,
+    planCode: req.body.planCode,
+  }, {
+    ipAddress: req.ip,
+    userAgent: req.header("user-agent") ?? undefined,
+  });
+
+  setAccessCookie(res, data.accessToken);
+  setRefreshCookie(res, data.refreshToken);
+
+  return ok(res, {
+    user: data.user,
+    company: data.company,
+    checkout: data.checkout ?? null,
+    nextAction: data.checkout
+      ? { type: "COMPANY_PRO_CHECKOUT_REQUIRED" }
+      : { type: "AUTHENTICATED", message: "Company registration completed" },
+  });
+}
+
 export async function refreshSession(req: Request, res: Response) {
   const refreshToken = req.cookies?.[env.JWT_REFRESH_COOKIE_NAME];
   if (!refreshToken) {

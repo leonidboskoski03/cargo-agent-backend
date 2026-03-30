@@ -40,6 +40,7 @@ export async function listMyTransactions(req: Request, res: Response) {
 export async function createCreditCheckoutSession(req: Request, res: Response) {
   const data = await service.createCheckoutSession(authFromRequest(req), {
     creditPackCode: req.body.creditPackCode,
+    idempotencyKey: req.body.idempotencyKey,
   });
 
   return created(res, data);

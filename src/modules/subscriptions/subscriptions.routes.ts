@@ -3,11 +3,15 @@ import { requireAuth } from "../../shared/middleware/auth.middleware.js";
 import { validate } from "../../shared/middleware/validate.middleware.js";
 import {
   cancelSubscriptionAtPeriodEnd,
+  revertSubscriptionCancelAtPeriodEnd,
+  createBillingPortalSession,
   createSubscriptionCheckoutSession,
   getMySubscription,
 } from "./subscriptions.controller.js";
 import {
+  cancelRevertSubscriptionSchema,
   cancelSubscriptionSchema,
+  createBillingPortalSessionSchema,
   createCheckoutSessionSchema,
   getMySubscriptionSchema,
 } from "./subscriptions.validator.js";
@@ -26,5 +30,17 @@ subscriptionsRouter.post(
   requireAuth,
   validate(cancelSubscriptionSchema),
   cancelSubscriptionAtPeriodEnd,
+);
+subscriptionsRouter.post(
+  "/cancel-revert",
+  requireAuth,
+  validate(cancelRevertSubscriptionSchema),
+  revertSubscriptionCancelAtPeriodEnd,
+);
+subscriptionsRouter.post(
+  "/portal-session",
+  requireAuth,
+  validate(createBillingPortalSessionSchema),
+  createBillingPortalSession,
 );
 

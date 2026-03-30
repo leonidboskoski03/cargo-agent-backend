@@ -1,5 +1,7 @@
 import { z } from "zod";
-import { OtpChannel, OtpPurpose, UserRole } from "@prisma/client";
+import { CompanyType, OtpChannel, OtpPurpose, PlanCode, UserRole } from "@prisma/client";
+
+const registrationKindSchema = z.enum(["JOB_SEEKER", "COMPANY"]);
 
 export const registerSchema = z.object({
   body: z.object({
@@ -9,6 +11,61 @@ export const registerSchema = z.object({
     password: z.string().min(8).max(120),
     role: z.nativeEnum(UserRole).default(UserRole.JOB_SEEKER),
     otpChallengeId: z.string().trim().min(8),
+  }),
+  params: z.object({}),
+  query: z.object({}),
+});
+
+export const registrationStartSchema = z.object({
+  body: z.object({
+    kind: registrationKindSchema,
+    firstName: z.string().trim().min(1).max(80),
+    lastName: z.string().trim().min(1).max(80),
+    email: z.string().trim().email(),
+    phone: z.string().trim().min(5).max(40).optional(),
+    password: z.string().min(8).max(120),
+  }),
+  params: z.object({}),
+  query: z.object({}),
+});
+
+export const registrationVerifyOtpSchema = z.object({
+  body: z.object({
+    draftId: z.string().trim().cuid(),
+    code: z.string().trim().min(4).max(8),
+  }),
+  params: z.object({}),
+  query: z.object({}),
+});
+
+export const completeJobSeekerRegistrationSchema = z.object({
+  body: z.object({
+    draftId: z.string().trim().cuid(),
+    countryCode: z.string().trim().min(2).max(2).transform((value) => value.toUpperCase()),
+    city: z.string().trim().min(1).max(120),
+    headline: z.string().trim().min(1).max(180).optional(),
+    yearsExperience: z.number().int().min(0).max(60).optional(),
+    availability: z.string().trim().min(1).max(120).optional(),
+    preferredRoutes: z.array(z.string().trim().min(2).max(120)).max(20).optional(),
+  }),
+  params: z.object({}),
+  query: z.object({}),
+});
+
+export const completeCompanyRegistrationSchema = z.object({
+  body: z.object({
+    draftId: z.string().trim().cuid(),
+    companyName: z.string().trim().min(2).max(120),
+    companyType: z.nativeEnum(CompanyType),
+    registrationNumber: z.string().trim().min(3).max(100),
+    address: z.string().trim().min(2).max(255),
+    countryCode: z.string().trim().min(2).max(2).transform((value) => value.toUpperCase()),
+    city: z.string().trim().min(1).max(120),
+    vatNumber: z.string().trim().min(3).max(120).optional(),
+    website: z.string().trim().url().optional(),
+    contactPhone: z.string().trim().min(5).max(40).optional(),
+    companyEmail: z.string().trim().email().optional(),
+    planCode: z.nativeEnum(PlanCode).default(PlanCode.FREE),
   }),
   params: z.object({}),
   query: z.object({}),

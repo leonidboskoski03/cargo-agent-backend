@@ -35,12 +35,14 @@ Validation checks:
 ```powershell
 npm run build
 npm test
+npm run test:release
 ```
 
 Pass condition:
 
 - Build passes.
 - All tests pass.
+- Release-critical integration suite passes.
 
 ## 5) Start API + Worker
 

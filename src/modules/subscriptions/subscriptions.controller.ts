@@ -13,6 +13,7 @@ export async function createSubscriptionCheckoutSession(req: Request, res: Respo
   const data = await service.createCheckoutSession({
     companyId: req.auth?.companyId,
     planCode: req.body.planCode,
+    idempotencyKey: req.body.idempotencyKey,
   });
 
   return ok(res, data);
@@ -20,6 +21,16 @@ export async function createSubscriptionCheckoutSession(req: Request, res: Respo
 
 export async function cancelSubscriptionAtPeriodEnd(req: Request, res: Response) {
   const data = await service.cancelAtPeriodEnd(req.auth?.companyId);
+  return ok(res, data);
+}
+
+export async function createBillingPortalSession(req: Request, res: Response) {
+  const data = await service.createBillingPortalSession(req.auth?.companyId);
+  return ok(res, data);
+}
+
+export async function revertSubscriptionCancelAtPeriodEnd(req: Request, res: Response) {
+  const data = await service.revertCancelAtPeriodEnd(req.auth?.companyId);
   return ok(res, data);
 }
 

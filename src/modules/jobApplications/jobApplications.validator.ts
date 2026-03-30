@@ -37,3 +37,24 @@ export const listMySubmissionsSchema = z.object({
   body: z.object({}),
 });
 
+export const promoteJobApplicationSchema = z.object({
+  query: z.object({}),
+  params: z.object({
+    jobApplicationId: z.string().trim().min(1),
+  }),
+  body: z.object({
+    days: z.number().int().min(1).max(30).optional(),
+  }),
+});
+
+export const promoteSubmissionSchema = z.object({
+  query: z.object({}),
+  params: z.object({
+    jobApplicationId: z.string().trim().min(1),
+    submissionId: z.string().trim().min(1),
+  }),
+  body: z.object({
+    days: z.number().int().min(1).max(30).optional(),
+  }),
+});
+

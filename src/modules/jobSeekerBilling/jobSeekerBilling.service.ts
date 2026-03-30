@@ -103,11 +103,31 @@ export class JobSeekerBillingService {
     });
   }
 
-  async createCheckoutSession(auth: AuthContext, input: { creditPackCode: string }) {
+  async createCheckoutSession(auth: AuthContext, input: { creditPackCode: string; idempotencyKey?: string }) {
     requireJobSeeker(auth);
 
     if (!isStripeConfigured()) {
       throw new AppError(500, "BILLING_PROVIDER_NOT_CONFIGURED", "Stripe is not configured");
+    }
+
+    const normalizedIdempotencyKey = input.idempotencyKey?.trim();
+
+    if (normalizedIdempotencyKey) {
+      const existing = await repo.findCheckoutSessionByIdempotencyKey(auth.userId as string, normalizedIdempotencyKey);
+      if (existing) {
+        const stripe = getStripeClient();
+        const existingStripeSession = await stripe.checkout.sessions.retrieve(existing.stripeCheckoutSessionId);
+
+        return {
+          checkoutSessionId: existing.id,
+          stripeCheckoutSessionId: existing.stripeCheckoutSessionId,
+          checkoutUrl: existingStripeSession.url,
+          status: existing.status,
+          amountCredits: existing.amountCredits,
+          currency: existing.currency,
+          reused: true,
+        };
+      }
     }
 
     const pack = await repo.findActiveCreditPackByCode(input.creditPackCode.trim().toUpperCase());
@@ -120,18 +140,21 @@ export class JobSeekerBillingService {
     }
 
     const stripe = getStripeClient();
-    const stripeSession = await stripe.checkout.sessions.create({
-      mode: "payment",
-      line_items: [{ price: pack.stripePriceId, quantity: 1 }],
-      success_url: billingConfig.checkoutSuccessUrl,
-      cancel_url: billingConfig.checkoutCancelUrl,
-      metadata: {
-        lane: "JOB_SEEKER_CREDITS",
-        userId: auth.userId as string,
-        creditPackCode: pack.code,
+    const stripeSession = await stripe.checkout.sessions.create(
+      {
+        mode: "payment",
+        line_items: [{ price: pack.stripePriceId, quantity: 1 }],
+        success_url: billingConfig.checkoutSuccessUrl,
+        cancel_url: billingConfig.checkoutCancelUrl,
+        metadata: {
+          lane: "JOB_SEEKER_CREDITS",
+          userId: auth.userId as string,
+          creditPackCode: pack.code,
+        },
+        client_reference_id: auth.userId as string,
       },
-      client_reference_id: auth.userId as string,
-    });
+      normalizedIdempotencyKey ? { idempotencyKey: normalizedIdempotencyKey } : undefined,
+    );
 
     const checkout = await repo.createCheckoutSession({
       userId: auth.userId as string,
@@ -140,6 +163,7 @@ export class JobSeekerBillingService {
       amountCredits: pack.credits,
       amountPaid: Number(pack.priceAmount),
       currency: pack.currency,
+      idempotencyKey: normalizedIdempotencyKey,
       expiresAt: stripeSession.expires_at ? new Date(stripeSession.expires_at * 1000) : null,
     });
 
@@ -150,6 +174,7 @@ export class JobSeekerBillingService {
       status: checkout.status,
       amountCredits: checkout.amountCredits,
       currency: checkout.currency,
+      reused: false,
     };
   }
 

@@ -72,7 +72,7 @@ export class JobApplicationsRepository {
   async listOpenForJobSeeker() {
     return prisma.jobApplication.findMany({
       where: { status: "OPEN", createdByCompanyId: { not: null } },
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ isPromoted: "desc" }, { createdAt: "desc" }],
       include: { createdByCompany: true, createdByUser: true },
     });
   }
@@ -80,7 +80,7 @@ export class JobApplicationsRepository {
   async listOpenForCompany() {
     return prisma.jobApplication.findMany({
       where: { status: "OPEN", createdByCompanyId: null },
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ isPromoted: "desc" }, { createdAt: "desc" }],
       include: { createdByCompany: true, createdByUser: true },
     });
   }
@@ -88,7 +88,7 @@ export class JobApplicationsRepository {
   async listCreatedByUser(userId: string) {
     return prisma.jobApplication.findMany({
       where: { createdByUserId: userId },
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ isPromoted: "desc" }, { createdAt: "desc" }],
     });
   }
 
@@ -266,7 +266,7 @@ export class JobApplicationsRepository {
   async listSubmissionsForJobApplication(jobApplicationId: string) {
     return prisma.jobApplicationSubmission.findMany({
       where: { jobApplicationId },
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ isPromoted: "desc" }, { createdAt: "desc" }],
       include: {
         submittedByUser: {
           select: {
@@ -280,6 +280,147 @@ export class JobApplicationsRepository {
         },
         submittedByCompany: true,
       },
+    });
+  }
+
+  async promoteListingWithCredits(input: {
+    jobApplicationId: string;
+    userId: string;
+    creditCost: number;
+    promotedUntil: Date;
+  }) {
+    return prisma.$transaction(async (tx) => {
+      const listing = await tx.jobApplication.findUnique({
+        where: { id: input.jobApplicationId },
+        select: { id: true, createdByUserId: true },
+      });
+
+      if (!listing || listing.createdByUserId !== input.userId) {
+        throw new Error("LISTING_NOT_FOUND_OR_FORBIDDEN");
+      }
+
+      const wallet =
+        (await tx.jobSeekerWallet.findUnique({ where: { userId: input.userId } })) ??
+        (await tx.jobSeekerWallet.create({ data: { userId: input.userId } }));
+
+      const debited = await tx.jobSeekerWallet.updateMany({
+        where: { id: wallet.id, balanceCredits: { gte: input.creditCost } },
+        data: {
+          balanceCredits: { decrement: input.creditCost },
+          version: { increment: 1 },
+        },
+      });
+
+      if (debited.count === 0) {
+        throw Object.assign(new Error("INSUFFICIENT_CREDITS"), {
+          details: {
+            creditCost: input.creditCost,
+            walletBalanceCredits: wallet.balanceCredits,
+          },
+        });
+      }
+
+      const promoted = await tx.jobApplication.update({
+        where: { id: input.jobApplicationId },
+        data: {
+          isPromoted: true,
+          promotedUntil: input.promotedUntil,
+        },
+      });
+
+      const updatedWallet = await tx.jobSeekerWallet.findUnique({
+        where: { id: wallet.id },
+        select: { id: true, balanceCredits: true },
+      });
+
+      await tx.jobSeekerCreditTransaction.create({
+        data: {
+          walletId: wallet.id,
+          userId: input.userId,
+          type: JobSeekerCreditTxType.SPEND,
+          amountCredits: -input.creditCost,
+          reasonCode: "JOB_APPLICATION_PROMOTION",
+          referenceType: "JOB_APPLICATION",
+          referenceId: input.jobApplicationId,
+          balanceAfter: updatedWallet?.balanceCredits ?? 0,
+        },
+      });
+
+      return {
+        listing: promoted,
+        walletBalanceCredits: updatedWallet?.balanceCredits ?? 0,
+      };
+    });
+  }
+
+  async promoteSubmissionWithCredits(input: {
+    submissionId: string;
+    jobApplicationId: string;
+    userId: string;
+    creditCost: number;
+    promotedUntil: Date;
+  }) {
+    return prisma.$transaction(async (tx) => {
+      const submission = await tx.jobApplicationSubmission.findUnique({
+        where: { id: input.submissionId },
+        select: { id: true, jobApplicationId: true, submittedByUserId: true },
+      });
+
+      if (!submission || submission.jobApplicationId !== input.jobApplicationId || submission.submittedByUserId !== input.userId) {
+        throw new Error("SUBMISSION_NOT_FOUND_OR_FORBIDDEN");
+      }
+
+      const wallet =
+        (await tx.jobSeekerWallet.findUnique({ where: { userId: input.userId } })) ??
+        (await tx.jobSeekerWallet.create({ data: { userId: input.userId } }));
+
+      const debited = await tx.jobSeekerWallet.updateMany({
+        where: { id: wallet.id, balanceCredits: { gte: input.creditCost } },
+        data: {
+          balanceCredits: { decrement: input.creditCost },
+          version: { increment: 1 },
+        },
+      });
+
+      if (debited.count === 0) {
+        throw Object.assign(new Error("INSUFFICIENT_CREDITS"), {
+          details: {
+            creditCost: input.creditCost,
+            walletBalanceCredits: wallet.balanceCredits,
+          },
+        });
+      }
+
+      const promoted = await tx.jobApplicationSubmission.update({
+        where: { id: input.submissionId },
+        data: {
+          isPromoted: true,
+          promotedUntil: input.promotedUntil,
+        },
+      });
+
+      const updatedWallet = await tx.jobSeekerWallet.findUnique({
+        where: { id: wallet.id },
+        select: { id: true, balanceCredits: true },
+      });
+
+      await tx.jobSeekerCreditTransaction.create({
+        data: {
+          walletId: wallet.id,
+          userId: input.userId,
+          type: JobSeekerCreditTxType.SPEND,
+          amountCredits: -input.creditCost,
+          reasonCode: "JOB_APPLICATION_SUBMISSION_PROMOTION",
+          referenceType: "JOB_APPLICATION_SUBMISSION",
+          referenceId: input.submissionId,
+          balanceAfter: updatedWallet?.balanceCredits ?? 0,
+        },
+      });
+
+      return {
+        submission: promoted,
+        walletBalanceCredits: updatedWallet?.balanceCredits ?? 0,
+      };
     });
   }
 

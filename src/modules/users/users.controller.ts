@@ -17,6 +17,11 @@ export async function getMyUser(req: Request, res: Response) {
   return ok(res, data);
 }
 
+export async function getMyProfileCompletion(req: Request, res: Response) {
+  const data = await service.getMyProfileCompletion(authFromRequest(req));
+  return ok(res, data);
+}
+
 export async function listUsers(req: Request, res: Response) {
   const data = await service.list(authFromRequest(req), {
     includeInactive: req.query.includeInactive === "true",
