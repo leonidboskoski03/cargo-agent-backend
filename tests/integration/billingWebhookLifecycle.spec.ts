@@ -328,5 +328,272 @@ describe("billing webhook lifecycle", () => {
       await prisma.company.deleteMany({ where: { id: company.id } });
     }
   }, 25_000);
-});
 
+  it("handles subscription.updated replay idempotently without extra version bumps", async () => {
+    const { prisma, buildApp } = await initRuntime();
+    if (!dbReady) {
+      return;
+    }
+
+    const app = buildApp();
+    const suffix = `${Date.now()}-updated-replay`;
+
+    const freePlan = await prisma.plan.upsert({
+      where: { code: PlanCode.FREE },
+      update: { isActive: true },
+      create: {
+        code: PlanCode.FREE,
+        name: "Free",
+        priceAmount: 0,
+        currency: "EUR",
+        isActive: true,
+      },
+      select: { id: true },
+    });
+
+    const proPlan = await prisma.plan.upsert({
+      where: { code: PlanCode.PRO },
+      update: { isActive: true },
+      create: {
+        code: PlanCode.PRO,
+        name: "Pro",
+        priceAmount: 49,
+        currency: "EUR",
+        isActive: true,
+      },
+      select: { id: true },
+    });
+
+    const company = await prisma.company.create({
+      data: {
+        companyType: CompanyType.CARRIER,
+        name: `Webhook Updated ${suffix}`,
+        registrationNumber: `WB-UPD-${suffix}`,
+        countryCode: "MK",
+        city: "Skopje",
+        stripeCustomerId: `cus_upd_${suffix}`,
+        currentPlanId: freePlan.id,
+        subscriptionStatus: "FREE",
+      },
+      select: { id: true, stripeCustomerId: true },
+    });
+
+    const createdEvent = {
+      id: `evt_sub_created_${suffix}`,
+      object: "event",
+      type: "customer.subscription.created",
+      data: {
+        object: {
+          id: `sub_upd_${suffix}`,
+          object: "subscription",
+          customer: company.stripeCustomerId,
+          status: "active",
+          start_date: Math.floor(Date.now() / 1000),
+          cancel_at_period_end: false,
+          metadata: { companyId: company.id },
+          items: { data: [] },
+        },
+      },
+    };
+
+    const updatedEvent = {
+      id: `evt_sub_updated_${suffix}`,
+      object: "event",
+      type: "customer.subscription.updated",
+      data: {
+        object: {
+          id: `sub_upd_${suffix}`,
+          object: "subscription",
+          customer: company.stripeCustomerId,
+          status: "past_due",
+          start_date: Math.floor(Date.now() / 1000),
+          cancel_at_period_end: true,
+          metadata: { companyId: company.id },
+          items: { data: [] },
+        },
+      },
+    };
+
+    try {
+      const createdResponse = await request(app)
+        .post("/webhooks/stripe")
+        .set("Content-Type", "application/json")
+        .send(JSON.stringify(createdEvent));
+      expect(createdResponse.statusCode).toBe(200);
+
+      const beforeUpdate = await prisma.subscription.findFirst({
+        where: { companyId: company.id, isCurrent: true },
+        select: { id: true, version: true },
+      });
+      expect(beforeUpdate).toBeTruthy();
+
+      const updatedResponse = await request(app)
+        .post("/webhooks/stripe")
+        .set("Content-Type", "application/json")
+        .send(JSON.stringify(updatedEvent));
+      expect(updatedResponse.statusCode).toBe(200);
+
+      const afterUpdate = await prisma.subscription.findFirst({
+        where: { companyId: company.id, isCurrent: true },
+        select: { id: true, version: true, status: true, cancelAtPeriodEnd: true, planId: true },
+      });
+
+      expect(afterUpdate?.planId).toBe(proPlan.id);
+      expect(afterUpdate?.status).toBe("PAST_DUE");
+      expect(afterUpdate?.cancelAtPeriodEnd).toBe(true);
+      expect(afterUpdate?.version).toBe((beforeUpdate?.version ?? 0) + 1);
+
+      const replayResponse = await request(app)
+        .post("/webhooks/stripe")
+        .set("Content-Type", "application/json")
+        .send(JSON.stringify(updatedEvent));
+      expect(replayResponse.statusCode).toBe(200);
+
+      const afterReplay = await prisma.subscription.findFirst({
+        where: { companyId: company.id, isCurrent: true },
+        select: { version: true, status: true, cancelAtPeriodEnd: true },
+      });
+
+      expect(afterReplay?.version).toBe(afterUpdate?.version);
+      expect(afterReplay?.status).toBe("PAST_DUE");
+      expect(afterReplay?.cancelAtPeriodEnd).toBe(true);
+
+      const updatedEventsCount = await prisma.billingEvent.count({
+        where: {
+          companyId: company.id,
+          providerEventId: updatedEvent.id,
+          eventType: BillingEventType.SUBSCRIPTION_UPDATED,
+        },
+      });
+      expect(updatedEventsCount).toBe(1);
+    } finally {
+      await prisma.billingEvent.deleteMany({ where: { companyId: company.id } });
+      await prisma.subscription.deleteMany({ where: { companyId: company.id } });
+      await prisma.company.deleteMany({ where: { id: company.id } });
+    }
+  }, 25_000);
+
+  it("handles invoice replay idempotently and keeps single billing event rows per provider event id", async () => {
+    const { prisma, buildApp } = await initRuntime();
+    if (!dbReady) {
+      return;
+    }
+
+    const app = buildApp();
+    const suffix = `${Date.now()}-invoice-replay`;
+
+    const freePlan = await prisma.plan.upsert({
+      where: { code: PlanCode.FREE },
+      update: { isActive: true },
+      create: {
+        code: PlanCode.FREE,
+        name: "Free",
+        priceAmount: 0,
+        currency: "EUR",
+        isActive: true,
+      },
+      select: { id: true },
+    });
+
+    const company = await prisma.company.create({
+      data: {
+        companyType: CompanyType.CARRIER,
+        name: `Webhook Invoice ${suffix}`,
+        registrationNumber: `WB-INV-${suffix}`,
+        countryCode: "MK",
+        city: "Skopje",
+        stripeCustomerId: `cus_invoice_${suffix}`,
+        currentPlanId: freePlan.id,
+        subscriptionStatus: "FREE",
+      },
+      select: { id: true, stripeCustomerId: true },
+    });
+
+    await prisma.subscription.create({
+      data: {
+        companyId: company.id,
+        planId: freePlan.id,
+        status: "FREE",
+        isCurrent: true,
+      },
+    });
+
+    const paidEvent = {
+      id: `evt_invoice_paid_${suffix}`,
+      object: "event",
+      type: "invoice.paid",
+      data: {
+        object: {
+          id: `in_paid_${suffix}`,
+          object: "invoice",
+          customer: company.stripeCustomerId,
+          amount_paid: 4900,
+          currency: "eur",
+          payment_intent: `pi_paid_${suffix}`,
+        },
+      },
+    };
+
+    const failedEvent = {
+      id: `evt_invoice_failed_${suffix}`,
+      object: "event",
+      type: "invoice.payment_failed",
+      data: {
+        object: {
+          id: `in_failed_${suffix}`,
+          object: "invoice",
+          customer: company.stripeCustomerId,
+          amount_paid: 0,
+          currency: "eur",
+          payment_intent: `pi_failed_${suffix}`,
+        },
+      },
+    };
+
+    try {
+      const firstPaid = await request(app)
+        .post("/webhooks/stripe")
+        .set("Content-Type", "application/json")
+        .send(JSON.stringify(paidEvent));
+      const replayPaid = await request(app)
+        .post("/webhooks/stripe")
+        .set("Content-Type", "application/json")
+        .send(JSON.stringify(paidEvent));
+      expect(firstPaid.statusCode).toBe(200);
+      expect(replayPaid.statusCode).toBe(200);
+
+      const firstFailed = await request(app)
+        .post("/webhooks/stripe")
+        .set("Content-Type", "application/json")
+        .send(JSON.stringify(failedEvent));
+      const replayFailed = await request(app)
+        .post("/webhooks/stripe")
+        .set("Content-Type", "application/json")
+        .send(JSON.stringify(failedEvent));
+      expect(firstFailed.statusCode).toBe(200);
+      expect(replayFailed.statusCode).toBe(200);
+
+      const paidCount = await prisma.billingEvent.count({
+        where: {
+          companyId: company.id,
+          providerEventId: paidEvent.id,
+          eventType: BillingEventType.INVOICE_PAID,
+        },
+      });
+      const failedCount = await prisma.billingEvent.count({
+        where: {
+          companyId: company.id,
+          providerEventId: failedEvent.id,
+          eventType: BillingEventType.INVOICE_PAYMENT_FAILED,
+        },
+      });
+
+      expect(paidCount).toBe(1);
+      expect(failedCount).toBe(1);
+    } finally {
+      await prisma.billingEvent.deleteMany({ where: { companyId: company.id } });
+      await prisma.subscription.deleteMany({ where: { companyId: company.id } });
+      await prisma.company.deleteMany({ where: { id: company.id } });
+    }
+  }, 25_000);
+});

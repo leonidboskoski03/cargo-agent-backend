@@ -1,8 +1,9 @@
 import { CompanyInviteStatus, UserRole } from "@prisma/client";
 import { randomBytes } from "crypto";
 import { env } from "../../config/env.js";
-import { AppError } from "../../shared/errors/AppError.js";
 import { Roles } from "../../shared/auth/permissions.js";
+import { UsageService } from "../../shared/billing/usage.service.js";
+import { AppError } from "../../shared/errors/AppError.js";
 import { sendCompanyInviteEmail } from "./companyInvites.notifier.js";
 import { CompanyInvitesRepository } from "./companyInvites.repository.js";
 
@@ -14,6 +15,7 @@ type AuthContext = {
 
 const INVITE_TTL_DAYS = 7;
 const repo = new CompanyInvitesRepository();
+const usageService = new UsageService();
 
 function requireAuth(auth: AuthContext) {
   if (!auth.userId || !auth.role) {
@@ -52,6 +54,18 @@ export class CompanyInvitesService {
 
   async create(auth: AuthContext, input: { invitedEmail: string; targetRole: UserRole }) {
     requireCompanyAdmin(auth);
+
+    const usage = await usageService.assertCanUse(auth.companyId as string, "TEAM_MEMBERS");
+    if (!usage.allowed) {
+      throw new AppError(403, "USAGE_LIMIT_REACHED", "Plan usage limit reached", {
+        metric: "TEAM_MEMBERS",
+        planCode: usage.planCode,
+        used: usage.used,
+        limit: usage.limit,
+        periodStart: usage.periodStart,
+        companyId: auth.companyId,
+      });
+    }
 
     if (input.targetRole !== UserRole.COMPANY_ADMIN && input.targetRole !== UserRole.COMPANY_DRIVER) {
       throw new AppError(400, "INVALID_INVITE_ROLE", "Invite role must be COMPANY_ADMIN or COMPANY_DRIVER");
@@ -103,13 +117,30 @@ export class CompanyInvitesService {
       throw new AppError(404, "USER_NOT_FOUND", "User not found");
     }
 
-    const invite = await repo.findPendingByToken(input.token);
+    const invite = await repo.findByToken(input.token);
     if (!invite) {
       throw new AppError(404, "INVITE_NOT_FOUND", "Invite not found");
     }
 
-    if (invite.expiresAt.getTime() < Date.now()) {
+    if (invite.status === CompanyInviteStatus.REVOKED) {
+      throw new AppError(410, "INVITE_REVOKED", "Invite has been revoked");
+    }
+
+    if (invite.status === CompanyInviteStatus.ACCEPTED) {
+      throw new AppError(409, "INVITE_ALREADY_ACCEPTED", "Invite has already been accepted");
+    }
+
+    if (invite.status === CompanyInviteStatus.EXPIRED) {
       throw new AppError(410, "INVITE_EXPIRED", "Invite has expired");
+    }
+
+    if (invite.expiresAt.getTime() < Date.now()) {
+      await repo.markInviteExpired(invite.id);
+      throw new AppError(410, "INVITE_EXPIRED", "Invite has expired");
+    }
+
+    if (invite.status !== CompanyInviteStatus.PENDING) {
+      throw new AppError(409, "INVITE_NOT_PENDING", "Invite is not pending");
     }
 
     if (user.email.toLowerCase() !== invite.invitedEmail.toLowerCase()) {
@@ -126,6 +157,18 @@ export class CompanyInvitesService {
       throw new AppError(400, "OTP_REQUIRED", "A verified invite OTP is required before accepting invite");
     }
 
+    const usage = await usageService.assertCanUse(invite.companyId, "TEAM_MEMBERS");
+    if (!usage.allowed) {
+      throw new AppError(403, "USAGE_LIMIT_REACHED", "Plan usage limit reached", {
+        metric: "TEAM_MEMBERS",
+        planCode: usage.planCode,
+        used: usage.used,
+        limit: usage.limit,
+        periodStart: usage.periodStart,
+        companyId: invite.companyId,
+      });
+    }
+
     try {
       return await repo.acceptInvite({
         inviteId: invite.id,
@@ -136,6 +179,10 @@ export class CompanyInvitesService {
     } catch (error) {
       if (error instanceof Error && error.message === "USER_ALREADY_IN_ANOTHER_COMPANY") {
         throw new AppError(409, "USER_ALREADY_IN_ANOTHER_COMPANY", "User already belongs to another company");
+      }
+
+      if (error instanceof Error && error.message === "INVITE_NOT_ACCEPTABLE") {
+        throw new AppError(409, "INVITE_NOT_PENDING", "Invite is no longer pending and valid");
       }
 
       throw error;

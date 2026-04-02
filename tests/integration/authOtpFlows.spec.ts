@@ -1,6 +1,6 @@
 import request from "supertest";
 import { beforeAll, describe, expect, it } from "vitest";
-import { OtpChannel, OtpPurpose, UserRole } from "@prisma/client";
+import { OtpChannel, OtpPurpose, OtpStatus, UserRole } from "@prisma/client";
 import { hashPassword } from "../../src/shared/auth/password.js";
 import { initRuntime, isDatabaseAvailable } from "./_helpers.js";
 
@@ -372,6 +372,249 @@ describe("auth otp flows", () => {
     } finally {
       await prisma.authOtpChallenge.deleteMany({ where: { userId: user.id } });
       await prisma.authSession.deleteMany({ where: { userId: user.id } });
+      await prisma.user.deleteMany({ where: { id: user.id } });
+    }
+  }, 20_000);
+
+  it("rejects expired OTP challenges for verify and resend", async () => {
+    const { prisma, buildApp } = await initRuntime();
+    if (!dbReady) {
+      return;
+    }
+
+    const app = buildApp();
+    const suffix = `${Date.now()}-expired`;
+    const email = `otp-expired-${suffix}@test.local`;
+
+    const user = await prisma.user.create({
+      data: {
+        role: UserRole.JOB_SEEKER,
+        firstName: "Otp",
+        lastName: "Expired",
+        email,
+        passwordHash: await hashPassword("OldPass123!"),
+      },
+      select: { id: true },
+    });
+
+    try {
+      const challengeForVerify = await request(app).post("/api/v1/auth/otp/request").send({
+        purpose: OtpPurpose.FORGOT_PASSWORD,
+        channel: OtpChannel.EMAIL,
+        email,
+      });
+      expect(challengeForVerify.statusCode).toBe(200);
+      const verifyChallengeId = challengeForVerify.body.data.challengeId as string;
+
+      await prisma.authOtpChallenge.update({
+        where: { id: verifyChallengeId },
+        data: { expiresAt: new Date(Date.now() - 60_000) },
+      });
+
+      const verifyExpired = await request(app).post("/api/v1/auth/otp/verify").send({
+        challengeId: verifyChallengeId,
+        code: challengeForVerify.body.data.code,
+      });
+      expect(verifyExpired.statusCode).toBe(400);
+      expect(verifyExpired.body.error.code).toBe("OTP_EXPIRED");
+
+      const challengeForResend = await request(app).post("/api/v1/auth/otp/request").send({
+        purpose: OtpPurpose.FORGOT_PASSWORD,
+        channel: OtpChannel.EMAIL,
+        email,
+      });
+      expect(challengeForResend.statusCode).toBe(200);
+      const resendChallengeId = challengeForResend.body.data.challengeId as string;
+
+      await prisma.authOtpChallenge.update({
+        where: { id: resendChallengeId },
+        data: { expiresAt: new Date(Date.now() - 60_000) },
+      });
+
+      const resendExpired = await request(app).post("/api/v1/auth/otp/resend").send({
+        challengeId: resendChallengeId,
+      });
+      expect(resendExpired.statusCode).toBe(400);
+      expect(resendExpired.body.error.code).toBe("OTP_EXPIRED");
+    } finally {
+      await prisma.authOtpChallenge.deleteMany({ where: { userId: user.id } });
+      await prisma.user.deleteMany({ where: { id: user.id } });
+    }
+  }, 20_000);
+
+  it("locks OTP challenge after max invalid attempts and blocks further verification", async () => {
+    const { prisma, buildApp } = await initRuntime();
+    if (!dbReady) {
+      return;
+    }
+
+    const app = buildApp();
+    const suffix = `${Date.now()}-lock`;
+    const email = `otp-lock-${suffix}@test.local`;
+
+    const user = await prisma.user.create({
+      data: {
+        role: UserRole.JOB_SEEKER,
+        firstName: "Otp",
+        lastName: "Lock",
+        email,
+        passwordHash: await hashPassword("OldPass123!"),
+      },
+      select: { id: true },
+    });
+
+    try {
+      const requestOtp = await request(app).post("/api/v1/auth/otp/request").send({
+        purpose: OtpPurpose.FORGOT_PASSWORD,
+        channel: OtpChannel.EMAIL,
+        email,
+      });
+
+      expect(requestOtp.statusCode).toBe(200);
+      const challengeId = requestOtp.body.data.challengeId as string;
+      const correctCode = requestOtp.body.data.code as string;
+      const wrongCode = `${correctCode.slice(0, -1)}${correctCode.endsWith("0") ? "1" : "0"}`;
+
+      for (let i = 1; i <= 5; i += 1) {
+        const attempt = await request(app).post("/api/v1/auth/otp/verify").send({
+          challengeId,
+          code: wrongCode,
+        });
+
+        if (i < 5) {
+          expect(attempt.statusCode).toBe(400);
+          expect(attempt.body.error.code).toBe("OTP_INVALID");
+        } else {
+          expect(attempt.statusCode).toBe(429);
+          expect(attempt.body.error.code).toBe("OTP_ATTEMPTS_EXCEEDED");
+        }
+      }
+
+      const lockedChallenge = await prisma.authOtpChallenge.findUnique({
+        where: { id: challengeId },
+        select: { status: true, attemptCount: true },
+      });
+      expect(lockedChallenge?.status).toBe(OtpStatus.LOCKED);
+      expect(lockedChallenge?.attemptCount).toBe(5);
+
+      const verifyAfterLock = await request(app).post("/api/v1/auth/otp/verify").send({
+        challengeId,
+        code: correctCode,
+      });
+      expect(verifyAfterLock.statusCode).toBe(400);
+      expect(verifyAfterLock.body.error.code).toBe("OTP_INVALID");
+    } finally {
+      await prisma.authOtpChallenge.deleteMany({ where: { userId: user.id } });
+      await prisma.user.deleteMany({ where: { id: user.id } });
+    }
+  }, 20_000);
+
+  it("rotates OTP on resend after cooldown and invalidates previous code", async () => {
+    const { prisma, buildApp } = await initRuntime();
+    if (!dbReady) {
+      return;
+    }
+
+    const app = buildApp();
+    const suffix = `${Date.now()}-resend-rotate`;
+    const email = `otp-rotate-${suffix}@test.local`;
+
+    const user = await prisma.user.create({
+      data: {
+        role: UserRole.JOB_SEEKER,
+        firstName: "Otp",
+        lastName: "Rotate",
+        email,
+        passwordHash: await hashPassword("OldPass123!"),
+      },
+      select: { id: true },
+    });
+
+    try {
+      const requestOtp = await request(app).post("/api/v1/auth/otp/request").send({
+        purpose: OtpPurpose.FORGOT_PASSWORD,
+        channel: OtpChannel.EMAIL,
+        email,
+      });
+
+      expect(requestOtp.statusCode).toBe(200);
+      const challengeId = requestOtp.body.data.challengeId as string;
+      const oldCode = requestOtp.body.data.code as string;
+
+      const cooldownResponse = await request(app).post("/api/v1/auth/otp/resend").send({ challengeId });
+      expect(cooldownResponse.statusCode).toBe(429);
+      expect(cooldownResponse.body.error.code).toBe("OTP_RESEND_COOLDOWN");
+
+      await prisma.authOtpChallenge.update({
+        where: { id: challengeId },
+        data: { nextResendAt: new Date(Date.now() - 1_000) },
+      });
+
+      const resendResponse = await request(app).post("/api/v1/auth/otp/resend").send({ challengeId });
+      expect(resendResponse.statusCode).toBe(200);
+      const newCode = resendResponse.body.data.code as string;
+      expect(newCode).toBeTypeOf("string");
+      expect(newCode).not.toBe(oldCode);
+
+      const oldCodeRejected = await request(app).post("/api/v1/auth/otp/verify").send({
+        challengeId,
+        code: oldCode,
+      });
+      expect(oldCodeRejected.statusCode).toBe(400);
+      expect(oldCodeRejected.body.error.code).toBe("OTP_INVALID");
+
+      const newCodeAccepted = await request(app).post("/api/v1/auth/otp/verify").send({
+        challengeId,
+        code: newCode,
+      });
+      expect(newCodeAccepted.statusCode).toBe(200);
+      expect(newCodeAccepted.body.data.success).toBe(true);
+    } finally {
+      await prisma.authOtpChallenge.deleteMany({ where: { userId: user.id } });
+      await prisma.user.deleteMany({ where: { id: user.id } });
+    }
+  }, 20_000);
+
+  it("treats verified OTP challenge as single-use at verify endpoint", async () => {
+    const { prisma, buildApp } = await initRuntime();
+    if (!dbReady) {
+      return;
+    }
+
+    const app = buildApp();
+    const suffix = `${Date.now()}-single-use`;
+    const email = `otp-single-use-${suffix}@test.local`;
+
+    const user = await prisma.user.create({
+      data: {
+        role: UserRole.JOB_SEEKER,
+        firstName: "Otp",
+        lastName: "SingleUse",
+        email,
+        passwordHash: await hashPassword("OldPass123!"),
+      },
+      select: { id: true },
+    });
+
+    try {
+      const requestOtp = await request(app).post("/api/v1/auth/otp/request").send({
+        purpose: OtpPurpose.FORGOT_PASSWORD,
+        channel: OtpChannel.EMAIL,
+        email,
+      });
+      expect(requestOtp.statusCode).toBe(200);
+
+      const challengeId = requestOtp.body.data.challengeId as string;
+      const code = requestOtp.body.data.code as string;
+
+      const firstVerify = await request(app).post("/api/v1/auth/otp/verify").send({ challengeId, code });
+      expect(firstVerify.statusCode).toBe(200);
+
+      const secondVerify = await request(app).post("/api/v1/auth/otp/verify").send({ challengeId, code });
+      expect(secondVerify.statusCode).toBe(400);
+      expect(secondVerify.body.error.code).toBe("OTP_INVALID");
+    } finally {
+      await prisma.authOtpChallenge.deleteMany({ where: { userId: user.id } });
       await prisma.user.deleteMany({ where: { id: user.id } });
     }
   }, 20_000);

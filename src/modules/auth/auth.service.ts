@@ -83,6 +83,8 @@ type ForgotPasswordInput = {
 type ResetPasswordInput = {
   otpChallengeId: string;
   newPassword: string;
+  ipAddress?: string;
+  userAgent?: string;
 };
 
 type ChangePasswordInput = {
@@ -672,6 +674,19 @@ export class AuthService {
 
     if (!challenge || challenge.status !== OtpStatus.VERIFIED || challenge.purpose !== OtpPurpose.FORGOT_PASSWORD || challenge.expiresAt.getTime() <= Date.now()) {
       throw new AppError(400, "OTP_REQUIRED", "A verified forgot-password OTP is required");
+    }
+
+    if (env.AUTH_RESET_PASSWORD_BIND_IP && challenge.requestedIp && input.ipAddress && challenge.requestedIp !== input.ipAddress) {
+      throw new AppError(400, "OTP_CONTEXT_MISMATCH", "OTP challenge context does not match this request");
+    }
+
+    if (
+      env.AUTH_RESET_PASSWORD_BIND_USER_AGENT &&
+      challenge.requestedAgent &&
+      input.userAgent &&
+      challenge.requestedAgent !== input.userAgent
+    ) {
+      throw new AppError(400, "OTP_CONTEXT_MISMATCH", "OTP challenge context does not match this request");
     }
 
     if (!challenge.userId) {

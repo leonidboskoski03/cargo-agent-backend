@@ -1,7 +1,9 @@
 import { PostStatus, type UserRole } from "@prisma/client";
 import { z } from "zod";
-import { AppError } from "../../shared/errors/AppError.js";
 import { Roles } from "../../shared/auth/permissions.js";
+import { EntitlementsService } from "../../shared/billing/entitlements.service.js";
+import { UsageService } from "../../shared/billing/usage.service.js";
+import { AppError } from "../../shared/errors/AppError.js";
 import { PostsRepository } from "./posts.repository.js";
 import {
   changePostStatusSchema,
@@ -28,6 +30,8 @@ type UpdatePostBody = z.infer<typeof updatePostSchema>["body"];
 type ChangePostStatusBody = z.infer<typeof changePostStatusSchema>["body"];
 
 const repo = new PostsRepository();
+const entitlementsService = new EntitlementsService();
+const usageService = new UsageService();
 
 const allowedTransitions: Record<PostStatus, PostStatus[]> = {
   OPEN: [PostStatus.ASSIGNED, PostStatus.CANCELLED, PostStatus.EXPIRED],
@@ -112,7 +116,19 @@ export class PostsService {
 	  throw new AppError(400, "PRICE_REQUIRED", "priceAmount is required for FIXED and NEGOTIABLE posts");
 	}
 
-	return repo.create({
+	const wantsPromoted = Boolean(body.isPromoted || body.promotedUntil);
+	if (wantsPromoted) {
+	  const feature = await entitlementsService.hasFeature(companyId, "PROMOTED_POSTS");
+	  if (!feature.allowed) {
+		throw new AppError(403, "PLAN_FEATURE_REQUIRED", "Your plan does not include this feature", {
+		  feature: "PROMOTED_POSTS",
+		  planCode: feature.entitlements.planCode,
+		  companyId,
+		});
+	  }
+	}
+
+	const created = await repo.create({
 	  companyId,
 	  createdByUserId: auth.userId,
 	  routeId: body.routeId,
@@ -138,6 +154,12 @@ export class PostsService {
 	  isPromoted: body.isPromoted,
 	  promotedUntil: body.promotedUntil,
 	});
+
+	if (created.isPromoted) {
+	  await usageService.incrementMonthlyUsage(companyId, "PROMOTED_POSTS_PER_MONTH");
+	}
+
+	return created;
   }
 
   async update(auth: AuthContext, postId: string, body: UpdatePostBody) {
@@ -170,7 +192,22 @@ export class PostsService {
 	  throw new AppError(400, "PRICE_REQUIRED", "priceAmount is required for FIXED and NEGOTIABLE posts");
 	}
 
-	return repo.update(postId, {
+	const nextIsPromoted = body.isPromoted ?? existing.isPromoted;
+	const nextPromotedUntil = body.promotedUntil === undefined ? existing.promotedUntil : body.promotedUntil;
+	const wantsPromoted = Boolean(nextIsPromoted || nextPromotedUntil);
+
+	if (wantsPromoted) {
+	  const feature = await entitlementsService.hasFeature(existing.companyId, "PROMOTED_POSTS");
+	  if (!feature.allowed) {
+		throw new AppError(403, "PLAN_FEATURE_REQUIRED", "Your plan does not include this feature", {
+		  feature: "PROMOTED_POSTS",
+		  planCode: feature.entitlements.planCode,
+		  companyId: existing.companyId,
+		});
+	  }
+	}
+
+	const updated = await repo.update(postId, {
 	  routeId: body.routeId,
 	  title: body.title,
 	  description: body.description,
@@ -194,6 +231,12 @@ export class PostsService {
 	  isPromoted: body.isPromoted,
 	  promotedUntil: body.promotedUntil,
 	});
+
+	if (!existing.isPromoted && updated.isPromoted) {
+	  await usageService.incrementMonthlyUsage(existing.companyId, "PROMOTED_POSTS_PER_MONTH");
+	}
+
+	return updated;
   }
 
   async changeStatus(auth: AuthContext, postId: string, body: ChangePostStatusBody) {
@@ -257,5 +300,4 @@ export class PostsService {
 	return repo.restore(postId);
   }
 }
-
 

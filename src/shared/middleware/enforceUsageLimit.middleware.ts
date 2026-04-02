@@ -15,10 +15,18 @@ export function enforceUsageLimit(metric: UsageMetric) {
 
     const result = await usageService.assertCanUse(companyId, metric);
     if (!result.allowed) {
-      return next(new AppError(403, "USAGE_LIMIT_REACHED", "Plan usage limit reached"));
+      return next(
+        new AppError(403, "USAGE_LIMIT_REACHED", "Plan usage limit reached", {
+          metric,
+          planCode: result.planCode,
+          used: result.used,
+          limit: result.limit,
+          periodStart: result.periodStart,
+          companyId,
+        }),
+      );
     }
 
     return next();
   };
 }
-

@@ -65,10 +65,13 @@ This plan focuses on closing MVP production risks first (money-path correctness,
   - Only intended user can accept valid invite; expired/revoked/used invites are blocked.
 - Acceptance:
   - Integration cases cover wrong-user acceptance and lifecycle transitions.
+- Status: DONE (2026-04-02)
+- Coverage now includes: mismatched email rejection, expired+auto-expire marking, revoked rejection, accepted-token reuse rejection, verified OTP requirement, and consumed-OTP reuse rejection.
 
 ## Sprint 3 - CI/CD + Observability + Frontend Integration Readiness
 
 ### 1) CI baseline and release gates
+- #TODO
 - Scope:
   - `package.json` scripts
   - `.github/workflows/ci.yml` (new)

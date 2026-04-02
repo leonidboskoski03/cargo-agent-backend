@@ -669,6 +669,8 @@ export class AuthRepository {
         maxAttempts: true,
         resendCount: true,
         nextResendAt: true,
+        requestedIp: true,
+        requestedAgent: true,
         expiresAt: true,
       },
     });

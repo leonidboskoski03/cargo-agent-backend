@@ -67,6 +67,18 @@ const envSchema = z.object({
   AUTH_FORGOT_PASSWORD_RATE_LIMIT_MAX: z.coerce.number().int().min(1).default(10),
   AUTH_RESET_PASSWORD_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().min(1000).default(60_000),
   AUTH_RESET_PASSWORD_RATE_LIMIT_MAX: z.coerce.number().int().min(1).default(10),
+  AUTH_STRICT_SESSION_CHECK_ENABLED: z
+    .string()
+    .default("false")
+    .transform((value) => value.toLowerCase() === "true"),
+  AUTH_RESET_PASSWORD_BIND_IP: z
+    .string()
+    .default("false")
+    .transform((value) => value.toLowerCase() === "true"),
+  AUTH_RESET_PASSWORD_BIND_USER_AGENT: z
+    .string()
+    .default("false")
+    .transform((value) => value.toLowerCase() === "true"),
   CRON_ENABLED: z
     .string()
     .default("true")

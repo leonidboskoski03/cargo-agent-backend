@@ -75,3 +75,31 @@ export function requireRole(roles: Role[]) {
   };
 }
 
+export async function requireActiveSession(req: Request, _res: Response, next: NextFunction) {
+  if (!env.AUTH_STRICT_SESSION_CHECK_ENABLED) {
+    return next();
+  }
+
+  const userId = req.auth?.sub;
+  const sessionId = typeof req.auth?.sid === "string" ? req.auth.sid : undefined;
+
+  if (!userId || !sessionId) {
+    return next(new AppError(401, "INVALID_TOKEN", "Invalid or expired token"));
+  }
+
+  const session = await prisma.authSession.findFirst({
+    where: {
+      id: sessionId,
+      userId,
+      revokedAt: null,
+      expiresAt: { gt: new Date() },
+    },
+    select: { id: true },
+  });
+
+  if (!session) {
+    return next(new AppError(401, "SESSION_REVOKED", "Session is no longer valid"));
+  }
+
+  return next();
+}

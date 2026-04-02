@@ -30,6 +30,9 @@ export function setTestEnv() {
   process.env.AUTH_FORGOT_PASSWORD_RATE_LIMIT_MAX = "100";
   process.env.AUTH_RESET_PASSWORD_RATE_LIMIT_WINDOW_MS = "60000";
   process.env.AUTH_RESET_PASSWORD_RATE_LIMIT_MAX = "100";
+  process.env.AUTH_STRICT_SESSION_CHECK_ENABLED = "false";
+  process.env.AUTH_RESET_PASSWORD_BIND_IP = "false";
+  process.env.AUTH_RESET_PASSWORD_BIND_USER_AGENT = "false";
   process.env.AUTH_LOGIN_MFA_REQUIRED_ROLES = "COMPANY_ADMIN";
   process.env.JOB_SEEKER_FREE_APPLICATIONS_PER_MONTH = "10";
   process.env.JOB_SEEKER_FREE_ACTIVE_LISTINGS = "1";
@@ -79,4 +82,3 @@ export function authHeader(
 
   return `Bearer ${token}`;
 }
-

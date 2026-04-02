@@ -1,4 +1,4 @@
-import { BidStatus, Prisma } from "@prisma/client";
+import { BidStatus, PlanCode, Prisma, UsageMetric } from "@prisma/client";
 import { prisma } from "../../shared/prisma/prismaClient.js";
 
 type ListFilters = {
@@ -165,6 +165,67 @@ export class BidsRepository {
       where: { id: bidId },
       data: { deletedAt: null },
       select: bidSelect,
+    });
+  }
+
+  async createWithMonthlyUsageReservation(input: {
+    data: CreateBidData;
+    periodStart: Date;
+    limit: number | null;
+    planCode: PlanCode;
+  }) {
+    return prisma.$transaction(async (tx) => {
+      if (input.limit !== null) {
+        const seededUsed = await tx.bid.count({
+          where: {
+            carrierCompanyId: input.data.carrierCompanyId,
+            deletedAt: null,
+            createdAt: { gte: input.periodStart },
+          },
+        });
+
+        await tx.usageCounter.upsert({
+          where: {
+            companyId_metric_periodStart: {
+              companyId: input.data.carrierCompanyId,
+              metric: UsageMetric.BIDS_PER_MONTH,
+              periodStart: input.periodStart,
+            },
+          },
+          update: {},
+          create: {
+            companyId: input.data.carrierCompanyId,
+            metric: UsageMetric.BIDS_PER_MONTH,
+            periodStart: input.periodStart,
+            used: seededUsed,
+            limitSnapshot: input.limit,
+            planCodeSnapshot: input.planCode,
+          },
+        });
+
+        const reserved = await tx.usageCounter.updateMany({
+          where: {
+            companyId: input.data.carrierCompanyId,
+            metric: UsageMetric.BIDS_PER_MONTH,
+            periodStart: input.periodStart,
+            used: { lt: input.limit },
+          },
+          data: {
+            used: { increment: 1 },
+            limitSnapshot: input.limit,
+            planCodeSnapshot: input.planCode,
+          },
+        });
+
+        if (reserved.count !== 1) {
+          throw new Error("BID_MONTHLY_LIMIT_REACHED");
+        }
+      }
+
+      return tx.bid.create({
+        data: input.data,
+        select: bidSelect,
+      });
     });
   }
 

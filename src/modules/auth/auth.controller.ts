@@ -288,6 +288,8 @@ export async function resetPassword(req: Request, res: Response) {
   await service.resetPassword({
     otpChallengeId: req.body.otpChallengeId,
     newPassword: req.body.newPassword,
+    ipAddress: req.ip,
+    userAgent: req.header("user-agent") ?? undefined,
   });
 
   clearAccessCookie(res);

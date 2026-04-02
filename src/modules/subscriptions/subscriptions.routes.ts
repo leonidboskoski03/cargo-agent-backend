@@ -1,5 +1,6 @@
 import { Router } from "express";
-import { requireAuth } from "../../shared/middleware/auth.middleware.js";
+import { Roles } from "../../shared/auth/permissions.js";
+import { requireAuth, requireRole } from "../../shared/middleware/auth.middleware.js";
 import { validate } from "../../shared/middleware/validate.middleware.js";
 import {
   cancelSubscriptionAtPeriodEnd,
@@ -22,25 +23,28 @@ subscriptionsRouter.get("/me", requireAuth, validate(getMySubscriptionSchema), g
 subscriptionsRouter.post(
   "/checkout-session",
   requireAuth,
+  requireRole([Roles.COMPANY_ADMIN]),
   validate(createCheckoutSessionSchema),
   createSubscriptionCheckoutSession,
 );
 subscriptionsRouter.post(
   "/cancel-at-period-end",
   requireAuth,
+  requireRole([Roles.COMPANY_ADMIN]),
   validate(cancelSubscriptionSchema),
   cancelSubscriptionAtPeriodEnd,
 );
 subscriptionsRouter.post(
   "/cancel-revert",
   requireAuth,
+  requireRole([Roles.COMPANY_ADMIN]),
   validate(cancelRevertSubscriptionSchema),
   revertSubscriptionCancelAtPeriodEnd,
 );
 subscriptionsRouter.post(
   "/portal-session",
   requireAuth,
+  requireRole([Roles.COMPANY_ADMIN]),
   validate(createBillingPortalSessionSchema),
   createBillingPortalSession,
 );
-

@@ -50,11 +50,22 @@ export class CompanyInvitesRepository {
     });
   }
 
-  async findPendingByToken(token: string) {
+  async findByToken(token: string) {
     return prisma.companyInvite.findFirst({
       where: {
         token,
+      },
+    });
+  }
+
+  async markInviteExpired(inviteId: string) {
+    return prisma.companyInvite.updateMany({
+      where: {
+        id: inviteId,
         status: CompanyInviteStatus.PENDING,
+      },
+      data: {
+        status: CompanyInviteStatus.EXPIRED,
       },
     });
   }
@@ -94,6 +105,23 @@ export class CompanyInvitesRepository {
         throw new Error("USER_ALREADY_IN_ANOTHER_COMPANY");
       }
 
+      const inviteUpdate = await tx.companyInvite.updateMany({
+        where: {
+          id: input.inviteId,
+          status: CompanyInviteStatus.PENDING,
+          expiresAt: { gt: new Date() },
+        },
+        data: {
+          status: CompanyInviteStatus.ACCEPTED,
+          acceptedByUserId: input.acceptedByUserId,
+          acceptedAt: new Date(),
+        },
+      });
+
+      if (inviteUpdate.count !== 1) {
+        throw new Error("INVITE_NOT_ACCEPTABLE");
+      }
+
       const updatedUser = await tx.user.update({
         where: { id: input.acceptedByUserId },
         data: {
@@ -108,14 +136,7 @@ export class CompanyInvitesRepository {
         },
       });
 
-      const invite = await tx.companyInvite.update({
-        where: { id: input.inviteId },
-        data: {
-          status: CompanyInviteStatus.ACCEPTED,
-          acceptedByUserId: input.acceptedByUserId,
-          acceptedAt: new Date(),
-        },
-      });
+      const invite = await tx.companyInvite.findUniqueOrThrow({ where: { id: input.inviteId } });
 
       return { user: updatedUser, invite };
     });

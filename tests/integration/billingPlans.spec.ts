@@ -250,5 +250,100 @@ describe("billing and plans endpoints", () => {
       await prisma.company.deleteMany({ where: { id: company.id } });
     }
   }, 20_000);
-});
 
+  it("forbids non-admin company users from subscription mutation endpoints", async () => {
+    const { prisma, buildApp, signAccessToken } = await initRuntime();
+    if (!dbReady) {
+      return;
+    }
+
+    const app = buildApp();
+    const suffix = `${Date.now()}-forbidden`;
+
+    const freePlan = await prisma.plan.upsert({
+      where: { code: PlanCode.FREE },
+      update: { isActive: true },
+      create: {
+        code: PlanCode.FREE,
+        name: "Free",
+        priceAmount: 0,
+        currency: "EUR",
+        isActive: true,
+      },
+      select: { id: true },
+    });
+
+    const company = await prisma.company.create({
+      data: {
+        companyType: CompanyType.CARRIER,
+        name: `Forbidden Co ${suffix}`,
+        registrationNumber: `FOR-${suffix}`,
+        countryCode: "RS",
+        city: "Nis",
+        currentPlanId: freePlan.id,
+        subscriptionStatus: "FREE",
+      },
+    });
+
+    const subscription = await prisma.subscription.create({
+      data: {
+        companyId: company.id,
+        planId: freePlan.id,
+        status: "FREE",
+        isCurrent: true,
+      },
+    });
+
+    const driver = await prisma.user.create({
+      data: {
+        companyId: company.id,
+        role: UserRole.COMPANY_DRIVER,
+        firstName: "Forbidden",
+        lastName: "Driver",
+        email: `forbidden-driver-${suffix}@test.local`,
+        passwordHash: "hash",
+      },
+    });
+
+    const token = authHeader(signAccessToken, {
+      userId: driver.id,
+      role: driver.role,
+      companyId: company.id,
+      email: driver.email,
+    });
+
+    try {
+      const checkoutResponse = await request(app)
+        .post("/api/v1/subscriptions/checkout-session")
+        .set("Authorization", token)
+        .send({});
+      expect(checkoutResponse.statusCode).toBe(403);
+      expect(checkoutResponse.body.error.code).toBe("FORBIDDEN");
+
+      const cancelResponse = await request(app)
+        .post("/api/v1/subscriptions/cancel-at-period-end")
+        .set("Authorization", token)
+        .send({});
+      expect(cancelResponse.statusCode).toBe(403);
+      expect(cancelResponse.body.error.code).toBe("FORBIDDEN");
+
+      const revertResponse = await request(app)
+        .post("/api/v1/subscriptions/cancel-revert")
+        .set("Authorization", token)
+        .send({});
+      expect(revertResponse.statusCode).toBe(403);
+      expect(revertResponse.body.error.code).toBe("FORBIDDEN");
+
+      const portalResponse = await request(app)
+        .post("/api/v1/subscriptions/portal-session")
+        .set("Authorization", token)
+        .send({});
+      expect(portalResponse.statusCode).toBe(403);
+      expect(portalResponse.body.error.code).toBe("FORBIDDEN");
+    } finally {
+      await prisma.subscription.deleteMany({ where: { id: subscription.id } });
+      await prisma.user.deleteMany({ where: { id: driver.id } });
+      await prisma.company.deleteMany({ where: { id: company.id } });
+    }
+  }, 20_000);
+});

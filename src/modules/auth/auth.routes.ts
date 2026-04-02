@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { otpRequestRateLimitMiddleware, otpVerifyRateLimitMiddleware } from "../../config/security.js";
-import { requireAuth } from "../../shared/middleware/auth.middleware.js";
+import { requireActiveSession, requireAuth } from "../../shared/middleware/auth.middleware.js";
 import { validate } from "../../shared/middleware/validate.middleware.js";
 import { ok } from "../../shared/http/apiResponse.js";
 import {
@@ -56,12 +56,12 @@ authRouter.post("/login", validate(loginSchema), login);
 authRouter.post("/login/verify-otp", validate(loginVerifyOtpSchema), loginVerifyOtp);
 authRouter.post("/refresh", validate(refreshSessionSchema), refreshSession);
 authRouter.post("/logout", validate(logoutSchema), logout);
-authRouter.post("/logout-all", requireAuth, validate(logoutAllSchema), logoutAll);
-authRouter.get("/sessions", requireAuth, validate(listSessionsSchema), listSessions);
-authRouter.delete("/sessions/:sessionId", requireAuth, validate(revokeSessionSchema), revokeSession);
+authRouter.post("/logout-all", requireAuth, requireActiveSession, validate(logoutAllSchema), logoutAll);
+authRouter.get("/sessions", requireAuth, requireActiveSession, validate(listSessionsSchema), listSessions);
+authRouter.delete("/sessions/:sessionId", requireAuth, requireActiveSession, validate(revokeSessionSchema), revokeSession);
 authRouter.post("/forgot-password", validate(forgotPasswordSchema), forgotPassword);
 authRouter.post("/reset-password", validate(resetPasswordSchema), resetPassword);
-authRouter.post("/change-password", requireAuth, validate(changePasswordSchema), changePassword);
+authRouter.post("/change-password", requireAuth, requireActiveSession, validate(changePasswordSchema), changePassword);
 authRouter.post("/otp/request", otpRequestRateLimitMiddleware, validate(requestOtpSchema), requestOtp);
 authRouter.post("/otp/verify", otpVerifyRateLimitMiddleware, validate(verifyOtpSchema), verifyOtp);
 authRouter.post("/otp/resend", validate(resendOtpSchema), resendOtp);

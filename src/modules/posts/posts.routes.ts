@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { enforceUsageLimit } from "../../shared/middleware/enforceUsageLimit.middleware.js";
 import { requireAuth } from "../../shared/middleware/auth.middleware.js";
 import { validate } from "../../shared/middleware/validate.middleware.js";
 import {
@@ -24,9 +25,8 @@ export const postsRouter = Router();
 
 postsRouter.get("/", requireAuth, validate(listPostsSchema), listPosts);
 postsRouter.get("/:postId", requireAuth, validate(getPostByIdSchema), getPostById);
-postsRouter.post("/", requireAuth, validate(createPostSchema), createPost);
+postsRouter.post("/", requireAuth, enforceUsageLimit("ACTIVE_POSTS"), validate(createPostSchema), createPost);
 postsRouter.patch("/:postId", requireAuth, validate(updatePostSchema), updatePost);
 postsRouter.patch("/:postId/status", requireAuth, validate(changePostStatusSchema), changePostStatus);
 postsRouter.delete("/:postId", requireAuth, validate(deletePostSchema), deletePost);
 postsRouter.post("/:postId/restore", requireAuth, validate(restorePostSchema), restorePost);
-

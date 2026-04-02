@@ -4,6 +4,7 @@ import { AppError } from "../../shared/errors/AppError.js";
 import { Roles } from "../../shared/auth/permissions.js";
 import { writeAuditEvent } from "../../shared/audit/auditLogger.js";
 import { enqueueNotificationEvent } from "../../shared/queue/notificationEvents.queue.js";
+import { UsageService } from "../../shared/billing/usage.service.js";
 import { BidsRepository } from "./bids.repository.js";
 import {
   changeBidStatusSchema,
@@ -30,6 +31,7 @@ type UpdateBidBody = z.infer<typeof updateBidSchema>["body"];
 type ChangeBidStatusBody = z.infer<typeof changeBidStatusSchema>["body"];
 
 const repo = new BidsRepository();
+const usageService = new UsageService();
 
 const allowedTransitions: Record<BidStatus, BidStatus[]> = {
   PENDING: [BidStatus.ACCEPTED, BidStatus.REJECTED, BidStatus.WITHDRAWN],
@@ -123,18 +125,36 @@ export class BidsService {
       throw new AppError(400, "PRICE_REQUIRED", "offeredPriceAmount is required");
     }
 
+    const usage = await usageService.getUsage(companyId, "BIDS_PER_MONTH");
+
     try {
-      return await repo.create({
-        postId: body.postId,
-        carrierCompanyId: companyId,
-        createdByUserId: auth.userId,
-        message: body.message,
-        offeredPriceAmount: body.offeredPriceAmount,
-        currency: body.currency.toUpperCase(),
-        estimatedPickupAt: body.estimatedPickupAt,
-        estimatedDeliveryAt: body.estimatedDeliveryAt,
+      return await repo.createWithMonthlyUsageReservation({
+        periodStart: usage.periodStart,
+        limit: usage.limit,
+        planCode: usage.planCode,
+        data: {
+          postId: body.postId,
+          carrierCompanyId: companyId,
+          createdByUserId: auth.userId,
+          message: body.message,
+          offeredPriceAmount: body.offeredPriceAmount,
+          currency: body.currency.toUpperCase(),
+          estimatedPickupAt: body.estimatedPickupAt,
+          estimatedDeliveryAt: body.estimatedDeliveryAt,
+        },
       });
     } catch (error) {
+      if (error instanceof Error && error.message === "BID_MONTHLY_LIMIT_REACHED") {
+        throw new AppError(403, "USAGE_LIMIT_REACHED", "Plan usage limit reached", {
+          metric: "BIDS_PER_MONTH",
+          planCode: usage.planCode,
+          used: usage.used,
+          limit: usage.limit,
+          periodStart: usage.periodStart,
+          companyId,
+        });
+      }
+
       if (repo.isUniqueConstraintError(error)) {
         throw new AppError(409, "BID_ALREADY_EXISTS", "Your company already has a bid for this post");
       }
@@ -279,5 +299,4 @@ export class BidsService {
     return repo.restore(bidId);
   }
 }
-
 
