@@ -1,31 +1,15 @@
 import { BidStatus, ContractStatus, PostStatus, type UserRole } from "@prisma/client";
-import { z } from "zod";
 import { AppError } from "../../shared/errors/AppError.js";
-import { Roles } from "../../shared/auth/permissions.js";
 import { writeAuditEvent } from "../../shared/audit/auditLogger.js";
 import { enqueueNotificationEvent } from "../../shared/queue/notificationEvents.queue.js";
+import { assertCompanyAdmin, assertCompanyUser, requireAuth } from "./contracts.helpers.js";
 import { ContractsRepository } from "./contracts.repository.js";
-import {
-  changeContractStatusSchema,
-  createContractSchema,
-  listContractsSchema,
-} from "./contracts.validator.js";
-
-type AuthContext = {
-  userId?: string;
-  role?: UserRole;
-  companyId?: string;
-};
-
-type RequiredAuthContext = {
-  userId: string;
-  role: UserRole;
-  companyId?: string;
-};
-
-type ListContractsQuery = z.infer<typeof listContractsSchema>["query"];
-type CreateContractBody = z.infer<typeof createContractSchema>["body"];
-type ChangeContractStatusBody = z.infer<typeof changeContractStatusSchema>["body"];
+import type {
+  AuthContext,
+  ChangeContractStatusBody,
+  CreateContractBody,
+  ListContractsQuery,
+} from "./contracts.types.js";
 
 const repo = new ContractsRepository();
 
@@ -37,31 +21,6 @@ const allowedTransitions: Record<ContractStatus, ContractStatus[]> = {
   DISPUTED: [],
 };
 
-function requireAuth(auth: AuthContext): asserts auth is RequiredAuthContext {
-  if (!auth.userId || !auth.role) {
-    throw new AppError(401, "UNAUTHENTICATED", "Authentication required");
-  }
-}
-
-function assertCompanyUser(auth: RequiredAuthContext) {
-  if (auth.role !== Roles.COMPANY_ADMIN && auth.role !== Roles.COMPANY_DRIVER) {
-    throw new AppError(403, "FORBIDDEN", "Only company users can access contracts");
-  }
-
-  if (!auth.companyId) {
-    throw new AppError(403, "COMPANY_REQUIRED", "Company users must belong to a company");
-  }
-}
-
-function assertCompanyAdmin(auth: RequiredAuthContext) {
-  if (auth.role !== Roles.COMPANY_ADMIN) {
-    throw new AppError(403, "FORBIDDEN", "Only company admins can perform this action");
-  }
-
-  if (!auth.companyId) {
-    throw new AppError(403, "COMPANY_REQUIRED", "Company admins must belong to a company");
-  }
-}
 
 export class ContractsService {
   async list(auth: AuthContext, query: ListContractsQuery) {

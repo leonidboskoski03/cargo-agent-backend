@@ -1,33 +1,16 @@
-import { PostStatus, type UserRole } from "@prisma/client";
-import { z } from "zod";
-import { Roles } from "../../shared/auth/permissions.js";
+import { PostStatus } from "@prisma/client";
 import { EntitlementsService } from "../../shared/billing/entitlements.service.js";
 import { UsageService } from "../../shared/billing/usage.service.js";
 import { AppError } from "../../shared/errors/AppError.js";
+import { assertCompanyAdmin, assertCompanyUser, requireAuth } from "./posts.helpers.js";
 import { PostsRepository } from "./posts.repository.js";
-import {
-  changePostStatusSchema,
-  createPostSchema,
-  listPostsSchema,
-  updatePostSchema,
-} from "./posts.validator.js";
-
-type AuthContext = {
-  userId?: string;
-  role?: UserRole;
-  companyId?: string;
-};
-
-type RequiredAuthContext = {
-  userId: string;
-  role: UserRole;
-  companyId?: string;
-};
-
-type ListPostsQuery = z.infer<typeof listPostsSchema>["query"];
-type CreatePostBody = z.infer<typeof createPostSchema>["body"];
-type UpdatePostBody = z.infer<typeof updatePostSchema>["body"];
-type ChangePostStatusBody = z.infer<typeof changePostStatusSchema>["body"];
+import type {
+  AuthContext,
+  ChangePostStatusBody,
+  CreatePostBody,
+  ListPostsQuery,
+  UpdatePostBody,
+} from "./posts.types.js";
 
 const repo = new PostsRepository();
 const entitlementsService = new EntitlementsService();
@@ -40,31 +23,6 @@ const allowedTransitions: Record<PostStatus, PostStatus[]> = {
   EXPIRED: [],
 };
 
-function requireAuth(auth: AuthContext): asserts auth is RequiredAuthContext {
-  if (!auth.userId || !auth.role) {
-	throw new AppError(401, "UNAUTHENTICATED", "Authentication required");
-  }
-}
-
-function assertCompanyUser(auth: RequiredAuthContext) {
-  if (auth.role !== Roles.COMPANY_ADMIN && auth.role !== Roles.COMPANY_DRIVER) {
-	throw new AppError(403, "FORBIDDEN", "Only company users can access posts");
-  }
-
-  if (!auth.companyId) {
-	throw new AppError(403, "COMPANY_REQUIRED", "Company users must belong to a company");
-  }
-}
-
-function assertCompanyAdmin(auth: RequiredAuthContext) {
-  if (auth.role !== Roles.COMPANY_ADMIN) {
-	throw new AppError(403, "FORBIDDEN", "Only company admins can perform this action");
-  }
-
-  if (!auth.companyId) {
-	throw new AppError(403, "COMPANY_REQUIRED", "Company admins must belong to a company");
-  }
-}
 
 export class PostsService {
   async list(auth: AuthContext, query: ListPostsQuery) {

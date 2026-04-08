@@ -1,0 +1,192 @@
+enum CompanyType {
+  SHIPPER
+  CARRIER
+  BOTH
+}
+
+enum UserRole {
+  COMPANY_ADMIN
+  COMPANY_DRIVER
+  JOB_SEEKER
+}
+
+enum VehicleType {
+  TRUCK
+  TRAILER
+  VAN
+}
+
+enum VehicleBodyType {
+  TILT
+  BOX
+  FLATBED
+  REEFER
+  TANKER
+}
+
+enum PostPriceType {
+  FIXED
+  NEGOTIABLE
+  REQUEST_QUOTE
+}
+
+enum PostStatus {
+  OPEN
+  ASSIGNED
+  CANCELLED
+  EXPIRED
+}
+
+enum BidStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+enum ContractStatus {
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  DISPUTED
+}
+
+enum ReviewStatus {
+  DRAFT
+  PUBLISHED
+  WITHDRAWN
+}
+
+enum NotificationType {
+  BID_ACCEPTED
+  CONTRACT_CREATED
+  REVIEW_PUBLISHED
+}
+
+enum DocumentKind {
+  COMPANY_LICENSE
+  VEHICLE_REGISTRATION
+  INSURANCE
+  CONTRACT_ATTACHMENT
+  OTHER
+}
+
+enum PlanCode {
+  FREE
+  PRO
+}
+
+enum BillingInterval {
+  MONTHLY
+  YEARLY
+}
+
+enum SubscriptionStatus {
+  FREE
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  INCOMPLETE
+  UNPAID
+}
+
+enum CheckoutSessionStatus {
+  CREATED
+  COMPLETED
+  EXPIRED
+  FAILED
+}
+
+enum BillingProvider {
+  STRIPE
+}
+
+enum BillingEventType {
+  CHECKOUT_COMPLETED
+  INVOICE_PAID
+  INVOICE_PAYMENT_FAILED
+  SUBSCRIPTION_CREATED
+  SUBSCRIPTION_UPDATED
+  SUBSCRIPTION_CANCELED
+}
+
+enum BillingEventStatus {
+  SUCCEEDED
+  FAILED
+  PENDING
+}
+
+enum UsageMetric {
+  ACTIVE_POSTS
+  BIDS_PER_MONTH
+  TEAM_MEMBERS
+  PROMOTED_POSTS_PER_MONTH
+}
+
+enum JobSeekerUsageMetric {
+  JOB_APPLICATIONS_PER_MONTH
+  ACTIVE_LOOKING_LISTINGS
+}
+
+enum JobSeekerCreditTxType {
+  PURCHASE
+  SPEND
+  REFUND
+  ADJUSTMENT
+}
+
+enum JobSeekerCheckoutSessionStatus {
+  CREATED
+  COMPLETED
+  EXPIRED
+  FAILED
+}
+
+enum JobApplicationStatus {
+  OPEN
+  PAUSED
+  CLOSED
+}
+
+enum JobApplicationSubmissionStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+enum CompanyInviteStatus {
+  PENDING
+  ACCEPTED
+  REVOKED
+  EXPIRED
+}
+
+enum OtpChannel {
+  EMAIL
+  SMS
+}
+
+enum OtpPurpose {
+  REGISTER_VERIFY
+  FORGOT_PASSWORD
+  CHANGE_PASSWORD
+  INVITE_ACCEPT
+  LOGIN_MFA
+}
+
+enum OtpStatus {
+  PENDING
+  VERIFIED
+  EXPIRED
+  LOCKED
+  CANCELED
+}
+
+enum RegistrationKind {
+  JOB_SEEKER
+  COMPANY
+}
+

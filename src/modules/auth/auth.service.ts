@@ -1,5 +1,4 @@
-import { CompanyType, OtpChannel, OtpPurpose, OtpStatus, PlanCode, RegistrationKind, UserRole } from "@prisma/client";
-import { createHash, randomBytes } from "crypto";
+import { OtpChannel, OtpPurpose, OtpStatus, PlanCode, RegistrationKind, UserRole } from "@prisma/client";
 import { env } from "../../config/env.js";
 import { AppError } from "../../shared/errors/AppError.js";
 import { signAccessToken } from "../../shared/auth/jwt.js";
@@ -7,171 +6,42 @@ import { hashPassword, verifyPassword } from "../../shared/auth/password.js";
 import { createOtpDeliveryProvider } from "./auth.otpDelivery.js";
 import { AuthRepository } from "./auth.repository.js";
 import { SubscriptionsService } from "../subscriptions/subscriptions.service.js";
-
-type LoginInput = {
-  email: string;
-  password: string;
-};
-
-type LoginWithVerifiedOtpInput = {
-  email: string;
-  password: string;
-  otpChallengeId: string;
-};
-
-type RegisterInput = {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  role: UserRole;
-  otpChallengeId: string;
-};
-
-type RegistrationStartInput = {
-  kind: RegistrationKind;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone?: string;
-  password: string;
-  ipAddress?: string;
-  userAgent?: string;
-};
-
-type VerifyRegistrationOtpInput = {
-  draftId: string;
-  code: string;
-};
-
-type CompleteJobSeekerRegistrationInput = {
-  draftId: string;
-  countryCode: string;
-  city: string;
-  headline?: string;
-  yearsExperience?: number;
-  availability?: string;
-  preferredRoutes?: string[];
-};
-
-type CompleteCompanyRegistrationInput = {
-  draftId: string;
-  companyName: string;
-  companyType: CompanyType;
-  registrationNumber: string;
-  address: string;
-  countryCode: string;
-  city: string;
-  vatNumber?: string;
-  website?: string;
-  contactPhone?: string;
-  companyEmail?: string;
-  planCode: PlanCode;
-};
-
-type SessionContext = {
-  ipAddress?: string;
-  userAgent?: string;
-};
-
-type ForgotPasswordInput = {
-  email: string;
-  ipAddress?: string;
-  userAgent?: string;
-};
-
-type ResetPasswordInput = {
-  otpChallengeId: string;
-  newPassword: string;
-  ipAddress?: string;
-  userAgent?: string;
-};
-
-type ChangePasswordInput = {
-  userId?: string;
-  currentPassword: string;
-  newPassword: string;
-  currentSessionId?: string;
-};
-
-type RequestOtpInput = {
-  purpose: OtpPurpose;
-  channel: OtpChannel;
-  email?: string;
-  phone?: string;
-  userId?: string;
-  ipAddress?: string;
-  userAgent?: string;
-};
-
-type VerifyOtpInput = {
-  challengeId: string;
-  code: string;
-};
-
-type ResendOtpInput = {
-  challengeId: string;
-};
-
-type ListSessionsInput = {
-  userId?: string;
-  currentSessionId?: string;
-};
-
-type RevokeSessionInput = {
-  userId?: string;
-  sessionId: string;
-};
+import {
+  createRefreshToken,
+  generateOtpCode,
+  getNextResendAt,
+  getOtpExpiresAt,
+  getRefreshExpiresAt,
+  getRegistrationDraftExpiresAt,
+  hashOtpCode,
+  hashRefreshToken,
+  normalizeEmail,
+  normalizePhone,
+  shouldRequireLoginMfa,
+} from "./auth.helpers.js";
+import type {
+  ChangePasswordInput,
+  CompleteCompanyRegistrationInput,
+  CompleteJobSeekerRegistrationInput,
+  ForgotPasswordInput,
+  ListSessionsInput,
+  LoginInput,
+  LoginWithVerifiedOtpInput,
+  RegisterInput,
+  RegistrationStartInput,
+  ResendOtpInput,
+  ResetPasswordInput,
+  RequestOtpInput,
+  RevokeSessionInput,
+  SessionContext,
+  VerifyOtpInput,
+  VerifyRegistrationOtpInput,
+} from "./auth.types.js";
 
 const repo = new AuthRepository();
 const otpDelivery = createOtpDeliveryProvider();
 const subscriptionsService = new SubscriptionsService();
 
-function hashRefreshToken(token: string) {
-  return createHash("sha256").update(token).digest("hex");
-}
-
-function createRefreshToken() {
-  return randomBytes(48).toString("hex");
-}
-
-function getRefreshExpiresAt() {
-  return new Date(Date.now() + env.JWT_REFRESH_SESSION_DAYS * 24 * 60 * 60 * 1000);
-}
-
-function hashOtpCode(code: string) {
-  return createHash("sha256").update(code).digest("hex");
-}
-
-function normalizeEmail(value: string) {
-  return value.trim().toLowerCase();
-}
-
-function normalizePhone(value: string) {
-  return value.trim();
-}
-
-function generateOtpCode() {
-  const max = 10 ** env.AUTH_OTP_CODE_LENGTH;
-  const num = Math.floor(Math.random() * max);
-  return num.toString().padStart(env.AUTH_OTP_CODE_LENGTH, "0");
-}
-
-function getOtpExpiresAt() {
-  return new Date(Date.now() + env.AUTH_OTP_TTL_MINUTES * 60 * 1000);
-}
-
-function getRegistrationDraftExpiresAt() {
-  return new Date(Date.now() + env.AUTH_OTP_TTL_MINUTES * 60 * 1000);
-}
-
-function getNextResendAt() {
-  return new Date(Date.now() + env.AUTH_OTP_RESEND_COOLDOWN_SECONDS * 1000);
-}
-
-function shouldRequireLoginMfa(role: UserRole) {
-  return env.AUTH_LOGIN_MFA_REQUIRED_ROLES.includes(role);
-}
 
 export class AuthService {
   async startRegistration(input: RegistrationStartInput) {

@@ -1,0 +1,163 @@
+model Notification {
+  id                 String   @id @default(cuid())
+  type               NotificationType
+  recipientUserId    String?
+  recipientCompanyId String?
+  title              String
+  body               String
+  payloadJson        Json?
+  readAt             DateTime?
+  createdAt          DateTime @default(now())
+
+  recipientUser    User?    @relation("UserNotifications", fields: [recipientUserId], references: [id], onDelete: Cascade)
+  recipientCompany Company? @relation("CompanyOwnedNotifications", fields: [recipientCompanyId], references: [id], onDelete: Cascade)
+
+  @@index([recipientUserId, createdAt])
+  @@index([recipientCompanyId, createdAt])
+  @@index([type, createdAt])
+}
+
+model Document {
+  id               String   @id @default(cuid())
+  ownerUserId      String?
+  ownerCompanyId   String?
+  uploadedByUserId String
+  kind             DocumentKind
+  name             String
+  mimeType         String
+  url              String
+  metadataJson     Json?
+  deletedAt        DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  ownerUser      User?    @relation("UserOwnedDocuments", fields: [ownerUserId], references: [id], onDelete: Cascade)
+  ownerCompany   Company? @relation("CompanyOwnedDocuments", fields: [ownerCompanyId], references: [id], onDelete: Cascade)
+  uploadedByUser User     @relation("DocumentUploadedByUser", fields: [uploadedByUserId], references: [id], onDelete: Cascade)
+
+  @@index([ownerUserId, createdAt])
+  @@index([ownerCompanyId, createdAt])
+  @@index([kind])
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  companyId   String
+  actorUserId String?
+  action      String
+  entityType  String?
+  entityId    String?
+  payloadJson Json?
+  createdAt   DateTime @default(now())
+
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  actorUser User?   @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([companyId])
+  @@index([companyId, action])
+  @@index([companyId, createdAt])
+  @@index([actorUserId])
+}
+
+model License {
+  id          String    @id @default(cuid())
+  userId      String
+  licenseType String
+  issuedAt    DateTime? @db.Date
+  expiresAt   DateTime? @db.Date
+  isValid     Boolean   @default(true)
+  deletedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, licenseType])
+  @@index([userId])
+}
+
+model Vehicle {
+  id                    String    @id @default(cuid())
+  companyId             String?
+  userId                String?
+  vehicleType           VehicleType
+  plateNumber           String
+  countryOfRegistration String
+  brand                 String?
+  model                 String?
+  year                  Int?
+  capacityKg            Int?
+  volumeM3              Decimal?  @db.Decimal(10, 3)
+  bodyType              VehicleBodyType?
+  refrigerated          Boolean?  @default(false)
+  hazmatCertified       Boolean?  @default(false)
+  isActive              Boolean   @default(true)
+  deletedAt             DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  company            Company?            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user               User?               @relation("VehicleDriverUser", fields: [userId], references: [id], onDelete: Cascade)
+  vehicleAssignments VehicleAssignment[]
+
+  @@unique([plateNumber, countryOfRegistration])
+  @@index([companyId])
+}
+
+model VehicleAssignment {
+  id           String    @id @default(cuid())
+  vehicleId    String
+  driverUserId String
+  startsAt     DateTime
+  endsAt       DateTime?
+  deletedAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  vehicle    Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  driverUser User    @relation("DriverUserVehicleAssignments", fields: [driverUserId], references: [id], onDelete: Cascade)
+
+  @@index([vehicleId])
+  @@index([driverUserId])
+  @@index([driverUserId, startsAt, endsAt])
+}
+
+model Location {
+  id          String   @id @default(cuid())
+  countryCode String
+  city        String
+  region      String?
+  postalCode  String?
+  lat         Decimal? @db.Decimal(10, 7)
+  lng         Decimal? @db.Decimal(10, 7)
+  deletedAt   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  originRoutes      Route[] @relation("OriginLocationRoutes")
+  destinationRoutes Route[] @relation("DestinationLocationRoutes")
+
+  @@index([countryCode, city])
+}
+
+model Route {
+  id                       String   @id @default(cuid())
+  originLocationId         String
+  destinationLocationId    String
+  distanceKm               Int?
+  estimatedDurationMinutes Int?
+  isActive                 Boolean  @default(true)
+  deletedAt                DateTime?
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  originLocation      Location @relation("OriginLocationRoutes", fields: [originLocationId], references: [id])
+  destinationLocation Location @relation("DestinationLocationRoutes", fields: [destinationLocationId], references: [id])
+  posts               Post[]
+  contracts           Contract[]
+
+  @@unique([originLocationId, destinationLocationId])
+  @@index([originLocationId])
+  @@index([destinationLocationId])
+}
+

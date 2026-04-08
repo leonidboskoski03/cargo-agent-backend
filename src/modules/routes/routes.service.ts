@@ -1,62 +1,9 @@
-import type { UserRole } from "@prisma/client";
-import { z } from "zod";
 import { AppError } from "../../shared/errors/AppError.js";
-import { Roles } from "../../shared/auth/permissions.js";
+import { assertCompanyAdmin, assertLocationsExist, requireAuth } from "./routes.helpers.js";
 import { RoutesRepository } from "./routes.repository.js";
-import { createRouteSchema, listRoutesSchema, updateRouteSchema } from "./routes.validator.js";
-
-type AuthContext = {
-  userId?: string;
-  role?: UserRole;
-  companyId?: string;
-};
-
-type RequiredAuthContext = {
-  userId: string;
-  role: UserRole;
-  companyId?: string;
-};
-
-type ListRoutesQuery = z.infer<typeof listRoutesSchema>["query"];
-type CreateRouteBody = z.infer<typeof createRouteSchema>["body"];
-type UpdateRouteBody = z.infer<typeof updateRouteSchema>["body"];
+import type { AuthContext, CreateRouteBody, ListRoutesQuery, UpdateRouteBody } from "./routes.types.js";
 
 const repo = new RoutesRepository();
-
-function requireAuth(auth: AuthContext): asserts auth is RequiredAuthContext {
-  if (!auth.userId || !auth.role) {
-    throw new AppError(401, "UNAUTHENTICATED", "Authentication required");
-  }
-}
-
-function assertCompanyAdmin(auth: RequiredAuthContext) {
-  if (auth.role !== Roles.COMPANY_ADMIN) {
-    throw new AppError(403, "FORBIDDEN", "Only company admins can perform this action");
-  }
-
-  if (!auth.companyId) {
-    throw new AppError(403, "COMPANY_REQUIRED", "Company admins must belong to a company");
-  }
-}
-
-async function assertLocationsExist(originLocationId: string, destinationLocationId: string) {
-  if (originLocationId === destinationLocationId) {
-    throw new AppError(400, "INVALID_ROUTE", "Origin and destination must be different");
-  }
-
-  const [origin, destination] = await Promise.all([
-    repo.findActiveLocationById(originLocationId),
-    repo.findActiveLocationById(destinationLocationId),
-  ]);
-
-  if (!origin) {
-    throw new AppError(404, "ORIGIN_LOCATION_NOT_FOUND", "Origin location not found");
-  }
-
-  if (!destination) {
-    throw new AppError(404, "DESTINATION_LOCATION_NOT_FOUND", "Destination location not found");
-  }
-}
 
 export class RoutesService {
   async list(auth: AuthContext, query: ListRoutesQuery) {
@@ -84,7 +31,7 @@ export class RoutesService {
     requireAuth(auth);
     assertCompanyAdmin(auth);
 
-    await assertLocationsExist(body.originLocationId, body.destinationLocationId);
+    await assertLocationsExist(repo, body.originLocationId, body.destinationLocationId);
 
     try {
       return await repo.create({
@@ -116,7 +63,7 @@ export class RoutesService {
     const originLocationId = body.originLocationId ?? existing.originLocationId;
     const destinationLocationId = body.destinationLocationId ?? existing.destinationLocationId;
 
-    await assertLocationsExist(originLocationId, destinationLocationId);
+    await assertLocationsExist(repo, originLocationId, destinationLocationId);
 
     try {
       return await repo.update(routeId, {
@@ -162,7 +109,7 @@ export class RoutesService {
       throw new AppError(400, "ROUTE_NOT_DELETED", "Route is already active");
     }
 
-    await assertLocationsExist(existing.originLocationId, existing.destinationLocationId);
+    await assertLocationsExist(repo, existing.originLocationId, existing.destinationLocationId);
 
     return repo.restore(routeId);
   }

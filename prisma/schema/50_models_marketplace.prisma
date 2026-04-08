@@ -1,0 +1,176 @@
+model Post {
+  id                         String        @id @default(cuid())
+  companyId                  String
+  createdByUserId            String
+  routeId                    String
+  title                      String?
+  description                String?
+  pickupEarliestAt           DateTime?
+  pickupLatestAt             DateTime?
+  deliveryDeadlineAt         DateTime?
+  expiresAt                  DateTime?
+  cargoDescription           String?
+  cargoType                  String?
+  weightKg                   Int?
+  palletCount                Int?
+  volumeM3                   Decimal?      @db.Decimal(10, 3)
+  requiredBodyType           VehicleBodyType?
+  hazmat                     Boolean?      @default(false)
+  temperatureControlRequired Boolean?      @default(false)
+  temperatureMinC            Int?
+  temperatureMaxC            Int?
+  priceType                  PostPriceType
+  priceAmount                Decimal?      @db.Decimal(12, 2)
+  currency                   String
+  status                     PostStatus    @default(OPEN)
+  isPromoted                 Boolean       @default(false)
+  promotedUntil              DateTime?
+  deletedAt                  DateTime?
+  createdAt                  DateTime      @default(now())
+  updatedAt                  DateTime      @updatedAt
+
+  company       Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdByUser User     @relation("PostCreatedByUser", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  route         Route    @relation(fields: [routeId], references: [id])
+  bids          Bid[]
+  contract      Contract?
+
+  @@index([companyId])
+  @@index([createdByUserId])
+  @@index([routeId])
+  @@index([status])
+  @@index([isPromoted])
+}
+
+model JobApplication {
+  id                   String               @id @default(cuid())
+  createdByUserId      String
+  createdByCompanyId   String?
+  title                String
+  description          String?
+  preferredCountryCode String?
+  preferredCity        String?
+  expectedPayAmount    Decimal?             @db.Decimal(12, 2)
+  currency             String?
+  status               JobApplicationStatus @default(OPEN)
+  isPromoted           Boolean              @default(false)
+  promotedUntil        DateTime?
+  deletedAt            DateTime?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+
+  createdByUser    User                       @relation("UserCreatedJobApplications", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  createdByCompany Company?                   @relation("CompanyCreatedJobApplications", fields: [createdByCompanyId], references: [id], onDelete: Cascade)
+  submissions      JobApplicationSubmission[]
+
+  @@index([createdByUserId])
+  @@index([createdByCompanyId])
+  @@index([status])
+  @@index([isPromoted])
+  @@index([preferredCountryCode, preferredCity])
+}
+
+model JobApplicationSubmission {
+  id                   String                         @id @default(cuid())
+  jobApplicationId     String
+  submittedByUserId    String
+  submittedByCompanyId String?
+  message              String?
+  status               JobApplicationSubmissionStatus @default(PENDING)
+  isPromoted           Boolean                        @default(false)
+  promotedUntil        DateTime?
+  deletedAt            DateTime?
+  createdAt            DateTime                       @default(now())
+  updatedAt            DateTime                       @updatedAt
+
+  jobApplication     JobApplication @relation(fields: [jobApplicationId], references: [id], onDelete: Cascade)
+  submittedByUser    User           @relation("UserJobApplicationSubmissions", fields: [submittedByUserId], references: [id], onDelete: Cascade)
+  submittedByCompany Company?       @relation("CompanyJobApplicationSubmissions", fields: [submittedByCompanyId], references: [id], onDelete: Cascade)
+
+  @@unique([jobApplicationId, submittedByUserId])
+  @@index([submittedByCompanyId])
+  @@index([status])
+  @@index([isPromoted])
+}
+
+model Bid {
+  id                  String    @id @default(cuid())
+  postId              String
+  carrierCompanyId    String
+  createdByUserId     String
+  message             String?
+  offeredPriceAmount  Decimal?  @db.Decimal(12, 2)
+  currency            String
+  estimatedPickupAt   DateTime?
+  estimatedDeliveryAt DateTime?
+  status              BidStatus @default(PENDING)
+  deletedAt           DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  post           Post    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  carrierCompany Company @relation("CarrierCompanyBids", fields: [carrierCompanyId], references: [id], onDelete: Cascade)
+  createdByUser  User    @relation("BidCreatedByUser", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  contract       Contract?
+
+  @@unique([postId, carrierCompanyId])
+  @@index([postId])
+  @@index([carrierCompanyId])
+  @@index([createdByUserId])
+  @@index([status])
+}
+
+model Contract {
+  id                String         @id @default(cuid())
+  postId            String         @unique
+  acceptedBidId     String         @unique
+  routeId           String
+  shipperCompanyId  String
+  carrierCompanyId  String
+  agreedPriceAmount Decimal        @db.Decimal(12, 2)
+  currency          String
+  status            ContractStatus @default(CONFIRMED)
+  pickupPlannedAt   DateTime?
+  deliveryPlannedAt DateTime?
+  pickupActualAt    DateTime?
+  deliveryActualAt  DateTime?
+  deletedAt         DateTime?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  post           Post    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  acceptedBid    Bid     @relation(fields: [acceptedBidId], references: [id], onDelete: Cascade)
+  route          Route   @relation(fields: [routeId], references: [id])
+  shipperCompany Company @relation("ShipperCompanyContracts", fields: [shipperCompanyId], references: [id], onDelete: Cascade)
+  carrierCompany Company @relation("CarrierCompanyContracts", fields: [carrierCompanyId], references: [id], onDelete: Cascade)
+  reviews        Review[]
+
+  @@index([routeId])
+  @@index([shipperCompanyId])
+  @@index([carrierCompanyId])
+  @@index([status])
+}
+
+model Review {
+  id                String       @id @default(cuid())
+  contractId        String
+  reviewerCompanyId String
+  reviewerUserId    String
+  targetCompanyId   String
+  rating            Int
+  comment           String?
+  status            ReviewStatus @default(PUBLISHED)
+  deletedAt         DateTime?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  contract        Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  reviewerCompany Company  @relation("ReviewerCompanyReviews", fields: [reviewerCompanyId], references: [id], onDelete: Cascade)
+  reviewerUser    User     @relation("ReviewerUserReviews", fields: [reviewerUserId], references: [id], onDelete: Cascade)
+  targetCompany   Company  @relation("TargetCompanyReviews", fields: [targetCompanyId], references: [id], onDelete: Cascade)
+
+  @@unique([contractId, reviewerCompanyId])
+  @@index([reviewerCompanyId])
+  @@index([targetCompanyId])
+}
+

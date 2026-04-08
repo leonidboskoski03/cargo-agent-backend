@@ -1,34 +1,9 @@
 import { NotificationType, type Prisma, type UserRole } from "@prisma/client";
-import { z } from "zod";
 import { Roles } from "../../shared/auth/permissions.js";
 import { AppError } from "../../shared/errors/AppError.js";
-import {
-  listNotificationsSchema,
-} from "./notifications.validator.js";
+import { requireAuth } from "./notifications.helpers.js";
 import { NotificationsRepository } from "./notifications.repository.js";
-
-type AuthContext = {
-  userId?: string;
-  role?: UserRole;
-  companyId?: string;
-};
-
-type ListQuery = z.infer<typeof listNotificationsSchema>["query"];
-
-type CreateNotificationInput = {
-  type: NotificationType;
-  title: string;
-  body: string;
-  payloadJson?: Prisma.InputJsonValue;
-  recipientUserId?: string;
-  recipientCompanyId?: string;
-};
-
-function requireAuth(auth: AuthContext) {
-  if (!auth.userId || !auth.role) {
-    throw new AppError(401, "UNAUTHENTICATED", "Authentication required");
-  }
-}
+import type { AuthContext, CreateNotificationInput, ListQuery } from "./notifications.types.js";
 
 export class NotificationsService {
   private readonly repository = new NotificationsRepository();

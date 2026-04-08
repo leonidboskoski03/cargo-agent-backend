@@ -5,32 +5,12 @@ import { jobSeekerBillingConfig } from "../../config/jobSeekerBilling.js";
 import { AppError } from "../../shared/errors/AppError.js";
 import { writeAuditEvent } from "../../shared/audit/auditLogger.js";
 import { getStripeClient, isStripeConfigured } from "../../shared/stripe/stripeClient.js";
+import { getCurrentMonthPeriodStartUtc, requireCompanyAdmin, requireJobSeeker } from "./jobSeekerBilling.helpers.js";
 import { JobSeekerBillingRepository } from "./jobSeekerBilling.repository.js";
-
-type AuthContext = {
-  userId?: string;
-  role?: UserRole;
-  companyId?: string;
-};
+import type { AuthContext } from "./jobSeekerBilling.types.js";
 
 const repo = new JobSeekerBillingRepository();
 
-function getCurrentMonthPeriodStartUtc() {
-  const now = new Date();
-  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 0, 0, 0, 0));
-}
-
-function requireJobSeeker(auth: AuthContext) {
-  if (!auth.userId || auth.role !== UserRole.JOB_SEEKER) {
-    throw new AppError(403, "FORBIDDEN", "Only job seekers can access this resource");
-  }
-}
-
-function requireCompanyAdmin(auth: AuthContext) {
-  if (!auth.userId || auth.role !== UserRole.COMPANY_ADMIN || !auth.companyId) {
-    throw new AppError(403, "FORBIDDEN", "Only company admins can access this resource");
-  }
-}
 
 export class JobSeekerBillingService {
   async getWallet(auth: AuthContext) {

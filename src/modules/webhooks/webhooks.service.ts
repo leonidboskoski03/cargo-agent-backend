@@ -1,86 +1,19 @@
-import type { BillingEventStatus, BillingEventType, PlanCode, SubscriptionStatus } from "@prisma/client";
+import type { BillingEventType, PlanCode } from "@prisma/client";
 import type Stripe from "stripe";
 import { logger } from "../../config/logger.js";
 import { isSupportedStripeLifecycleEvent } from "../../shared/stripe/stripeEventMapper.js";
 import { WebhooksRepository } from "./webhooks.repository.js";
+import {
+  getInvoicePaymentIntentId,
+  getSubscriptionPeriod,
+  toBillingEventStatus,
+  toBillingEventType,
+  toDate,
+  toSubscriptionStatus,
+} from "./webhooks.helpers.js";
 
 const repo = new WebhooksRepository();
 
-function toSubscriptionStatus(status: Stripe.Subscription.Status): SubscriptionStatus {
-  switch (status) {
-    case "trialing":
-      return "TRIALING";
-    case "active":
-      return "ACTIVE";
-    case "past_due":
-      return "PAST_DUE";
-    case "canceled":
-      return "CANCELED";
-    case "incomplete":
-      return "INCOMPLETE";
-    case "unpaid":
-      return "UNPAID";
-    default:
-      return "INCOMPLETE";
-  }
-}
-
-function toBillingEventType(type: Stripe.Event.Type): BillingEventType | null {
-  switch (type) {
-    case "checkout.session.completed":
-      return "CHECKOUT_COMPLETED";
-    case "invoice.paid":
-      return "INVOICE_PAID";
-    case "invoice.payment_failed":
-      return "INVOICE_PAYMENT_FAILED";
-    case "customer.subscription.created":
-      return "SUBSCRIPTION_CREATED";
-    case "customer.subscription.updated":
-      return "SUBSCRIPTION_UPDATED";
-    case "customer.subscription.deleted":
-      return "SUBSCRIPTION_CANCELED";
-    default:
-      return null;
-  }
-}
-
-function toBillingEventStatus(type: Stripe.Event.Type): BillingEventStatus {
-  if (type === "invoice.payment_failed") {
-    return "FAILED";
-  }
-
-  return "SUCCEEDED";
-}
-
-function toDate(unixSeconds: number | null | undefined) {
-  if (!unixSeconds) {
-    return null;
-  }
-
-  return new Date(unixSeconds * 1000);
-}
-
-function getInvoicePaymentIntentId(invoice: Stripe.Invoice): string | null {
-  const raw = invoice as unknown as { payment_intent?: string | { id?: string } | null };
-  const value = raw.payment_intent;
-  if (!value) {
-    return null;
-  }
-
-  return typeof value === "string" ? value : value.id ?? null;
-}
-
-function getSubscriptionPeriod(subscription: Stripe.Subscription) {
-  const raw = subscription as unknown as {
-    current_period_start?: number;
-    current_period_end?: number;
-  };
-
-  return {
-    start: toDate(raw.current_period_start),
-    end: toDate(raw.current_period_end),
-  };
-}
 
 export class WebhooksService {
   async handleStripeEvent(input: { event: Stripe.Event; payload: string }) {

@@ -1,3 +1,8 @@
+// Deprecated: this monolithic file is kept only as a temporary fallback/reference.
+// Active schema source is the split layout under `prisma/schema/`.
+// Use npm scripts (`prisma:generate`, `prisma:migrate`, `prisma:studio`, `prisma:validate`)
+// so Prisma always resolves the split schema path.
+
 generator client {
   provider = "prisma-client-js"
 }

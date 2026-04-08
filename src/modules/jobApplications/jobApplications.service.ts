@@ -2,54 +2,18 @@ import { z } from "zod";
 import { AppError } from "../../shared/errors/AppError.js";
 import { jobSeekerBillingConfig } from "../../config/jobSeekerBilling.js";
 import { COMPANY_ROLES, Roles, isCompanyRole } from "../../shared/auth/permissions.js";
-import {
-  createJobApplicationSchema,
-  applyToJobApplicationSchema,
-} from "./jobApplications.validator.js";
+import { requireAuth } from "./jobApplications.helpers.js";
 import { JobApplicationsRepository } from "./jobApplications.repository.js";
-
-// Infer types from Zod schemas - single source of truth
-type CreateJobApplicationBody = z.infer<typeof createJobApplicationSchema>["body"];
-type ApplyJobApplicationParams = z.infer<typeof applyToJobApplicationSchema>["params"];
-type ApplyJobApplicationBody = z.infer<typeof applyToJobApplicationSchema>["body"];
-
-type AuthContext = {
-  userId?: string;
-  role?: string;
-  companyId?: string;
-};
-
-type CreateJobApplicationInput = {
-  auth: AuthContext;
-  body: CreateJobApplicationBody;
-};
-
-type ApplyInput = {
-  auth: AuthContext;
-  jobApplicationId: ApplyJobApplicationParams["jobApplicationId"];
-  message?: ApplyJobApplicationBody["message"];
-};
-
-type PromoteListingInput = {
-  auth: AuthContext;
-  jobApplicationId: string;
-  days?: number;
-};
-
-type PromoteSubmissionInput = {
-  auth: AuthContext;
-  jobApplicationId: string;
-  submissionId: string;
-  days?: number;
-};
+import type {
+  ApplyInput,
+  AuthContext,
+  CreateJobApplicationInput,
+  PromoteListingInput,
+  PromoteSubmissionInput,
+} from "./jobApplications.types.js";
 
 const repo = new JobApplicationsRepository();
 
-function requireAuth(auth: AuthContext) {
-  if (!auth.userId || !auth.role) {
-    throw new AppError(401, "UNAUTHENTICATED", "Authentication required");
-  }
-}
 
 export class JobApplicationsService {
   async create(input: CreateJobApplicationInput) {

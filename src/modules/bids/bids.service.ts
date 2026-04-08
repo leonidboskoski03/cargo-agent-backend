@@ -1,34 +1,17 @@
 import { BidStatus, PostStatus, type UserRole } from "@prisma/client";
-import { z } from "zod";
 import { AppError } from "../../shared/errors/AppError.js";
-import { Roles } from "../../shared/auth/permissions.js";
 import { writeAuditEvent } from "../../shared/audit/auditLogger.js";
 import { enqueueNotificationEvent } from "../../shared/queue/notificationEvents.queue.js";
 import { UsageService } from "../../shared/billing/usage.service.js";
 import { BidsRepository } from "./bids.repository.js";
-import {
-  changeBidStatusSchema,
-  createBidSchema,
-  listBidsSchema,
-  updateBidSchema,
-} from "./bids.validator.js";
-
-type AuthContext = {
-  userId?: string;
-  role?: UserRole;
-  companyId?: string;
-};
-
-type RequiredAuthContext = {
-  userId: string;
-  role: UserRole;
-  companyId?: string;
-};
-
-type ListBidsQuery = z.infer<typeof listBidsSchema>["query"];
-type CreateBidBody = z.infer<typeof createBidSchema>["body"];
-type UpdateBidBody = z.infer<typeof updateBidSchema>["body"];
-type ChangeBidStatusBody = z.infer<typeof changeBidStatusSchema>["body"];
+import { assertCompanyAdmin, assertCompanyUser, requireAuth } from "./bids.helpers.js";
+import type {
+  AuthContext,
+  ChangeBidStatusBody,
+  CreateBidBody,
+  ListBidsQuery,
+  UpdateBidBody,
+} from "./bids.types.js";
 
 const repo = new BidsRepository();
 const usageService = new UsageService();
@@ -40,31 +23,6 @@ const allowedTransitions: Record<BidStatus, BidStatus[]> = {
   WITHDRAWN: [],
 };
 
-function requireAuth(auth: AuthContext): asserts auth is RequiredAuthContext {
-  if (!auth.userId || !auth.role) {
-    throw new AppError(401, "UNAUTHENTICATED", "Authentication required");
-  }
-}
-
-function assertCompanyUser(auth: RequiredAuthContext) {
-  if (auth.role !== Roles.COMPANY_ADMIN && auth.role !== Roles.COMPANY_DRIVER) {
-    throw new AppError(403, "FORBIDDEN", "Only company users can access bids");
-  }
-
-  if (!auth.companyId) {
-    throw new AppError(403, "COMPANY_REQUIRED", "Company users must belong to a company");
-  }
-}
-
-function assertCompanyAdmin(auth: RequiredAuthContext) {
-  if (auth.role !== Roles.COMPANY_ADMIN) {
-    throw new AppError(403, "FORBIDDEN", "Only company admins can perform this action");
-  }
-
-  if (!auth.companyId) {
-    throw new AppError(403, "COMPANY_REQUIRED", "Company admins must belong to a company");
-  }
-}
 
 export class BidsService {
   async list(auth: AuthContext, query: ListBidsQuery) {

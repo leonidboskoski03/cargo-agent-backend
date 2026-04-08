@@ -1,59 +1,16 @@
 import type { UserRole } from "@prisma/client";
-import { z } from "zod";
 import { AppError } from "../../shared/errors/AppError.js";
-import { Roles } from "../../shared/auth/permissions.js";
 import { UsersRepository } from "./users.repository.js";
-import {
-  listUsersSchema,
-  updateMyProfileSchema,
-  updateUserMembershipSchema,
-} from "./users.validator.js";
-
-type AuthContext = {
-  userId?: string;
-  role?: UserRole;
-  companyId?: string;
-};
-
-type RequiredAuthContext = {
-  userId: string;
-  role: UserRole;
-  companyId?: string;
-};
-
-type ListUsersQuery = z.infer<typeof listUsersSchema>["query"];
-type UpdateMyProfileBody = z.infer<typeof updateMyProfileSchema>["body"];
-type UpdateUserMembershipBody = z.infer<typeof updateUserMembershipSchema>["body"];
+import { assertCanReadUser, assertCompanyAdmin, requireAuth } from "./users.helpers.js";
+import type {
+  AuthContext,
+  ListUsersQuery,
+  UpdateMyProfileBody,
+  UpdateUserMembershipBody,
+} from "./users.types.js";
 
 const repo = new UsersRepository();
 
-function requireAuth(auth: AuthContext): asserts auth is RequiredAuthContext {
-  if (!auth.userId || !auth.role) {
-    throw new AppError(401, "UNAUTHENTICATED", "Authentication required");
-  }
-}
-
-function assertCompanyAdmin(auth: RequiredAuthContext) {
-  if (auth.role !== Roles.COMPANY_ADMIN) {
-    throw new AppError(403, "FORBIDDEN", "Only company admins can perform this action");
-  }
-
-  if (!auth.companyId) {
-    throw new AppError(403, "COMPANY_REQUIRED", "Company admins must belong to a company");
-  }
-}
-
-function assertCanReadUser(auth: RequiredAuthContext, targetUser: { id: string; companyId: string | null }) {
-  if (targetUser.id === auth.userId) {
-    return;
-  }
-
-  if (auth.role === Roles.COMPANY_ADMIN && auth.companyId && targetUser.companyId === auth.companyId) {
-    return;
-  }
-
-  throw new AppError(403, "FORBIDDEN", "You do not have permission to access this user");
-}
 
 export class UsersService {
   async getMyProfileCompletion(auth: AuthContext) {

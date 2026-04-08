@@ -1,49 +1,9 @@
-import { type DocumentKind, type Prisma, type UserRole } from "@prisma/client";
-import { z } from "zod";
+import { type Prisma } from "@prisma/client";
 import { AppError } from "../../shared/errors/AppError.js";
 import { Roles } from "../../shared/auth/permissions.js";
-import { createDocumentSchema, listDocumentsSchema } from "./documents.validator.js";
+import { assertAccess, requireAuth } from "./documents.helpers.js";
 import { DocumentsRepository } from "./documents.repository.js";
-
-type AuthContext = {
-  userId?: string;
-  role?: UserRole;
-  companyId?: string;
-};
-
-type ListQuery = z.infer<typeof listDocumentsSchema>["query"];
-type CreateBody = z.infer<typeof createDocumentSchema>["body"];
-
-type CreateInput = {
-  ownerUserId?: string;
-  ownerCompanyId?: string;
-  uploadedByUserId: string;
-  kind: DocumentKind;
-  name: string;
-  mimeType: string;
-  url: string;
-  metadataJson?: Prisma.InputJsonValue;
-};
-
-function requireAuth(auth: AuthContext) {
-  if (!auth.userId || !auth.role) {
-    throw new AppError(401, "UNAUTHENTICATED", "Authentication required");
-  }
-}
-
-function assertAccess(auth: AuthContext, doc: { ownerUserId: string | null; ownerCompanyId: string | null }) {
-  if (auth.role === Roles.JOB_SEEKER) {
-    if (doc.ownerUserId !== auth.userId) {
-      throw new AppError(403, "FORBIDDEN", "You can only access your own documents");
-    }
-
-    return;
-  }
-
-  if (!auth.companyId || doc.ownerCompanyId !== auth.companyId) {
-    throw new AppError(403, "FORBIDDEN", "You can only access company documents in your scope");
-  }
-}
+import type { AuthContext, CreateBody, CreateInput, ListQuery } from "./documents.service.types.js";
 
 export class DocumentsService {
   private readonly repository = new DocumentsRepository();

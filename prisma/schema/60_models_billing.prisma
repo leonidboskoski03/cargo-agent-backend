@@ -1,0 +1,122 @@
+model Plan {
+  id                 String          @id @default(cuid())
+  code               PlanCode        @unique
+  name               String
+  billingInterval    BillingInterval?
+  priceAmount        Decimal         @default(0) @db.Decimal(10, 2)
+  currency           String?
+  stripePriceId      String?         @unique
+  stripeProductId    String?         @unique
+  maxActivePosts     Int?
+  maxBidsPerMonth    Int?
+  maxTeamMembers     Int?
+  hasPromotedPosts   Boolean         @default(false)
+  hasAnalytics       Boolean         @default(false)
+  hasRouteAlerts     Boolean         @default(false)
+  hasPrioritySupport Boolean         @default(false)
+  isActive           Boolean         @default(true)
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  subscriptions Subscription[]
+  companies     Company[] @relation("CompanyCurrentPlan")
+}
+
+model Subscription {
+  id                      String             @id @default(cuid())
+  companyId               String
+  planId                  String
+  status                  SubscriptionStatus
+  stripeSubscriptionId    String?            @unique
+  stripeCustomerId        String?
+  stripeCheckoutSessionId String?
+  currentPeriodStart      DateTime?
+  currentPeriodEnd        DateTime?
+  startsAt                DateTime?
+  endsAt                  DateTime?
+  trialEndsAt             DateTime?
+  cancelAtPeriodEnd       Boolean            @default(false)
+  canceledAt              DateTime?
+  isCurrent               Boolean            @default(true)
+  version                 Int                @default(1)
+  createdAt               DateTime           @default(now())
+  updatedAt               DateTime           @updatedAt
+
+  company          Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  plan             Plan              @relation(fields: [planId], references: [id])
+  checkoutSessions CheckoutSession[]
+  billingEvents    BillingEvent[]
+
+  @@index([companyId, isCurrent])
+  @@index([companyId])
+  @@index([companyId, status])
+  @@index([planId])
+  @@index([status])
+  @@index([stripeCustomerId])
+  @@index([stripeCheckoutSessionId])
+}
+
+model CheckoutSession {
+  id                      String                @id @default(cuid())
+  companyId               String
+  subscriptionId          String?
+  idempotencyKey          String?
+  provider                BillingProvider       @default(STRIPE)
+  status                  CheckoutSessionStatus @default(CREATED)
+  stripeCheckoutSessionId String                @unique
+  planCode                PlanCode
+  expiresAt               DateTime?
+  completedAt             DateTime?
+  createdAt               DateTime              @default(now())
+  updatedAt               DateTime              @updatedAt
+
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  subscription Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+
+  @@index([companyId])
+  @@index([status])
+  @@index([expiresAt])
+  @@unique([companyId, idempotencyKey])
+}
+
+model BillingEvent {
+  id                    String              @id @default(cuid())
+  companyId             String
+  subscriptionId        String?
+  eventType             BillingEventType
+  provider              BillingProvider     @default(STRIPE)
+  providerEventId       String              @unique
+  stripeInvoiceId       String?
+  stripePaymentIntentId String?
+  amount                Decimal?            @db.Decimal(10, 2)
+  currency              String?
+  status                BillingEventStatus?
+  payloadJson           Json?
+  createdAt             DateTime            @default(now())
+
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  subscription Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+
+  @@index([companyId])
+  @@index([subscriptionId])
+  @@index([eventType])
+}
+
+model UsageCounter {
+  id               String      @id @default(cuid())
+  companyId        String
+  metric           UsageMetric
+  periodStart      DateTime
+  used             Int         @default(0)
+  limitSnapshot    Int?
+  planCodeSnapshot PlanCode
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, metric, periodStart])
+  @@index([companyId])
+  @@index([metric, periodStart])
+}
+

@@ -1,32 +1,15 @@
 import { ContractStatus, ReviewStatus, type UserRole } from "@prisma/client";
-import { z } from "zod";
 import { AppError } from "../../shared/errors/AppError.js";
-import { Roles } from "../../shared/auth/permissions.js";
 import { enqueueNotificationEvent } from "../../shared/queue/notificationEvents.queue.js";
+import { assertCompanyAdmin, assertCompanyUser, requireAuth } from "./reviews.helpers.js";
 import { ReviewsRepository } from "./reviews.repository.js";
-import {
-  changeReviewStatusSchema,
-  createReviewSchema,
-  listReviewsSchema,
-  updateReviewSchema,
-} from "./reviews.validator.js";
-
-type AuthContext = {
-  userId?: string;
-  role?: UserRole;
-  companyId?: string;
-};
-
-type RequiredAuthContext = {
-  userId: string;
-  role: UserRole;
-  companyId?: string;
-};
-
-type ListReviewsQuery = z.infer<typeof listReviewsSchema>["query"];
-type CreateReviewBody = z.infer<typeof createReviewSchema>["body"];
-type UpdateReviewBody = z.infer<typeof updateReviewSchema>["body"];
-type ChangeReviewStatusBody = z.infer<typeof changeReviewStatusSchema>["body"];
+import type {
+  AuthContext,
+  ChangeReviewStatusBody,
+  CreateReviewBody,
+  ListReviewsQuery,
+  UpdateReviewBody,
+} from "./reviews.types.js";
 
 const repo = new ReviewsRepository();
 
@@ -36,31 +19,6 @@ const allowedTransitions: Record<ReviewStatus, ReviewStatus[]> = {
   WITHDRAWN: [],
 };
 
-function requireAuth(auth: AuthContext): asserts auth is RequiredAuthContext {
-  if (!auth.userId || !auth.role) {
-    throw new AppError(401, "UNAUTHENTICATED", "Authentication required");
-  }
-}
-
-function assertCompanyUser(auth: RequiredAuthContext) {
-  if (auth.role !== Roles.COMPANY_ADMIN && auth.role !== Roles.COMPANY_DRIVER) {
-    throw new AppError(403, "FORBIDDEN", "Only company users can access reviews");
-  }
-
-  if (!auth.companyId) {
-    throw new AppError(403, "COMPANY_REQUIRED", "Company users must belong to a company");
-  }
-}
-
-function assertCompanyAdmin(auth: RequiredAuthContext) {
-  if (auth.role !== Roles.COMPANY_ADMIN) {
-    throw new AppError(403, "FORBIDDEN", "Only company admins can perform this action");
-  }
-
-  if (!auth.companyId) {
-    throw new AppError(403, "COMPANY_REQUIRED", "Company admins must belong to a company");
-  }
-}
 
 export class ReviewsService {
   async list(auth: AuthContext, query: ListReviewsQuery) {

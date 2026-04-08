@@ -1,51 +1,10 @@
 import type { UserRole } from "@prisma/client";
-import { z } from "zod";
 import { AppError } from "../../shared/errors/AppError.js";
-import { Roles } from "../../shared/auth/permissions.js";
+import { assertCompanyAdmin, assertCompanyRole, requireAuth } from "./companies.helpers.js";
 import { CompaniesRepository } from "./companies.repository.js";
-import { updateMyCompanySchema } from "./companies.validator.js";
-
-type AuthContext = {
-  userId?: string;
-  role?: UserRole;
-  companyId?: string;
-};
-
-type RequiredAuthContext = {
-  userId: string;
-  role: UserRole;
-  companyId?: string;
-};
-
-type UpdateMyCompanyBody = z.infer<typeof updateMyCompanySchema>["body"];
+import type { AuthContext, UpdateMyCompanyBody } from "./companies.types.js";
 
 const repo = new CompaniesRepository();
-
-function requireAuth(auth: AuthContext): asserts auth is RequiredAuthContext {
-  if (!auth.userId || !auth.role) {
-    throw new AppError(401, "UNAUTHENTICATED", "Authentication required");
-  }
-}
-
-function assertCompanyRole(auth: RequiredAuthContext) {
-  if (auth.role !== Roles.COMPANY_ADMIN && auth.role !== Roles.COMPANY_DRIVER) {
-    throw new AppError(403, "FORBIDDEN", "Only company users can access this resource");
-  }
-
-  if (!auth.companyId) {
-    throw new AppError(403, "COMPANY_REQUIRED", "Company users must belong to a company");
-  }
-}
-
-function assertCompanyAdmin(auth: RequiredAuthContext) {
-  if (auth.role !== Roles.COMPANY_ADMIN) {
-    throw new AppError(403, "FORBIDDEN", "Only company admins can perform this action");
-  }
-
-  if (!auth.companyId) {
-    throw new AppError(403, "COMPANY_REQUIRED", "Company admins must belong to a company");
-  }
-}
 
 export class CompaniesService {
   async list(auth: AuthContext) {

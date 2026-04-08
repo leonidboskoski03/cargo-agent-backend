@@ -1,61 +1,16 @@
-import type { UserRole } from "@prisma/client";
-import { z } from "zod";
 import { AppError } from "../../shared/errors/AppError.js";
 import { Roles } from "../../shared/auth/permissions.js";
-import {
-  createLicenseSchema,
-  listLicensesSchema,
-  updateLicenseSchema,
-} from "./licenses.validator.js";
+import { assertAllowedRole, assertCanManageLicenseUser, requireAuth } from "./licenses.helpers.js";
 import { LicensesRepository } from "./licenses.repository.js";
-
-type AuthContext = {
-  userId?: string;
-  role?: UserRole;
-  companyId?: string;
-};
-
-type RequiredAuthContext = {
-  userId: string;
-  role: UserRole;
-  companyId?: string;
-};
-
-type CreateLicenseBody = z.infer<typeof createLicenseSchema>["body"];
-type UpdateLicenseBody = z.infer<typeof updateLicenseSchema>["body"];
-type ListLicensesQuery = z.infer<typeof listLicensesSchema>["query"];
+import type {
+  AuthContext,
+  CreateLicenseBody,
+  ListLicensesQuery,
+  UpdateLicenseBody,
+} from "./licenses.types.js";
 
 const repo = new LicensesRepository();
 
-function requireAuth(auth: AuthContext): asserts auth is RequiredAuthContext {
-  if (!auth.userId || !auth.role) {
-    throw new AppError(401, "UNAUTHENTICATED", "Authentication required");
-  }
-}
-
-function assertAllowedRole(role: UserRole) {
-  if (![Roles.COMPANY_ADMIN, Roles.COMPANY_DRIVER, Roles.JOB_SEEKER].includes(role)) {
-    throw new AppError(403, "FORBIDDEN", "Role is not allowed to manage licenses");
-  }
-}
-
-function assertCanManageLicenseUser(auth: RequiredAuthContext, targetUser: { id: string; companyId: string | null }) {
-  if (auth.role === Roles.COMPANY_ADMIN) {
-    if (!auth.companyId) {
-      throw new AppError(403, "COMPANY_REQUIRED", "Company admins must belong to a company");
-    }
-
-    if (targetUser.companyId !== auth.companyId) {
-      throw new AppError(403, "FORBIDDEN", "You can only manage users in your company");
-    }
-
-    return;
-  }
-
-  if (targetUser.id !== auth.userId) {
-    throw new AppError(403, "FORBIDDEN", "You can only manage your own licenses");
-  }
-}
 
 export class LicensesService {
   async list(auth: AuthContext, query: ListLicensesQuery) {

@@ -1,0 +1,89 @@
+model JobSeekerWallet {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  balanceCredits Int      @default(0)
+  version        Int      @default(1)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user         User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions JobSeekerCreditTransaction[]
+}
+
+model JobSeekerCreditTransaction {
+  id               String              @id @default(cuid())
+  walletId         String
+  userId           String
+  type             JobSeekerCreditTxType
+  amountCredits    Int
+  reasonCode       String
+  referenceType    String?
+  referenceId      String?
+  stripePaymentRef String?
+  balanceAfter     Int
+  createdAt        DateTime            @default(now())
+
+  wallet JobSeekerWallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  user   User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([walletId, createdAt])
+  @@index([referenceType, referenceId])
+  @@index([stripePaymentRef])
+}
+
+model JobSeekerCreditPack {
+  id            String   @id @default(cuid())
+  code          String   @unique
+  name          String
+  credits       Int
+  priceAmount   Decimal  @db.Decimal(10, 2)
+  currency      String
+  stripePriceId String?  @unique
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  checkoutSessions JobSeekerCheckoutSession[]
+}
+
+model JobSeekerUsageCounter {
+  id            String              @id @default(cuid())
+  userId        String
+  metric        JobSeekerUsageMetric
+  periodStart   DateTime
+  used          Int                 @default(0)
+  limitSnapshot Int?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, metric, periodStart])
+  @@index([userId, metric, periodStart])
+}
+
+model JobSeekerCheckoutSession {
+  id                      String                         @id @default(cuid())
+  userId                  String
+  creditPackId            String
+  idempotencyKey          String?
+  status                  JobSeekerCheckoutSessionStatus @default(CREATED)
+  stripeCheckoutSessionId String                         @unique
+  amountCredits           Int
+  amountPaid              Decimal?                       @db.Decimal(10, 2)
+  currency                String
+  completedAt             DateTime?
+  expiresAt               DateTime?
+  createdAt               DateTime                       @default(now())
+  updatedAt               DateTime                       @updatedAt
+
+  user       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  creditPack JobSeekerCreditPack @relation(fields: [creditPackId], references: [id], onDelete: Restrict)
+
+  @@index([userId, createdAt])
+  @@index([status])
+  @@index([expiresAt])
+  @@unique([userId, idempotencyKey])
+}
+

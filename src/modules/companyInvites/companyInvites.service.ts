@@ -1,48 +1,17 @@
 import { CompanyInviteStatus, UserRole } from "@prisma/client";
 import { randomBytes } from "crypto";
 import { env } from "../../config/env.js";
-import { Roles } from "../../shared/auth/permissions.js";
 import { UsageService } from "../../shared/billing/usage.service.js";
 import { AppError } from "../../shared/errors/AppError.js";
+import { parseInviteStatus, requireAuth, requireCompanyAdmin } from "./companyInvites.helpers.js";
 import { sendCompanyInviteEmail } from "./companyInvites.notifier.js";
 import { CompanyInvitesRepository } from "./companyInvites.repository.js";
-
-type AuthContext = {
-  userId?: string;
-  role?: UserRole;
-  companyId?: string;
-};
+import type { AuthContext } from "./companyInvites.types.js";
 
 const INVITE_TTL_DAYS = 7;
 const repo = new CompanyInvitesRepository();
 const usageService = new UsageService();
 
-function requireAuth(auth: AuthContext) {
-  if (!auth.userId || !auth.role) {
-    throw new AppError(401, "UNAUTHENTICATED", "Authentication required");
-  }
-}
-
-function requireCompanyAdmin(auth: AuthContext) {
-  requireAuth(auth);
-
-  if (auth.role !== Roles.COMPANY_ADMIN || !auth.companyId) {
-    throw new AppError(403, "FORBIDDEN", "Only company admins can perform this action");
-  }
-}
-
-function parseInviteStatus(value?: string) {
-  if (!value) {
-    return undefined;
-  }
-
-  const normalized = value.trim().toUpperCase();
-  if (normalized === CompanyInviteStatus.PENDING || normalized === CompanyInviteStatus.ACCEPTED || normalized === CompanyInviteStatus.REVOKED || normalized === CompanyInviteStatus.EXPIRED) {
-    return normalized as CompanyInviteStatus;
-  }
-
-  throw new AppError(400, "INVALID_INVITE_STATUS", "Invalid invite status filter");
-}
 
 export class CompanyInvitesService {
   async list(auth: AuthContext, query: { status?: string }) {

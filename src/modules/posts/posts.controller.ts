@@ -1,16 +1,10 @@
 import type { Request, Response } from "express";
 import { created, ok } from "../../shared/http/apiResponse.js";
+import { authFromRequest, getStringParam } from "../../shared/http/controllerAuth.helpers.js";
 import { PostsService } from "./posts.service.js";
 
 const service = new PostsService();
 
-function authFromRequest(req: Request) {
-  return req.auth ? { userId: req.auth.sub, role: req.auth.role, companyId: req.auth.companyId } : {};
-}
-
-function getStringParam(value: string | string[] | undefined) {
-  return Array.isArray(value) ? value[0] : value ?? "";
-}
 
 export async function listPosts(req: Request, res: Response) {
   const data = await service.list(authFromRequest(req), {
