@@ -1,4 +1,4 @@
-# Prisma Schema Layout
+# Prisma Schema Layout v1
 
 This project uses a split Prisma schema under `prisma/schema/`.
 
