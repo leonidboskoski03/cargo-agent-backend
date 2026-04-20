@@ -20,11 +20,28 @@ export function startBillingWebhookWorker() {
   );
 
   worker.on("completed", (job) => {
-    logger.debug({ jobId: job.id, eventId: job.data.event.id }, "Billing webhook job completed");
+    logger.debug(
+      {
+        queue: queueNames.billingWebhooks,
+        jobId: job.id,
+        eventId: job.data.event.id,
+        attemptsMade: job.attemptsMade,
+      },
+      "Billing webhook job completed",
+    );
   });
 
   worker.on("failed", (job, error) => {
-    logger.error({ jobId: job?.id, eventId: job?.data.event.id, error }, "Billing webhook job failed");
+    logger.error(
+      {
+        queue: queueNames.billingWebhooks,
+        jobId: job?.id,
+        eventId: job?.data.event.id,
+        attemptsMade: job?.attemptsMade,
+        error,
+      },
+      "Billing webhook job failed",
+    );
   });
 
   return worker;

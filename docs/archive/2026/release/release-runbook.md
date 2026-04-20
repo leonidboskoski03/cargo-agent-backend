@@ -4,6 +4,12 @@ Last updated: 2026-04-02
 
 This runbook validates the backend in a clean environment before MVP release.
 
+Related release assets:
+
+- `docs/release-gate-command-evidence-map.md`
+- `docs/uat-smoke-checklist.md`
+- `docs/tracking/[PARTIAL DONE]-Final-GO-NO-GO-Readiness-Tracker.md`
+
 ## 1) Preconditions
 
 - PostgreSQL is available and reachable.

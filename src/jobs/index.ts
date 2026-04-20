@@ -11,6 +11,7 @@ export function startJobs() {
     return;
   }
 
+  // These baseline jobs are intentionally placeholders for MVP and currently only emit logs.
   tasks = [
     cron.schedule("*/10 * * * *", () => {
       logger.info("cleanupExpiredPosts job placeholder");

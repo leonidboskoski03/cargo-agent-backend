@@ -1,4 +1,5 @@
 import type { UserRole } from "@prisma/client";
+import { Roles } from "../../shared/auth/permissions.js";
 import { AppError } from "../../shared/errors/AppError.js";
 import { UsersRepository } from "./users.repository.js";
 import { assertCanReadUser, assertCompanyAdmin, requireAuth } from "./users.helpers.js";

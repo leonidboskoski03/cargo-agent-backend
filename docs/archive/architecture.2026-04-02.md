@@ -1,8 +1,7 @@
-# Architecture Notes
+# Archived Relocation Pointer
 
-- Modular monolith with feature-first folders under `src/modules`.
-- Shared cross-cutting concerns under `src/shared`.
-- Versioned APIs under `src/routes/v1.ts`.
-- New scaling modules included: `documents`, `notifications`, `auditLogs`.
-- Keep business logic in services, Prisma access in repositories, and request validation in Zod validators.
+This legacy root archive path is retained for history only.
+
+- Canonical archived file: `docs/archive/2026/context/architecture.2026-04-02.md`
+- Archive note: `docs/archive/2026/context/notes/architecture.2026-04-02.archive-note.md`
 
