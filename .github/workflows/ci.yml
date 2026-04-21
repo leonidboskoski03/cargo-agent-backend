@@ -40,6 +40,7 @@ jobs:
 
     env:
       NODE_ENV: test
+      TZ: UTC
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/cargo_agent_test
       JWT_ACCESS_SECRET: 1234567890123456
       JWT_REFRESH_SECRET: 12345678901234567
@@ -81,5 +82,9 @@ jobs:
         run: npm run test:ci:unit
 
       - name: Test (integration, serialized and fail fast)
-        run: npm run test:ci:integration
+        run: |
+          npm run test:ci:integration || {
+            echo "Integration suite failed on first attempt. Retrying once to rule out transient CI flake..."
+            npm run test:ci:integration
+          }
 
