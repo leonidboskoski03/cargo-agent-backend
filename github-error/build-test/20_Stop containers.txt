@@ -1,0 +1,87 @@
+﻿2026-04-20T12:23:37.5307247Z Print service container logs: 22050ce5006a40c09e556f666f54f50d_postgres16_6b3129
+2026-04-20T12:23:37.5311387Z ##[command]/usr/bin/docker logs --details 1708150abbd1c9c597737d7b4ee76007db82b6cd4f82ee3ee1aef00e94d26224
+2026-04-20T12:23:37.5443341Z  initdb: warning: enabling "trust" authentication for local connections
+2026-04-20T12:23:37.5446105Z  initdb: hint: You can change this by editing pg_hba.conf or using the option -A, or --auth-local and --auth-host, the next time you run initdb.
+2026-04-20T12:23:37.5447209Z  The files belonging to this database system will be owned by user "postgres".
+2026-04-20T12:23:37.5448018Z  2026-04-20 12:11:59.567 UTC [1] LOG:  starting PostgreSQL 16.13 (Debian 16.13-1.pgdg13+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit
+2026-04-20T12:23:37.5448736Z  2026-04-20 12:11:59.567 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+2026-04-20T12:23:37.5449174Z  2026-04-20 12:11:59.567 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+2026-04-20T12:23:37.5449774Z  2026-04-20 12:11:59.568 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+2026-04-20T12:23:37.5450581Z  2026-04-20 12:11:59.570 UTC [64] LOG:  database system was shut down at 2026-04-20 12:11:59 UTC
+2026-04-20T12:23:37.5451097Z  2026-04-20 12:11:59.573 UTC [1] LOG:  database system is ready to accept connections
+2026-04-20T12:23:37.5451508Z  2026-04-20 12:16:59.670 UTC [62] LOG:  checkpoint starting: time
+2026-04-20T12:23:37.5452539Z  2026-04-20 12:17:49.497 UTC [62] LOG:  checkpoint complete: wrote 501 buffers (3.1%); 1 WAL file(s) added, 0 removed, 0 recycled; write=49.806 s, sync=0.013 s, total=49.828 s; sync files=351, longest=0.001 s, average=0.001 s; distance=3247 kB, estimate=3247 kB; lsn=0/1C58628, redo lsn=0/1C4AEC0
+2026-04-20T12:23:37.5454007Z  2026-04-20 12:20:00.693 UTC [481] ERROR:  duplicate key value violates unique constraint "UsageCounter_companyId_metric_periodStart_key"
+2026-04-20T12:23:37.5454919Z  2026-04-20 12:20:00.693 UTC [481] DETAIL:  Key ("companyId", metric, "periodStart")=(cmo75xafn00183fyft3qythv4, BIDS_PER_MONTH, 2026-04-01 00:00:00) already exists.
+2026-04-20T12:23:37.5456441Z  2026-04-20 12:20:00.693 UTC [481] STATEMENT:  INSERT INTO "public"."UsageCounter" ("id","companyId","metric","periodStart","used","limitSnapshot","planCodeSnapshot","createdAt","updatedAt") VALUES ($1,$2,CAST($3::text AS "public"."UsageMetric"),$4,$5,$6,CAST($7::text AS "public"."PlanCode"),$8,$9) RETURNING "public"."UsageCounter"."id"
+2026-04-20T12:23:37.5457693Z  2026-04-20 12:20:53.251 UTC [537] ERROR:  duplicate key value violates unique constraint "Plan_code_key"
+2026-04-20T12:23:37.5458238Z  2026-04-20 12:20:53.251 UTC [537] DETAIL:  Key (code)=(PRO) already exists.
+2026-04-20T12:23:37.5461123Z  2026-04-20 12:20:53.251 UTC [537] STATEMENT:  INSERT INTO "public"."Plan" ("id","code","name","priceAmount","currency","hasPromotedPosts","hasAnalytics","hasRouteAlerts","hasPrioritySupport","isActive","createdAt","updatedAt") VALUES ($1,CAST($2::text AS "public"."PlanCode"),$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING "public"."Plan"."id", "public"."Plan"."code"::text, "public"."Plan"."name", "public"."Plan"."billingInterval"::text, "public"."Plan"."priceAmount", "public"."Plan"."currency", "public"."Plan"."stripePriceId", "public"."Plan"."stripeProductId", "public"."Plan"."maxActivePosts", "public"."Plan"."maxBidsPerMonth", "public"."Plan"."maxTeamMembers", "public"."Plan"."hasPromotedPosts", "public"."Plan"."hasAnalytics", "public"."Plan"."hasRouteAlerts", "public"."Plan"."hasPrioritySupport", "public"."Plan"."isActive", "public"."Plan"."createdAt", "public"."Plan"."updatedAt"
+2026-04-20T12:23:37.5470681Z  2026-04-20 12:21:59.565 UTC [62] LOG:  checkpoint starting: time
+2026-04-20T12:23:37.5472436Z  2026-04-20 12:22:21.420 UTC [62] LOG:  checkpoint complete: wrote 219 buffers (1.3%); 0 WAL file(s) added, 0 removed, 0 recycled; write=21.854 s, sync=0.001 s, total=21.856 s; sync files=141, longest=0.001 s, average=0.001 s; distance=199 kB, estimate=2942 kB; lsn=0/1C7CE00, redo lsn=0/1C7CD90
+2026-04-20T12:23:37.5473600Z  This user must also own the server process.
+2026-04-20T12:23:37.5474085Z  
+2026-04-20T12:23:37.5474348Z  The database cluster will be initialized with locale "en_US.utf8".
+2026-04-20T12:23:37.5474755Z  The default database encoding has accordingly been set to "UTF8".
+2026-04-20T12:23:37.5475140Z  The default text search configuration will be set to "english".
+2026-04-20T12:23:37.5475434Z  
+2026-04-20T12:23:37.5475600Z  Data page checksums are disabled.
+2026-04-20T12:23:37.5475821Z  
+2026-04-20T12:23:37.5476084Z  fixing permissions on existing directory /var/lib/postgresql/data ... ok
+2026-04-20T12:23:37.5476433Z  creating subdirectories ... ok
+2026-04-20T12:23:37.5476719Z  selecting dynamic shared memory implementation ... posix
+2026-04-20T12:23:37.5477029Z  selecting default max_connections ... 100
+2026-04-20T12:23:37.5477297Z  selecting default shared_buffers ... 128MB
+2026-04-20T12:23:37.5477557Z  selecting default time zone ... Etc/UTC
+2026-04-20T12:23:37.5477806Z  creating configuration files ... ok
+2026-04-20T12:23:37.5478149Z  running bootstrap script ... ok
+2026-04-20T12:23:37.5478414Z  performing post-bootstrap initialization ... ok
+2026-04-20T12:23:37.5478686Z  syncing data to disk ... ok
+2026-04-20T12:23:37.5478882Z  
+2026-04-20T12:23:37.5479031Z  
+2026-04-20T12:23:37.5479237Z  Success. You can now start the database server using:
+2026-04-20T12:23:37.5479496Z  
+2026-04-20T12:23:37.5479698Z      pg_ctl -D /var/lib/postgresql/data -l logfile start
+2026-04-20T12:23:37.5479964Z  
+2026-04-20T12:23:37.5480539Z  waiting for server to start....2026-04-20 12:11:59.285 UTC [48] LOG:  starting PostgreSQL 16.13 (Debian 16.13-1.pgdg13+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit
+2026-04-20T12:23:37.5481327Z  2026-04-20 12:11:59.286 UTC [48] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+2026-04-20T12:23:37.5481818Z  2026-04-20 12:11:59.288 UTC [51] LOG:  database system was shut down at 2026-04-20 12:11:59 UTC
+2026-04-20T12:23:37.5482277Z  2026-04-20 12:11:59.291 UTC [48] LOG:  database system is ready to accept connections
+2026-04-20T12:23:37.5482606Z   done
+2026-04-20T12:23:37.5482771Z  server started
+2026-04-20T12:23:37.5482943Z  CREATE DATABASE
+2026-04-20T12:23:37.5483110Z  
+2026-04-20T12:23:37.5483296Z  
+2026-04-20T12:23:37.5483576Z  /usr/local/bin/docker-entrypoint.sh: ignoring /docker-entrypoint-initdb.d/*
+2026-04-20T12:23:37.5484065Z  
+2026-04-20T12:23:37.5484369Z  waiting for server to shut down....2026-04-20 12:11:59.452 UTC [48] LOG:  received fast shutdown request
+2026-04-20T12:23:37.5484839Z  2026-04-20 12:11:59.452 UTC [48] LOG:  aborting any active transactions
+2026-04-20T12:23:37.5485347Z  2026-04-20 12:11:59.458 UTC [48] LOG:  background worker "logical replication launcher" (PID 54) exited with exit code 1
+2026-04-20T12:23:37.5485825Z  2026-04-20 12:11:59.458 UTC [49] LOG:  shutting down
+2026-04-20T12:23:37.5486154Z  2026-04-20 12:11:59.458 UTC [49] LOG:  checkpoint starting: shutdown immediate
+2026-04-20T12:23:37.5487113Z  2026-04-20 12:11:59.473 UTC [49] LOG:  checkpoint complete: wrote 926 buffers (5.7%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.011 s, sync=0.003 s, total=0.016 s; sync files=301, longest=0.002 s, average=0.001 s; distance=4273 kB, estimate=4273 kB; lsn=0/191F0F8, redo lsn=0/191F0F8
+2026-04-20T12:23:37.5488058Z  2026-04-20 12:11:59.477 UTC [48] LOG:  database system is shut down
+2026-04-20T12:23:37.5488335Z   done
+2026-04-20T12:23:37.5488496Z  server stopped
+2026-04-20T12:23:37.5488656Z  
+2026-04-20T12:23:37.5488865Z  PostgreSQL init process complete; ready for start up.
+2026-04-20T12:23:37.5489128Z  
+2026-04-20T12:23:37.5495651Z Stop and remove container: 22050ce5006a40c09e556f666f54f50d_postgres16_6b3129
+2026-04-20T12:23:37.5500060Z ##[command]/usr/bin/docker rm --force 1708150abbd1c9c597737d7b4ee76007db82b6cd4f82ee3ee1aef00e94d26224
+2026-04-20T12:23:37.6527304Z 1708150abbd1c9c597737d7b4ee76007db82b6cd4f82ee3ee1aef00e94d26224
+2026-04-20T12:23:37.6546966Z Print service container logs: a8be70ba12384a719c4456e1261bca6e_redis7_491a51
+2026-04-20T12:23:37.6548519Z ##[command]/usr/bin/docker logs --details 5856cb100953dd931f46c2140be84bd11eee8bd477716015005fb365bf22a9fa
+2026-04-20T12:23:37.6860316Z  1:C 20 Apr 2026 12:12:01.963 # WARNING Memory overcommit must be enabled! Without it, a background save or replication may fail under low memory condition. Being disabled, it can also cause failures without low memory condition, see https://github.com/jemalloc/jemalloc/issues/1328. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+2026-04-20T12:23:37.6862621Z  1:C 20 Apr 2026 12:12:01.964 * oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+2026-04-20T12:23:37.6863296Z  1:C 20 Apr 2026 12:12:01.964 * Redis version=7.4.8, bits=64, commit=00000000, modified=0, pid=1, just started
+2026-04-20T12:23:37.6864330Z  1:C 20 Apr 2026 12:12:01.964 # Warning: no config file specified, using the default config. In order to specify a config file use redis-server /path/to/redis.conf
+2026-04-20T12:23:37.6865366Z  1:M 20 Apr 2026 12:12:01.964 * monotonic clock: POSIX clock_gettime
+2026-04-20T12:23:37.6865910Z  1:M 20 Apr 2026 12:12:01.966 * Running mode=standalone, port=6379.
+2026-04-20T12:23:37.6866355Z  1:M 20 Apr 2026 12:12:01.967 * Server initialized
+2026-04-20T12:23:37.6866849Z  1:M 20 Apr 2026 12:12:01.967 * Ready to accept connections tcp
+2026-04-20T12:23:37.6868053Z Stop and remove container: a8be70ba12384a719c4456e1261bca6e_redis7_491a51
+2026-04-20T12:23:37.6868729Z ##[command]/usr/bin/docker rm --force 5856cb100953dd931f46c2140be84bd11eee8bd477716015005fb365bf22a9fa
+2026-04-20T12:23:37.8214655Z 5856cb100953dd931f46c2140be84bd11eee8bd477716015005fb365bf22a9fa
+2026-04-20T12:23:37.8248725Z Remove container network: github_network_f0f65023e19b43628b4df4060a4324a8
+2026-04-20T12:23:37.8260753Z ##[command]/usr/bin/docker network rm github_network_f0f65023e19b43628b4df4060a4324a8
+2026-04-20T12:23:37.9153509Z github_network_f0f65023e19b43628b4df4060a4324a8

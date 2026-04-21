@@ -8,6 +8,8 @@ describe("WebhooksService", () => {
 
   beforeEach(() => {
     vi.restoreAllMocks();
+    // Prevent Prisma access in unit tests unless a test explicitly overrides replay behavior.
+    vi.spyOn(WebhooksRepository.prototype, "hasBillingEventByProviderEventId").mockResolvedValue(false);
   });
 
   it("ignores unsupported Stripe event types", async () => {

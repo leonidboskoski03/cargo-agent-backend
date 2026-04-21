@@ -1,0 +1,104 @@
+﻿2026-04-20T12:12:16.3923316Z ##[group]Run actions/checkout@v4
+2026-04-20T12:12:16.3924199Z with:
+2026-04-20T12:12:16.3924481Z   repository: leonidboskoski03/cargo-agent-backend
+2026-04-20T12:12:16.3924997Z   token: ***
+2026-04-20T12:12:16.3925184Z   ssh-strict: true
+2026-04-20T12:12:16.3925382Z   ssh-user: git
+2026-04-20T12:12:16.3925585Z   persist-credentials: true
+2026-04-20T12:12:16.3925834Z   clean: true
+2026-04-20T12:12:16.3926034Z   sparse-checkout-cone-mode: true
+2026-04-20T12:12:16.3926298Z   fetch-depth: 1
+2026-04-20T12:12:16.3926494Z   fetch-tags: false
+2026-04-20T12:12:16.3926684Z   show-progress: true
+2026-04-20T12:12:16.3926888Z   lfs: false
+2026-04-20T12:12:16.3927060Z   submodules: false
+2026-04-20T12:12:16.3927264Z   set-safe-directory: true
+2026-04-20T12:12:16.3927709Z env:
+2026-04-20T12:12:16.3927876Z   NODE_ENV: test
+2026-04-20T12:12:16.3928338Z   DATABASE_URL: ***localhost:5432/cargo_agent_test
+2026-04-20T12:12:16.3928656Z   JWT_ACCESS_SECRET: 1.23456789012346E+15
+2026-04-20T12:12:16.3928948Z   JWT_REFRESH_SECRET: 1.23456789012346E+16
+2026-04-20T12:12:16.3929320Z   CORS_ORIGIN: http://localhost:3000
+2026-04-20T12:12:16.3929586Z   LOG_LEVEL: silent
+2026-04-20T12:12:16.3929789Z   REDIS_URL: redis://127.0.0.1:6379
+2026-04-20T12:12:16.3930063Z   BULLMQ_ENABLED: false
+2026-04-20T12:12:16.3930282Z   CRON_ENABLED: false
+2026-04-20T12:12:16.3930520Z   STRIPE_SECRET_KEY: sk_test_ci_placeholder
+2026-04-20T12:12:16.3930838Z   STRIPE_WEBHOOK_SECRET: whsec_ci_placeholder
+2026-04-20T12:12:16.3931162Z   STRIPE_PRO_MONTHLY_PRICE_ID: price_ci_placeholder
+2026-04-20T12:12:16.3931593Z   STRIPE_CHECKOUT_SUCCESS_URL: http://localhost:3000/billing/success
+2026-04-20T12:12:16.3932075Z   STRIPE_CHECKOUT_CANCEL_URL: http://localhost:3000/billing/cancel
+2026-04-20T12:12:16.3932693Z   BILLING_PORTAL_RETURN_URL: http://localhost:3000/settings/billing
+2026-04-20T12:12:16.3933035Z ##[endgroup]
+2026-04-20T12:12:16.5016150Z Syncing repository: leonidboskoski03/cargo-agent-backend
+2026-04-20T12:12:16.5018142Z ##[group]Getting Git version info
+2026-04-20T12:12:16.5019172Z Working directory is '/home/runner/work/cargo-agent-backend/cargo-agent-backend'
+2026-04-20T12:12:16.5020117Z [command]/usr/bin/git version
+2026-04-20T12:12:16.5075071Z git version 2.53.0
+2026-04-20T12:12:16.5100279Z ##[endgroup]
+2026-04-20T12:12:16.5115439Z Temporarily overriding HOME='/home/runner/work/_temp/9282c3d6-36d0-4911-8dd4-3928886a0711' before making global git config changes
+2026-04-20T12:12:16.5116858Z Adding repository directory to the temporary git global config as a safe directory
+2026-04-20T12:12:16.5122796Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/cargo-agent-backend/cargo-agent-backend
+2026-04-20T12:12:16.5154872Z Deleting the contents of '/home/runner/work/cargo-agent-backend/cargo-agent-backend'
+2026-04-20T12:12:16.5158862Z ##[group]Initializing the repository
+2026-04-20T12:12:16.5171105Z [command]/usr/bin/git init /home/runner/work/cargo-agent-backend/cargo-agent-backend
+2026-04-20T12:12:16.5243578Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-04-20T12:12:16.5244695Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-04-20T12:12:16.5245499Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-04-20T12:12:16.5246047Z hint: call:
+2026-04-20T12:12:16.5246223Z hint:
+2026-04-20T12:12:16.5246495Z hint: 	git config --global init.defaultBranch <name>
+2026-04-20T12:12:16.5246759Z hint:
+2026-04-20T12:12:16.5247010Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-04-20T12:12:16.5247435Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-04-20T12:12:16.5247762Z hint:
+2026-04-20T12:12:16.5247930Z hint: 	git branch -m <name>
+2026-04-20T12:12:16.5248134Z hint:
+2026-04-20T12:12:16.5248402Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-04-20T12:12:16.5248935Z Initialized empty Git repository in /home/runner/work/cargo-agent-backend/cargo-agent-backend/.git/
+2026-04-20T12:12:16.5254660Z [command]/usr/bin/git remote add origin https://github.com/leonidboskoski03/cargo-agent-backend
+2026-04-20T12:12:16.5279880Z ##[endgroup]
+2026-04-20T12:12:16.5280674Z ##[group]Disabling automatic garbage collection
+2026-04-20T12:12:16.5286017Z [command]/usr/bin/git config --local gc.auto 0
+2026-04-20T12:12:16.5311710Z ##[endgroup]
+2026-04-20T12:12:16.5312491Z ##[group]Setting up auth
+2026-04-20T12:12:16.5320702Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-04-20T12:12:16.5350369Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-04-20T12:12:16.5604711Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-04-20T12:12:16.5628559Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-04-20T12:12:16.5825526Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-04-20T12:12:16.5859043Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-04-20T12:12:16.6049503Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-04-20T12:12:16.6086028Z ##[endgroup]
+2026-04-20T12:12:16.6086645Z ##[group]Fetching the repository
+2026-04-20T12:12:16.6087815Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +594e3b0fdafc583d15f5c641e28629ddf0427458:refs/remotes/pull/1/merge
+2026-04-20T12:12:17.1868209Z From https://github.com/leonidboskoski03/cargo-agent-backend
+2026-04-20T12:12:17.1869407Z  * [new ref]         594e3b0fdafc583d15f5c641e28629ddf0427458 -> pull/1/merge
+2026-04-20T12:12:17.1895986Z ##[endgroup]
+2026-04-20T12:12:17.1896622Z ##[group]Determining the checkout info
+2026-04-20T12:12:17.1897405Z ##[endgroup]
+2026-04-20T12:12:17.1901989Z [command]/usr/bin/git sparse-checkout disable
+2026-04-20T12:12:17.1936110Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-04-20T12:12:17.1958979Z ##[group]Checking out the ref
+2026-04-20T12:12:17.1964628Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/1/merge
+2026-04-20T12:12:17.2135966Z Note: switching to 'refs/remotes/pull/1/merge'.
+2026-04-20T12:12:17.2145200Z 
+2026-04-20T12:12:17.2155757Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-04-20T12:12:17.2157011Z changes and commit them, and you can discard any commits you make in this
+2026-04-20T12:12:17.2158104Z state without impacting any branches by switching back to a branch.
+2026-04-20T12:12:17.2158698Z 
+2026-04-20T12:12:17.2159175Z If you want to create a new branch to retain commits you create, you may
+2026-04-20T12:12:17.2160052Z do so (now or later) by using -c with the switch command. Example:
+2026-04-20T12:12:17.2160603Z 
+2026-04-20T12:12:17.2160867Z   git switch -c <new-branch-name>
+2026-04-20T12:12:17.2161230Z 
+2026-04-20T12:12:17.2161494Z Or undo this operation with:
+2026-04-20T12:12:17.2162137Z 
+2026-04-20T12:12:17.2162417Z   git switch -
+2026-04-20T12:12:17.2162771Z 
+2026-04-20T12:12:17.2163252Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-04-20T12:12:17.2163985Z 
+2026-04-20T12:12:17.2164734Z HEAD is now at 594e3b0 Merge 2dc552b52ba02e13341f47b5c50a27fa2cdbc19a into 0c95e0e48ecd88db674d19b4091ea83808007d15
+2026-04-20T12:12:17.2166676Z ##[endgroup]
+2026-04-20T12:12:17.2237623Z [command]/usr/bin/git log -1 --format=%H
+2026-04-20T12:12:17.2264637Z 594e3b0fdafc583d15f5c641e28629ddf0427458

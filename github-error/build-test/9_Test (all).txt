@@ -1,0 +1,1810 @@
+﻿2026-04-20T12:12:47.5779036Z ##[group]Run npm test
+2026-04-20T12:12:47.5779443Z [36;1mnpm test[0m
+2026-04-20T12:12:47.5798985Z shell: /usr/bin/bash -e {0}
+2026-04-20T12:12:47.5799355Z env:
+2026-04-20T12:12:47.5799607Z   NODE_ENV: test
+2026-04-20T12:12:47.5800308Z   DATABASE_URL: ***localhost:5432/cargo_agent_test
+2026-04-20T12:12:47.5800782Z   JWT_ACCESS_SECRET: 1.23456789012346E+15
+2026-04-20T12:12:47.5801222Z   JWT_REFRESH_SECRET: 1.23456789012346E+16
+2026-04-20T12:12:47.5801668Z   CORS_ORIGIN: http://localhost:3000
+2026-04-20T12:12:47.5802073Z   LOG_LEVEL: silent
+2026-04-20T12:12:47.5802412Z   REDIS_URL: redis://127.0.0.1:6379
+2026-04-20T12:12:47.5802841Z   BULLMQ_ENABLED: false
+2026-04-20T12:12:47.5803177Z   CRON_ENABLED: false
+2026-04-20T12:12:47.5803512Z   STRIPE_SECRET_KEY: sk_test_ci_placeholder
+2026-04-20T12:12:47.5804199Z   STRIPE_WEBHOOK_SECRET: whsec_ci_placeholder
+2026-04-20T12:12:47.5804695Z   STRIPE_PRO_MONTHLY_PRICE_ID: price_ci_placeholder
+2026-04-20T12:12:47.5805312Z   STRIPE_CHECKOUT_SUCCESS_URL: http://localhost:3000/billing/success
+2026-04-20T12:12:47.5806085Z   STRIPE_CHECKOUT_CANCEL_URL: http://localhost:3000/billing/cancel
+2026-04-20T12:12:47.5806788Z   BILLING_PORTAL_RETURN_URL: http://localhost:3000/settings/billing
+2026-04-20T12:12:47.5807289Z ##[endgroup]
+2026-04-20T12:12:47.6909520Z 
+2026-04-20T12:12:47.6910329Z > cargo-agent-backend@0.1.0 test
+2026-04-20T12:12:47.6911158Z > vitest run
+2026-04-20T12:12:47.6911536Z 
+2026-04-20T12:12:48.0083938Z 
+2026-04-20T12:12:48.0087614Z [1m[46m RUN [49m[22m [36mv3.2.4 [39m[90m/home/runner/work/cargo-agent-backend/cargo-agent-backend[39m
+2026-04-20T12:12:48.0088681Z 
+2026-04-20T12:15:19.7770847Z  [31m❯[39m tests/integration/companyInvitesFlow.spec.ts [2m([22m[2m8 tests[22m[2m | [22m[31m7 failed[39m[2m)[22m[33m 151327[2mms[22m[39m
+2026-04-20T12:15:19.7773189Z [31m   [31m×[31m company invites flow[2m > [22mallows company admin to invite and user to accept invite[39m[33m 25011[2mms[22m[39m
+2026-04-20T12:15:19.7777442Z [31m     → Test timed out in 25000ms.
+2026-04-20T12:15:19.7778529Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:15:19.7779678Z [31m   [31m×[31m company invites flow[2m > [22mblocks accepting invite with mismatched email[39m[32m 42[2mms[22m[39m
+2026-04-20T12:15:19.7780554Z [31m     → expected 400 to be 403 // Object.is equality[39m
+2026-04-20T12:15:19.7781581Z [31m   [31m×[31m company invites flow[2m > [22mrequires a verified INVITE_ACCEPT OTP before accepting invite[39m[33m 25002[2mms[22m[39m
+2026-04-20T12:15:19.7782377Z [31m     → Test timed out in 25000ms.
+2026-04-20T12:15:19.7783561Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:15:19.7785023Z [31m   [31m×[31m company invites flow[2m > [22mconsumes verified invite OTP even when acceptance fails and blocks OTP reuse[39m[33m 25016[2mms[22m[39m
+2026-04-20T12:15:19.7785873Z [31m     → Test timed out in 25000ms.
+2026-04-20T12:15:19.7786890Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:15:19.7788623Z [31m   [31m×[31m company invites flow[2m > [22mblocks accepting an expired invite and marks it as expired[39m[33m 25013[2mms[22m[39m
+2026-04-20T12:15:19.7789959Z [31m     → Test timed out in 25000ms.
+2026-04-20T12:15:19.7791283Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:15:19.7793068Z [31m   [31m×[31m company invites flow[2m > [22mblocks accepting a revoked invite[39m[33m 25002[2mms[22m[39m
+2026-04-20T12:15:19.7794409Z [31m     → Test timed out in 25000ms.
+2026-04-20T12:15:19.7795719Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:15:19.7797460Z [31m   [31m×[31m company invites flow[2m > [22mblocks reusing an already accepted invite token[39m[33m 25000[2mms[22m[39m
+2026-04-20T12:15:19.7799039Z [31m     → Test timed out in 25000ms.
+2026-04-20T12:15:19.7800275Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:15:19.7801935Z    [32m✓[39m company invites flow[2m > [22mblocks invite creation when TEAM_MEMBERS limit is reached[32m 18[2mms[22m[39m
+2026-04-20T12:17:42.6484763Z  [31m❯[39m tests/integration/authOtpFlows.spec.ts [2m([22m[2m11 tests[22m[2m | [22m[31m7 failed[39m[2m)[22m[33m 142430[2mms[22m[39m
+2026-04-20T12:17:42.6486844Z    [33m[2m✓[22m[39m auth otp flows[2m > [22mrequests and verifies email OTP for forgot password [33m 360[2mms[22m[39m
+2026-04-20T12:17:42.6491702Z [31m   [31m×[31m auth otp flows[2m > [22msupports simulated SMS OTP and enforces resend cooldown[39m[33m 20008[2mms[22m[39m
+2026-04-20T12:17:42.6492913Z [31m     → Test timed out in 20000ms.
+2026-04-20T12:17:42.6494435Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:17:42.6496330Z [31m   [31m×[31m auth otp flows[2m > [22mrequires verified REGISTER_VERIFY OTP before user registration[39m[33m 20010[2mms[22m[39m
+2026-04-20T12:17:42.6497569Z [31m     → Test timed out in 20000ms.
+2026-04-20T12:17:42.6498844Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:17:42.6500629Z    [33m[2m✓[22m[39m auth otp flows[2m > [22mcompletes JOB_SEEKER wizard registration flow [33m 331[2mms[22m[39m
+2026-04-20T12:17:42.6502034Z    [33m[2m✓[22m[39m auth otp flows[2m > [22mcompletes COMPANY wizard registration flow on FREE plan [33m 335[2mms[22m[39m
+2026-04-20T12:17:42.6503847Z [31m   [31m×[31m auth otp flows[2m > [22mcompletes login with verified LOGIN_MFA OTP and rejects challenge reuse[39m[33m 20000[2mms[22m[39m
+2026-04-20T12:17:42.6504922Z [31m     → Test timed out in 20000ms.
+2026-04-20T12:17:42.6506005Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:17:42.6507331Z    [33m[2m✓[22m[39m auth otp flows[2m > [22mrequires MFA during login for configured roles [33m 911[2mms[22m[39m
+2026-04-20T12:17:42.6508828Z [31m   [31m×[31m auth otp flows[2m > [22mrejects expired OTP challenges for verify and resend[39m[33m 20002[2mms[22m[39m
+2026-04-20T12:17:42.6509763Z [31m     → Test timed out in 20000ms.
+2026-04-20T12:17:42.6511392Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:17:42.6514299Z [31m   [31m×[31m auth otp flows[2m > [22mlocks OTP challenge after max invalid attempts and blocks further verification[39m[33m 20001[2mms[22m[39m
+2026-04-20T12:17:42.6515535Z [31m     → Test timed out in 20000ms.
+2026-04-20T12:17:42.6516877Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:17:42.6518804Z [31m   [31m×[31m auth otp flows[2m > [22mrotates OTP on resend after cooldown and invalidates previous code[39m[33m 20002[2mms[22m[39m
+2026-04-20T12:17:42.6519961Z [31m     → Test timed out in 20000ms.
+2026-04-20T12:17:42.6521195Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:17:42.6523032Z [31m   [31m×[31m auth otp flows[2m > [22mtreats verified OTP challenge as single-use at verify endpoint[39m[33m 20002[2mms[22m[39m
+2026-04-20T12:17:42.6524248Z [31m     → Test timed out in 20000ms.
+2026-04-20T12:17:42.6525287Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:18:18.9366196Z  [31m❯[39m tests/integration/marketplaceEndToEnd.spec.ts [2m([22m[2m2 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 35965[2mms[22m[39m
+2026-04-20T12:18:18.9368391Z [31m   [31m×[31m marketplace end-to-end flows[2m > [22mruns company FREE flow: register -> posts -> bid -> contract -> invite -> company job listing[39m[33m 35011[2mms[22m[39m
+2026-04-20T12:18:18.9369334Z [31m     → Test timed out in 35000ms.
+2026-04-20T12:18:18.9372075Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:18:18.9373660Z    [33m[2m✓[22m[39m marketplace end-to-end flows[2m > [22mruns job seeker flow: profile setup -> credits spend -> apply -> promote listing/submission [33m 425[2mms[22m[39m
+2026-04-20T12:19:59.7841704Z  [31m❯[39m tests/integration/billingWebhookLifecycle.spec.ts [2m([22m[2m4 tests[22m[2m | [22m[31m4 failed[39m[2m)[22m[33m 100528[2mms[22m[39m
+2026-04-20T12:19:59.7844786Z [31m   [31m×[31m billing webhook lifecycle[2m > [22mprocesses checkout.session.completed idempotently for company and job seeker checkout lanes[39m[33m 25015[2mms[22m[39m
+2026-04-20T12:19:59.7846095Z [31m     → Test timed out in 25000ms.
+2026-04-20T12:19:59.7847226Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:19:59.7849204Z [31m   [31m×[31m billing webhook lifecycle[2m > [22mapplies subscription created/deleted webhook lifecycle and keeps a single current subscription[39m[33m 25020[2mms[22m[39m
+2026-04-20T12:19:59.7849995Z [31m     → Test timed out in 25000ms.
+2026-04-20T12:19:59.7850723Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:19:59.7851819Z [31m   [31m×[31m billing webhook lifecycle[2m > [22mhandles subscription.updated replay idempotently without extra version bumps[39m[33m 25008[2mms[22m[39m
+2026-04-20T12:19:59.7852500Z [31m     → Test timed out in 25000ms.
+2026-04-20T12:19:59.7853180Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:19:59.7855073Z [31m   [31m×[31m billing webhook lifecycle[2m > [22mhandles invoice replay idempotently and keeps single billing event rows per provider event id[39m[33m 25005[2mms[22m[39m
+2026-04-20T12:19:59.7856321Z [31m     → Test timed out in 25000ms.
+2026-04-20T12:19:59.7857407Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:20:25.6663461Z  [31m❯[39m tests/integration/bidUsageLimits.spec.ts [2m([22m[2m2 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 25588[2mms[22m[39m
+2026-04-20T12:20:25.6665909Z    [32m✓[39m bid usage limits[2m > [22mblocks FREE carriers at monthly bid limit and allows PRO under higher limit[32m 106[2mms[22m[39m
+2026-04-20T12:20:25.6668068Z [31m   [31m×[31m bid usage limits[2m > [22mallows only one concurrent bid when monthly limit is 1[39m[33m 25007[2mms[22m[39m
+2026-04-20T12:20:25.6669406Z [31m     → Test timed out in 25000ms.
+2026-04-20T12:20:25.6670921Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:20:51.5413001Z  [31m❯[39m tests/integration/postUsageLimits.spec.ts [2m([22m[2m2 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 25577[2mms[22m[39m
+2026-04-20T12:20:51.5416503Z    [32m✓[39m post usage limits[2m > [22mblocks FREE companies at active post limit and allows PRO under higher limit[32m 91[2mms[22m[39m
+2026-04-20T12:20:51.5423960Z [31m   [31m×[31m post usage limits[2m > [22mblocks promoted posts on FREE and allows them on PRO[39m[33m 25005[2mms[22m[39m
+2026-04-20T12:20:51.5425279Z [31m     → Test timed out in 25000ms.
+2026-04-20T12:20:51.5426029Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:20:52.4771471Z  [32m✓[39m tests/integration/entitlementsEnforcement.spec.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 532[2mms[22m[39m
+2026-04-20T12:21:13.4103018Z  [31m❯[39m tests/integration/billingPlans.spec.ts [2m([22m[2m5 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[33m 20639[2mms[22m[39m
+2026-04-20T12:21:13.4105079Z [31m   [31m×[31m billing and plans endpoints[2m > [22mlists active plans by default and includes inactive when requested[39m[32m 32[2mms[22m[39m
+2026-04-20T12:21:13.4106159Z [31m     → 
+2026-04-20T12:21:13.4106637Z Invalid `prisma.plan.create()` invocation in
+2026-04-20T12:21:13.4107780Z /home/runner/work/cargo-agent-backend/cargo-agent-backend/tests/integration/billingPlans.spec.ts:23:42
+2026-04-20T12:21:13.4108494Z 
+2026-04-20T12:21:13.4108658Z   20 const app = buildApp();
+2026-04-20T12:21:13.4109138Z   21 const suffix = Date.now().toString();
+2026-04-20T12:21:13.4109529Z   22 
+2026-04-20T12:21:13.4109837Z → 23 const activePlan = await prisma.plan.create(
+2026-04-20T12:21:13.4110293Z Unique constraint failed on the fields: (`code`)[39m
+2026-04-20T12:21:13.4110978Z    [32m✓[39m billing and plans endpoints[2m > [22mlists billing events for authenticated company scope[32m 45[2mms[22m[39m
+2026-04-20T12:21:13.4112092Z [31m   [31m×[31m billing and plans endpoints[2m > [22mreturns provider-not-configured for billing portal when Stripe keys are missing[39m[33m 20003[2mms[22m[39m
+2026-04-20T12:21:13.4112916Z [31m     → Test timed out in 20000ms.
+2026-04-20T12:21:13.4114224Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:21:13.4115873Z    [32m✓[39m billing and plans endpoints[2m > [22msupports cancel and cancel-revert for non-stripe current subscriptions[32m 52[2mms[22m[39m
+2026-04-20T12:21:13.4117541Z    [32m✓[39m billing and plans endpoints[2m > [22mforbids non-admin company users from subscription mutation endpoints[32m 27[2mms[22m[39m
+2026-04-20T12:21:54.5407561Z  [31m❯[39m tests/integration/jobSeekerBilling.spec.ts [2m([22m[2m4 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[33m 40833[2mms[22m[39m
+2026-04-20T12:21:54.5411147Z    [32m✓[39m job seeker billing endpoints[2m > [22mreturns wallet and credit packs for job seeker[32m 70[2mms[22m[39m
+2026-04-20T12:21:54.5412997Z [31m   [31m×[31m job seeker billing endpoints[2m > [22mforbids company admin from accessing job seeker wallet endpoint[39m[33m 20006[2mms[22m[39m
+2026-04-20T12:21:54.5414083Z [31m     → Test timed out in 20000ms.
+2026-04-20T12:21:54.5415162Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:21:54.5416354Z [31m   [31m×[31m job seeker billing endpoints[2m > [22mreturns feature disabled for admin credit adjustment when internal flag is off[39m[33m 20011[2mms[22m[39m
+2026-04-20T12:21:54.5417122Z [31m     → Test timed out in 20000ms.
+2026-04-20T12:21:54.5417891Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:21:54.5418937Z    [32m✓[39m job seeker billing endpoints[2m > [22mallows company admin to adjust job seeker credits when feature flag is enabled[32m 248[2mms[22m[39m
+2026-04-20T12:22:25.3349059Z  [31m❯[39m tests/integration/releaseSmokeChain.spec.ts [2m([22m[2m1 test[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 30506[2mms[22m[39m
+2026-04-20T12:22:25.3351998Z [31m   [31m×[31m release smoke chain[2m > [22mcovers registration -> marketplace -> webhook idempotency in one chain[39m[33m 30025[2mms[22m[39m
+2026-04-20T12:22:25.3352729Z [31m     → Test timed out in 30000ms.
+2026-04-20T12:22:25.3353431Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:23:07.0424711Z  [31m❯[39m tests/integration/authPasswordFlows.spec.ts [2m([22m[2m3 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[33m 41400[2mms[22m[39m
+2026-04-20T12:23:07.0426994Z [31m   [31m×[31m auth password flows[2m > [22mresets password and invalidates old access token[39m[33m 20015[2mms[22m[39m
+2026-04-20T12:23:07.0427981Z [31m     → Test timed out in 20000ms.
+2026-04-20T12:23:07.0429087Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:23:07.0430674Z [31m   [31m×[31m auth password flows[2m > [22mchanges password for authenticated user and revokes previous token version[39m[33m 20010[2mms[22m[39m
+2026-04-20T12:23:07.0431737Z [31m     → Test timed out in 20000ms.
+2026-04-20T12:23:07.0432830Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:23:07.0434364Z    [33m[2m✓[22m[39m auth password flows[2m > [22mlists active sessions and allows revoking a specific session [33m 925[2mms[22m[39m
+2026-04-20T12:23:07.9508543Z  [32m✓[39m tests/integration/marketplaceScenario.spec.ts [2m([22m[2m1 test[22m[2m)[22m[33m 620[2mms[22m[39m
+2026-04-20T12:23:08.7348488Z  [32m✓[39m tests/integration/subscriptionWebhookLifecycle.spec.ts [2m([22m[2m1 test[22m[2m)[22m[33m 503[2mms[22m[39m
+2026-04-20T12:23:09.0917787Z  [32m✓[39m tests/unit/modules/webhooks/webhooks.service.spec.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 71[2mms[22m[39m
+2026-04-20T12:23:09.3728285Z  [32m✓[39m tests/unit/workflows/marketplaceLifecycle.spec.ts [2m([22m[2m1 test[22m[2m)[22m[32m 6[2mms[22m[39m
+2026-04-20T12:23:09.6493495Z  [32m✓[39m tests/unit/modules/jobApplications/jobApplications.service.spec.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+2026-04-20T12:23:30.4662734Z  [31m❯[39m tests/integration/jobApplicationsScenario.spec.ts [2m([22m[2m1 test[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 20498[2mms[22m[39m
+2026-04-20T12:23:30.4664776Z [31m   [31m×[31m job applications scenario[2m > [22msupports job seeker listing and company submission[39m[33m 20008[2mms[22m[39m
+2026-04-20T12:23:30.4665414Z [31m     → Test timed out in 20000ms.
+2026-04-20T12:23:30.4666115Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:23:31.3020374Z  [32m✓[39m tests/integration/jobSeekerWebhookIdempotency.spec.ts [2m([22m[2m1 test[22m[2m)[22m[33m 563[2mms[22m[39m
+2026-04-20T12:23:32.1342873Z  [32m✓[39m tests/integration/notificationsReadState.spec.ts [2m([22m[2m1 test[22m[2m)[22m[33m 551[2mms[22m[39m
+2026-04-20T12:23:32.9617997Z  [32m✓[39m tests/integration/apiSmoke.spec.ts [2m([22m[2m21 tests[22m[2m)[22m[33m 557[2mms[22m[39m
+2026-04-20T12:23:33.2345158Z  [32m✓[39m tests/unit/shared/queue/notificationEvents.queue.spec.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 62[2mms[22m[39m
+2026-04-20T12:23:33.9987223Z  [32m✓[39m tests/integration/authGuards.spec.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 473[2mms[22m[39m
+2026-04-20T12:23:33.9991053Z    [33m[2m✓[22m[39m Auth guards[2m > [22mrequires auth for notifications list [33m 465[2mms[22m[39m
+2026-04-20T12:23:34.2515394Z  [32m✓[39m tests/unit/modules/notifications/notificationEvents.service.spec.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+2026-04-20T12:23:34.6865508Z  [32m✓[39m tests/unit/modules/contracts/contracts.service.spec.ts [2m([22m[2m1 test[22m[2m)[22m[32m 4[2mms[22m[39m
+2026-04-20T12:23:34.9287197Z  [32m✓[39m tests/unit/modules/documents/documents.service.spec.ts [2m([22m[2m1 test[22m[2m)[22m[32m 4[2mms[22m[39m
+2026-04-20T12:23:35.3217686Z  [32m✓[39m tests/unit/modules/reviews/reviews.service.spec.ts [2m([22m[2m1 test[22m[2m)[22m[32m 4[2mms[22m[39m
+2026-04-20T12:23:35.7341179Z  [32m✓[39m tests/unit/modules/bids/bids.service.spec.ts [2m([22m[2m1 test[22m[2m)[22m[32m 4[2mms[22m[39m
+2026-04-20T12:23:35.9712421Z  [32m✓[39m tests/unit/modules/notifications/notifications.service.spec.ts [2m([22m[2m1 test[22m[2m)[22m[32m 5[2mms[22m[39m
+2026-04-20T12:23:36.2361099Z  [32m✓[39m tests/unit/modules/posts/posts.service.spec.ts [2m([22m[2m1 test[22m[2m)[22m[32m 4[2mms[22m[39m
+2026-04-20T12:23:36.9403929Z  [32m✓[39m tests/integration/health.spec.ts [2m([22m[2m1 test[22m[2m)[22m[33m 451[2mms[22m[39m
+2026-04-20T12:23:36.9405287Z    [33m[2m✓[22m[39m health endpoints[2m > [22mreturns live status [33m 449[2mms[22m[39m
+2026-04-20T12:23:36.9552487Z 
+2026-04-20T12:23:36.9553870Z [31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 29 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+2026-04-20T12:23:36.9554516Z 
+2026-04-20T12:23:36.9565901Z [41m[1m FAIL [22m[49m tests/integration/authOtpFlows.spec.ts[2m > [22mauth otp flows[2m > [22msupports simulated SMS OTP and enforces resend cooldown
+2026-04-20T12:23:36.9594697Z [31m[1mError[22m: Test timed out in 20000ms.
+2026-04-20T12:23:36.9625299Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:23:36.9664788Z [36m [2m❯[22m tests/integration/authOtpFlows.spec.ts:[2m61:3[22m[39m
+2026-04-20T12:23:36.9915276Z     [90m 59| [39m  }[33m,[39m [34m20_000[39m)[33m;[39m
+2026-04-20T12:23:36.9934643Z     [90m 60| [39m
+2026-04-20T12:23:36.9995019Z     [90m 61| [39m  it("supports simulated SMS OTP and enforces resend cooldown", async …
+2026-04-20T12:23:37.0107874Z     [90m   | [39m  [31m^[39m
+2026-04-20T12:23:37.0125205Z     [90m 62| [39m    [35mconst[39m { prisma[33m,[39m buildApp } [33m=[39m [35mawait[39m [34minitRuntime[39m()[33m;[39m
+2026-04-20T12:23:37.0154550Z     [90m 63| [39m    [35mif[39m ([33m![39mdbReady) {
+2026-04-20T12:23:37.0155172Z 
+2026-04-20T12:23:37.0174660Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/29]⎯[22m[39m
+2026-04-20T12:23:37.0184082Z 
+2026-04-20T12:23:37.0185458Z [41m[1m FAIL [22m[49m tests/integration/authOtpFlows.spec.ts[2m > [22mauth otp flows[2m > [22mrequires verified REGISTER_VERIFY OTP before user registration
+2026-04-20T12:23:37.0186728Z [31m[1mError[22m: Test timed out in 20000ms.
+2026-04-20T12:23:37.0187900Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:23:37.0189136Z [36m [2m❯[22m tests/integration/authOtpFlows.spec.ts:[2m109:3[22m[39m
+2026-04-20T12:23:37.0190045Z     [90m107| [39m  }[33m,[39m [34m20_000[39m)[33m;[39m
+2026-04-20T12:23:37.0204578Z     [90m108| [39m
+2026-04-20T12:23:37.0224785Z     [90m109| [39m  it("requires verified REGISTER_VERIFY OTP before user registration",…
+2026-04-20T12:23:37.0244493Z     [90m   | [39m  [31m^[39m
+2026-04-20T12:23:37.0264929Z     [90m110| [39m    [35mconst[39m { prisma[33m,[39m buildApp } [33m=[39m [35mawait[39m [34minitRuntime[39m()[33m;[39m
+2026-04-20T12:23:37.0266076Z     [90m111| [39m    [35mif[39m ([33m![39mdbReady) {
+2026-04-20T12:23:37.0266470Z 
+2026-04-20T12:23:37.0266931Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/29]⎯[22m[39m
+2026-04-20T12:23:37.0267272Z 
+2026-04-20T12:23:37.0268643Z [41m[1m FAIL [22m[49m tests/integration/authOtpFlows.spec.ts[2m > [22mauth otp flows[2m > [22mcompletes login with verified LOGIN_MFA OTP and rejects challenge reuse
+2026-04-20T12:23:37.0270026Z [31m[1mError[22m: Test timed out in 20000ms.
+2026-04-20T12:23:37.0271371Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:23:37.0272753Z [36m [2m❯[22m tests/integration/authOtpFlows.spec.ts:[2m269:3[22m[39m
+2026-04-20T12:23:37.0273629Z     [90m267| [39m  }[33m,[39m [34m20_000[39m)[33m;[39m
+2026-04-20T12:23:37.0274321Z     [90m268| [39m
+2026-04-20T12:23:37.0275069Z     [90m269| [39m  it("completes login with verified LOGIN_MFA OTP and rejects challeng…
+2026-04-20T12:23:37.0275770Z     [90m   | [39m  [31m^[39m
+2026-04-20T12:23:37.0276791Z     [90m270| [39m    [35mconst[39m { prisma[33m,[39m buildApp } [33m=[39m [35mawait[39m [34minitRuntime[39m()[33m;[39m
+2026-04-20T12:23:37.0278170Z     [90m271| [39m    [35mif[39m ([33m![39mdbReady) {
+2026-04-20T12:23:37.0278499Z 
+2026-04-20T12:23:37.0278910Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/29]⎯[22m[39m
+2026-04-20T12:23:37.0279207Z 
+2026-04-20T12:23:37.0280408Z [41m[1m FAIL [22m[49m tests/integration/authOtpFlows.spec.ts[2m > [22mauth otp flows[2m > [22mrejects expired OTP challenges for verify and resend
+2026-04-20T12:23:37.0281607Z [31m[1mError[22m: Test timed out in 20000ms.
+2026-04-20T12:23:37.0282984Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:23:37.0324810Z [36m [2m❯[22m tests/integration/authOtpFlows.spec.ts:[2m379:3[22m[39m
+2026-04-20T12:23:37.0325812Z     [90m377| [39m  }[33m,[39m [34m20_000[39m)[33m;[39m
+2026-04-20T12:23:37.0326428Z     [90m378| [39m
+2026-04-20T12:23:37.0327337Z     [90m379| [39m  it("rejects expired OTP challenges for verify and resend", async () …
+2026-04-20T12:23:37.0328215Z     [90m   | [39m  [31m^[39m
+2026-04-20T12:23:37.0329376Z     [90m380| [39m    [35mconst[39m { prisma[33m,[39m buildApp } [33m=[39m [35mawait[39m [34minitRuntime[39m()[33m;[39m
+2026-04-20T12:23:37.0330330Z     [90m381| [39m    [35mif[39m ([33m![39mdbReady) {
+2026-04-20T12:23:37.0330661Z 
+2026-04-20T12:23:37.0331075Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/29]⎯[22m[39m
+2026-04-20T12:23:37.0331390Z 
+2026-04-20T12:23:37.0332847Z [41m[1m FAIL [22m[49m tests/integration/authOtpFlows.spec.ts[2m > [22mauth otp flows[2m > [22mlocks OTP challenge after max invalid attempts and blocks further verification
+2026-04-20T12:23:37.0334729Z [31m[1mError[22m: Test timed out in 20000ms.
+2026-04-20T12:23:37.0336075Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:23:37.0337486Z [36m [2m❯[22m tests/integration/authOtpFlows.spec.ts:[2m445:3[22m[39m
+2026-04-20T12:23:37.0338379Z     [90m443| [39m  }[33m,[39m [34m20_000[39m)[33m;[39m
+2026-04-20T12:23:37.0338854Z     [90m444| [39m
+2026-04-20T12:23:37.0339584Z     [90m445| [39m  it("locks OTP challenge after max invalid attempts and blocks furthe…
+2026-04-20T12:23:37.0340328Z     [90m   | [39m  [31m^[39m
+2026-04-20T12:23:37.0341294Z     [90m446| [39m    [35mconst[39m { prisma[33m,[39m buildApp } [33m=[39m [35mawait[39m [34minitRuntime[39m()[33m;[39m
+2026-04-20T12:23:37.0342334Z     [90m447| [39m    [35mif[39m ([33m![39mdbReady) {
+2026-04-20T12:23:37.0342990Z 
+2026-04-20T12:23:37.0343402Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/29]⎯[22m[39m
+2026-04-20T12:23:37.0383981Z 
+2026-04-20T12:23:37.0385543Z [41m[1m FAIL [22m[49m tests/integration/authOtpFlows.spec.ts[2m > [22mauth otp flows[2m > [22mrotates OTP on resend after cooldown and invalidates previous code
+2026-04-20T12:23:37.0386959Z [31m[1mError[22m: Test timed out in 20000ms.
+2026-04-20T12:23:37.0388394Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:23:37.0389817Z [36m [2m❯[22m tests/integration/authOtpFlows.spec.ts:[2m512:3[22m[39m
+2026-04-20T12:23:37.0390706Z     [90m510| [39m  }[33m,[39m [34m20_000[39m)[33m;[39m
+2026-04-20T12:23:37.0391269Z     [90m511| [39m
+2026-04-20T12:23:37.0392051Z     [90m512| [39m  it("rotates OTP on resend after cooldown and invalidates previous co…
+2026-04-20T12:23:37.0392815Z     [90m   | [39m  [31m^[39m
+2026-04-20T12:23:37.0394049Z     [90m513| [39m    [35mconst[39m { prisma[33m,[39m buildApp } [33m=[39m [35mawait[39m [34minitRuntime[39m()[33m;[39m
+2026-04-20T12:23:37.0395148Z     [90m514| [39m    [35mif[39m ([33m![39mdbReady) {
+2026-04-20T12:23:37.0395513Z 
+2026-04-20T12:23:37.0395933Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/29]⎯[22m[39m
+2026-04-20T12:23:37.0396286Z 
+2026-04-20T12:23:37.0397904Z [41m[1m FAIL [22m[49m tests/integration/authOtpFlows.spec.ts[2m > [22mauth otp flows[2m > [22mtreats verified OTP challenge as single-use at verify endpoint
+2026-04-20T12:23:37.0399252Z [31m[1mError[22m: Test timed out in 20000ms.
+2026-04-20T12:23:37.0400604Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:23:37.0401977Z [36m [2m❯[22m tests/integration/authOtpFlows.spec.ts:[2m578:3[22m[39m
+2026-04-20T12:23:37.0402850Z     [90m576| [39m  }[33m,[39m [34m20_000[39m)[33m;[39m
+2026-04-20T12:23:37.0403392Z     [90m577| [39m
+2026-04-20T12:23:37.0424670Z     [90m578| [39m  it("treats verified OTP challenge as single-use at verify endpoint",…
+2026-04-20T12:23:37.0425531Z     [90m   | [39m  [31m^[39m
+2026-04-20T12:23:37.0426625Z     [90m579| [39m    [35mconst[39m { prisma[33m,[39m buildApp } [33m=[39m [35mawait[39m [34minitRuntime[39m()[33m;[39m
+2026-04-20T12:23:37.0427726Z     [90m580| [39m    [35mif[39m ([33m![39mdbReady) {
+2026-04-20T12:23:37.0428095Z 
+2026-04-20T12:23:37.0428527Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/29]⎯[22m[39m
+2026-04-20T12:23:37.0428886Z 
+2026-04-20T12:23:37.0430123Z [41m[1m FAIL [22m[49m tests/integration/authPasswordFlows.spec.ts[2m > [22mauth password flows[2m > [22mresets password and invalidates old access token
+2026-04-20T12:23:37.0431455Z [31m[1mError[22m: Test timed out in 20000ms.
+2026-04-20T12:23:37.0432824Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:23:37.0434379Z [36m [2m❯[22m tests/integration/authPasswordFlows.spec.ts:[2m15:3[22m[39m
+2026-04-20T12:23:37.0435176Z     [90m 13| [39m  })[33m;[39m
+2026-04-20T12:23:37.0435649Z     [90m 14| [39m
+2026-04-20T12:23:37.0436808Z     [90m 15| [39m  [34mit[39m([32m"resets password and invalidates old access token"[39m[33m,[39m [35masync[39m () [33m=>[39m {
+2026-04-20T12:23:37.0437897Z     [90m   | [39m  [31m^[39m
+2026-04-20T12:23:37.0439245Z     [90m 16| [39m    [35mconst[39m { prisma[33m,[39m buildApp[33m,[39m signAccessToken } [33m=[39m [35mawait[39m [34minitRuntime[39m()[33m;[39m
+2026-04-20T12:23:37.0440482Z     [90m 17| [39m    [35mif[39m ([33m![39mdbReady) {
+2026-04-20T12:23:37.0440867Z 
+2026-04-20T12:23:37.0441287Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/29]⎯[22m[39m
+2026-04-20T12:23:37.0441645Z 
+2026-04-20T12:23:37.0443224Z [41m[1m FAIL [22m[49m tests/integration/authPasswordFlows.spec.ts[2m > [22mauth password flows[2m > [22mchanges password for authenticated user and revokes previous token version
+2026-04-20T12:23:37.0465457Z [31m[1mError[22m: Test timed out in 20000ms.
+2026-04-20T12:23:37.0466662Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:23:37.0468017Z [36m [2m❯[22m tests/integration/authPasswordFlows.spec.ts:[2m92:3[22m[39m
+2026-04-20T12:23:37.0468908Z     [90m 90| [39m  }[33m,[39m [34m20_000[39m)[33m;[39m
+2026-04-20T12:23:37.0469459Z     [90m 91| [39m
+2026-04-20T12:23:37.0470179Z     [90m 92| [39m  it("changes password for authenticated user and revokes previous tok…
+2026-04-20T12:23:37.0470977Z     [90m   | [39m  [31m^[39m
+2026-04-20T12:23:37.0472226Z     [90m 93| [39m    [35mconst[39m { prisma[33m,[39m buildApp[33m,[39m signAccessToken } [33m=[39m [35mawait[39m [34minitRuntime[39m()[33m;[39m
+2026-04-20T12:23:37.0473440Z     [90m 94| [39m    [35mif[39m ([33m![39mdbReady) {
+2026-04-20T12:23:37.0474062Z 
+2026-04-20T12:23:37.0474462Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/29]⎯[22m[39m
+2026-04-20T12:23:37.0474792Z 
+2026-04-20T12:23:37.0476039Z [41m[1m FAIL [22m[49m tests/integration/bidUsageLimits.spec.ts[2m > [22mbid usage limits[2m > [22mallows only one concurrent bid when monthly limit is 1
+2026-04-20T12:23:37.0477363Z [31m[1mError[22m: Test timed out in 25000ms.
+2026-04-20T12:23:37.0478963Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:23:37.0480328Z [36m [2m❯[22m tests/integration/bidUsageLimits.spec.ts:[2m259:3[22m[39m
+2026-04-20T12:23:37.0481255Z     [90m257| [39m  }[33m,[39m [34m25_000[39m)[33m;[39m
+2026-04-20T12:23:37.0481758Z     [90m258| [39m
+2026-04-20T12:23:37.0482513Z     [90m259| [39m  it("allows only one concurrent bid when monthly limit is 1", async (…
+2026-04-20T12:23:37.0483309Z     [90m   | [39m  [31m^[39m
+2026-04-20T12:23:37.0505036Z     [90m260| [39m    [35mconst[39m { prisma[33m,[39m buildApp[33m,[39m signAccessToken } [33m=[39m [35mawait[39m [34minitRuntime[39m()[33m;[39m
+2026-04-20T12:23:37.0506269Z     [90m261| [39m    [35mif[39m ([33m![39mdbReady) {
+2026-04-20T12:23:37.0506618Z 
+2026-04-20T12:23:37.0507048Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/29]⎯[22m[39m
+2026-04-20T12:23:37.0507377Z 
+2026-04-20T12:23:37.0508690Z [41m[1m FAIL [22m[49m tests/integration/billingPlans.spec.ts[2m > [22mbilling and plans endpoints[2m > [22mlists active plans by default and includes inactive when requested
+2026-04-20T12:23:37.0510313Z [31m[1mPrismaClientKnownRequestError[22m: 
+2026-04-20T12:23:37.0510908Z Invalid `prisma.plan.create()` invocation in
+2026-04-20T12:23:37.0511847Z /home/runner/work/cargo-agent-backend/cargo-agent-backend/tests/integration/billingPlans.spec.ts:23:42
+2026-04-20T12:23:37.0512490Z 
+2026-04-20T12:23:37.0512647Z   20 const app = buildApp();
+2026-04-20T12:23:37.0513096Z   21 const suffix = Date.now().toString();
+2026-04-20T12:23:37.0514648Z   22 
+2026-04-20T12:23:37.0515300Z → 23 const activePlan = await prisma.plan.create(
+2026-04-20T12:23:37.0516097Z Unique constraint failed on the fields: (`code`)[39m
+2026-04-20T12:23:37.0517396Z [90m [2m❯[22m ei.handleRequestError node_modules/@prisma/client/src/runtime/RequestHandler.ts:[2m228:13[22m[39m
+2026-04-20T12:23:37.0518996Z [90m [2m❯[22m ei.handleAndLogRequestError node_modules/@prisma/client/src/runtime/RequestHandler.ts:[2m174:12[22m[39m
+2026-04-20T12:23:37.0520508Z [90m [2m❯[22m ei.request node_modules/@prisma/client/src/runtime/RequestHandler.ts:[2m143:12[22m[39m
+2026-04-20T12:23:37.0522064Z [90m [2m❯[22m a node_modules/@prisma/client/src/runtime/getPrismaClient.ts:[2m833:24[22m[39m
+2026-04-20T12:23:37.0523320Z [36m [2m❯[22m tests/integration/billingPlans.spec.ts:[2m23:24[22m[39m
+2026-04-20T12:23:37.0555289Z     [90m 21| [39m    [35mconst[39m suffix [33m=[39m [33mDate[39m[33m.[39m[34mnow[39m()[33m.[39m[34mtoString[39m()[33m;[39m
+2026-04-20T12:23:37.0594336Z     [90m 22| [39m
+2026-04-20T12:23:37.0595373Z     [90m 23| [39m    [35mconst[39m activePlan [33m=[39m [35mawait[39m prisma[33m.[39mplan[33m.[39m[34mcreate[39m({
+2026-04-20T12:23:37.0596396Z     [90m   | [39m                       [31m^[39m
+2026-04-20T12:23:37.0596935Z     [90m 24| [39m      data[33m:[39m {
+2026-04-20T12:23:37.0597762Z     [90m 25| [39m        code[33m:[39m [33mPlanCode[39m[33m.[39m[33mPRO[39m[33m,[39m
+2026-04-20T12:23:37.0598340Z 
+2026-04-20T12:23:37.0644746Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/29]⎯[22m[39m
+2026-04-20T12:23:37.0694074Z 
+2026-04-20T12:23:37.0745771Z [41m[1m FAIL [22m[49m tests/integration/billingPlans.spec.ts[2m > [22mbilling and plans endpoints[2m > [22mreturns provider-not-configured for billing portal when Stripe keys are missing
+2026-04-20T12:23:37.0776185Z [31m[1mError[22m: Test timed out in 20000ms.
+2026-04-20T12:23:37.0780117Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:23:37.0804817Z [36m [2m❯[22m tests/integration/billingPlans.spec.ts:[2m119:3[22m[39m
+2026-04-20T12:23:37.0844585Z     [90m117| [39m  }[33m,[39m [34m20_000[39m)[33m;[39m
+2026-04-20T12:23:37.0861754Z     [90m118| [39m
+2026-04-20T12:23:37.0907063Z     [90m119| [39m  it("returns provider-not-configured for billing portal when Stripe k…
+2026-04-20T12:23:37.0908393Z     [90m   | [39m  [31m^[39m
+2026-04-20T12:23:37.0909632Z     [90m120| [39m    [35mconst[39m { prisma[33m,[39m buildApp[33m,[39m signAccessToken } [33m=[39m [35mawait[39m [34minitRuntime[39m()[33m;[39m
+2026-04-20T12:23:37.0910843Z     [90m121| [39m    [35mif[39m ([33m![39mdbReady) {
+2026-04-20T12:23:37.0911204Z 
+2026-04-20T12:23:37.0911649Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/29]⎯[22m[39m
+2026-04-20T12:23:37.0911993Z 
+2026-04-20T12:23:37.0914174Z [41m[1m FAIL [22m[49m tests/integration/billingWebhookLifecycle.spec.ts[2m > [22mbilling webhook lifecycle[2m > [22mprocesses checkout.session.completed idempotently for company and job seeker checkout lanes
+2026-04-20T12:23:37.0915942Z [31m[1mError[22m: Test timed out in 25000ms.
+2026-04-20T12:23:37.0917203Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:23:37.0918552Z [36m [2m❯[22m tests/integration/billingWebhookLifecycle.spec.ts:[2m14:3[22m[39m
+2026-04-20T12:23:37.0919378Z     [90m 12| [39m  })[33m;[39m
+2026-04-20T12:23:37.0919820Z     [90m 13| [39m
+2026-04-20T12:23:37.0920529Z     [90m 14| [39m  it("processes checkout.session.completed idempotently for company an…
+2026-04-20T12:23:37.0921296Z     [90m   | [39m  [31m^[39m
+2026-04-20T12:23:37.0922217Z     [90m 15| [39m    [35mconst[39m { prisma[33m,[39m buildApp } [33m=[39m [35mawait[39m [34minitRuntime[39m()[33m;[39m
+2026-04-20T12:23:37.0923143Z     [90m 16| [39m    [35mif[39m ([33m![39mdbReady) {
+2026-04-20T12:23:37.0944068Z 
+2026-04-20T12:23:37.0944663Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/29]⎯[22m[39m
+2026-04-20T12:23:37.0944992Z 
+2026-04-20T12:23:37.0946654Z [41m[1m FAIL [22m[49m tests/integration/billingWebhookLifecycle.spec.ts[2m > [22mbilling webhook lifecycle[2m > [22mapplies subscription created/deleted webhook lifecycle and keeps a single current subscription
+2026-04-20T12:23:37.0948340Z [31m[1mError[22m: Test timed out in 25000ms.
+2026-04-20T12:23:37.0949699Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:23:37.0950953Z [36m [2m❯[22m tests/integration/billingWebhookLifecycle.spec.ts:[2m186:3[22m[39m
+2026-04-20T12:23:37.0951903Z     [90m184| [39m  }[33m,[39m [34m25_000[39m)[33m;[39m
+2026-04-20T12:23:37.0952404Z     [90m185| [39m
+2026-04-20T12:23:37.0953180Z     [90m186| [39m  it("applies subscription created/deleted webhook lifecycle and keeps…
+2026-04-20T12:23:37.0974443Z     [90m   | [39m  [31m^[39m
+2026-04-20T12:23:37.0975679Z     [90m187| [39m    [35mconst[39m { prisma[33m,[39m buildApp } [33m=[39m [35mawait[39m [34minitRuntime[39m()[33m;[39m
+2026-04-20T12:23:37.0976641Z     [90m188| [39m    [35mif[39m ([33m![39mdbReady) {
+2026-04-20T12:23:37.0976991Z 
+2026-04-20T12:23:37.0977417Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/29]⎯[22m[39m
+2026-04-20T12:23:37.0977790Z 
+2026-04-20T12:23:37.0979294Z [41m[1m FAIL [22m[49m tests/integration/billingWebhookLifecycle.spec.ts[2m > [22mbilling webhook lifecycle[2m > [22mhandles subscription.updated replay idempotently without extra version bumps
+2026-04-20T12:23:37.0980915Z [31m[1mError[22m: Test timed out in 25000ms.
+2026-04-20T12:23:37.0982274Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:23:37.0984240Z [36m [2m❯[22m tests/integration/billingWebhookLifecycle.spec.ts:[2m332:3[22m[39m
+2026-04-20T12:23:37.0985176Z     [90m330| [39m  }[33m,[39m [34m25_000[39m)[33m;[39m
+2026-04-20T12:23:37.0985731Z     [90m331| [39m
+2026-04-20T12:23:37.0986513Z     [90m332| [39m  it("handles subscription.updated replay idempotently without extra v…
+2026-04-20T12:23:37.0987333Z     [90m   | [39m  [31m^[39m
+2026-04-20T12:23:37.0988347Z     [90m333| [39m    [35mconst[39m { prisma[33m,[39m buildApp } [33m=[39m [35mawait[39m [34minitRuntime[39m()[33m;[39m
+2026-04-20T12:23:37.0989640Z     [90m334| [39m    [35mif[39m ([33m![39mdbReady) {
+2026-04-20T12:23:37.0989987Z 
+2026-04-20T12:23:37.0990381Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/29]⎯[22m[39m
+2026-04-20T12:23:37.0990702Z 
+2026-04-20T12:23:37.0992457Z [41m[1m FAIL [22m[49m tests/integration/billingWebhookLifecycle.spec.ts[2m > [22mbilling webhook lifecycle[2m > [22mhandles invoice replay idempotently and keeps single billing event rows per provider event id
+2026-04-20T12:23:37.0994378Z [31m[1mError[22m: Test timed out in 25000ms.
+2026-04-20T12:23:37.0995721Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:23:37.0997188Z [36m [2m❯[22m tests/integration/billingWebhookLifecycle.spec.ts:[2m476:3[22m[39m
+2026-04-20T12:23:37.0998169Z     [90m474| [39m  }[33m,[39m [34m25_000[39m)[33m;[39m
+2026-04-20T12:23:37.0998729Z     [90m475| [39m
+2026-04-20T12:23:37.0999528Z     [90m476| [39m  it("handles invoice replay idempotently and keeps single billing eve…
+2026-04-20T12:23:37.1000287Z     [90m   | [39m  [31m^[39m
+2026-04-20T12:23:37.1001383Z     [90m477| [39m    [35mconst[39m { prisma[33m,[39m buildApp } [33m=[39m [35mawait[39m [34minitRuntime[39m()[33m;[39m
+2026-04-20T12:23:37.1002402Z     [90m478| [39m    [35mif[39m ([33m![39mdbReady) {
+2026-04-20T12:23:37.1002795Z 
+2026-04-20T12:23:37.1003152Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/29]⎯[22m[39m
+2026-04-20T12:23:37.1003508Z 
+2026-04-20T12:23:37.1010880Z [41m[1m FAIL [22m[49m tests/integration/companyInvitesFlow.spec.ts[2m > [22mcompany invites flow[2m > [22mallows company admin to invite and user to accept invite
+2026-04-20T12:23:37.1012581Z [31m[1mError[22m: Test timed out in 25000ms.
+2026-04-20T12:23:37.1014041Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:23:37.1015426Z [36m [2m❯[22m tests/integration/companyInvitesFlow.spec.ts:[2m14:3[22m[39m
+2026-04-20T12:23:37.1016374Z     [90m 12| [39m  })[33m;[39m
+2026-04-20T12:23:37.1044333Z     [90m 13| [39m
+2026-04-20T12:23:37.1064769Z     [90m 14| [39m  it("allows company admin to invite and user to accept invite", async…
+2026-04-20T12:23:37.1065557Z     [90m   | [39m  [31m^[39m
+2026-04-20T12:23:37.1066876Z     [90m 15| [39m    [35mconst[39m { prisma[33m,[39m buildApp[33m,[39m signAccessToken } [33m=[39m [35mawait[39m [34minitRuntime[39m()[33m;[39m
+2026-04-20T12:23:37.1068069Z     [90m 16| [39m    [35mif[39m ([33m![39mdbReady) {
+2026-04-20T12:23:37.1068446Z 
+2026-04-20T12:23:37.1068871Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/29]⎯[22m[39m
+2026-04-20T12:23:37.1069220Z 
+2026-04-20T12:23:37.1070498Z [41m[1m FAIL [22m[49m tests/integration/companyInvitesFlow.spec.ts[2m > [22mcompany invites flow[2m > [22mblocks accepting invite with mismatched email
+2026-04-20T12:23:37.1072063Z [31m[1mAssertionError[22m: expected 400 to be 403 // Object.is equality[39m
+2026-04-20T12:23:37.1072836Z 
+2026-04-20T12:23:37.1073083Z [32m- Expected[39m
+2026-04-20T12:23:37.1073511Z [31m+ Received[39m
+2026-04-20T12:23:37.1073894Z 
+2026-04-20T12:23:37.1074079Z [32m- 403[39m
+2026-04-20T12:23:37.1074449Z [31m+ 400[39m
+2026-04-20T12:23:37.1074637Z 
+2026-04-20T12:23:37.1075349Z [36m [2m❯[22m tests/integration/companyInvitesFlow.spec.ts:[2m208:46[22m[39m
+2026-04-20T12:23:37.1077021Z     [90m206| [39m        [33m.[39m[34msend[39m({ token[33m:[39m acceptToken[33m,[39m otpChallengeId[33m:[39m [32m"missing"[39m })[33m;[39m
+2026-04-20T12:23:37.1094339Z     [90m207| [39m
+2026-04-20T12:23:37.1135103Z     [90m208| [39m      [34mexpect[39m(acceptWithWrongUser[33m.[39mstatusCode)[33m.[39m[34mtoBe[39m([34m403[39m)[33m;[39m
+2026-04-20T12:23:37.1154554Z     [90m   | [39m                                             [31m^[39m
+2026-04-20T12:23:37.1187062Z     [90m209| [39m      expect(acceptWithWrongUser.body.error.code).toBe("INVITE_EMAIL_M…
+2026-04-20T12:23:37.1234455Z     [90m210| [39m    } [35mfinally[39m {
+2026-04-20T12:23:37.1313983Z 
+2026-04-20T12:23:37.1374542Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/29]⎯[22m[39m
+2026-04-20T12:23:37.1393975Z 
+2026-04-20T12:23:37.1395442Z [41m[1m FAIL [22m[49m tests/integration/companyInvitesFlow.spec.ts[2m > [22mcompany invites flow[2m > [22mrequires a verified INVITE_ACCEPT OTP before accepting invite
+2026-04-20T12:23:37.1396920Z [31m[1mError[22m: Test timed out in 25000ms.
+2026-04-20T12:23:37.1398208Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:23:37.1399669Z [36m [2m❯[22m tests/integration/companyInvitesFlow.spec.ts:[2m218:3[22m[39m
+2026-04-20T12:23:37.1400564Z     [90m216| [39m  }[33m,[39m [34m25_000[39m)[33m;[39m
+2026-04-20T12:23:37.1401081Z     [90m217| [39m
+2026-04-20T12:23:37.1401871Z     [90m218| [39m  it("requires a verified INVITE_ACCEPT OTP before accepting invite", …
+2026-04-20T12:23:37.1402657Z     [90m   | [39m  [31m^[39m
+2026-04-20T12:23:37.1403988Z     [90m219| [39m    [35mconst[39m { prisma[33m,[39m buildApp[33m,[39m signAccessToken } [33m=[39m [35mawait[39m [34minitRuntime[39m()[33m;[39m
+2026-04-20T12:23:37.1405182Z     [90m220| [39m    [35mif[39m ([33m![39mdbReady) {
+2026-04-20T12:23:37.1405531Z 
+2026-04-20T12:23:37.1405959Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/29]⎯[22m[39m
+2026-04-20T12:23:37.1406307Z 
+2026-04-20T12:23:37.1407843Z [41m[1m FAIL [22m[49m tests/integration/companyInvitesFlow.spec.ts[2m > [22mcompany invites flow[2m > [22mconsumes verified invite OTP even when acceptance fails and blocks OTP reuse
+2026-04-20T12:23:37.1409637Z [31m[1mError[22m: Test timed out in 25000ms.
+2026-04-20T12:23:37.1410951Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:23:37.1412350Z [36m [2m❯[22m tests/integration/companyInvitesFlow.spec.ts:[2m307:3[22m[39m
+2026-04-20T12:23:37.1413258Z     [90m305| [39m  }[33m,[39m [34m25_000[39m)[33m;[39m
+2026-04-20T12:23:37.1435595Z     [90m306| [39m
+2026-04-20T12:23:37.1436393Z     [90m307| [39m  it("consumes verified invite OTP even when acceptance fails and bloc…
+2026-04-20T12:23:37.1504515Z     [90m   | [39m  [31m^[39m
+2026-04-20T12:23:37.1535503Z     [90m308| [39m    [35mconst[39m { prisma[33m,[39m buildApp[33m,[39m signAccessToken } [33m=[39m [35mawait[39m [34minitRuntime[39m()[33m;[39m
+2026-04-20T12:23:37.1554608Z     [90m309| [39m    [35mif[39m ([33m![39mdbReady) {
+2026-04-20T12:23:37.1574048Z 
+2026-04-20T12:23:37.1587645Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/29]⎯[22m[39m
+2026-04-20T12:23:37.1613994Z 
+2026-04-20T12:23:37.1615764Z [41m[1m FAIL [22m[49m tests/integration/companyInvitesFlow.spec.ts[2m > [22mcompany invites flow[2m > [22mblocks accepting an expired invite and marks it as expired
+2026-04-20T12:23:37.1644550Z [31m[1mError[22m: Test timed out in 25000ms.
+2026-04-20T12:23:37.1665153Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:23:37.1694970Z [36m [2m❯[22m tests/integration/companyInvitesFlow.spec.ts:[2m449:3[22m[39m
+2026-04-20T12:23:37.1714556Z     [90m447| [39m  }[33m,[39m [34m25_000[39m)[33m;[39m
+2026-04-20T12:23:37.1734324Z     [90m448| [39m
+2026-04-20T12:23:37.1754840Z     [90m449| [39m  it("blocks accepting an expired invite and marks it as expired", asy…
+2026-04-20T12:23:37.1774535Z     [90m   | [39m  [31m^[39m
+2026-04-20T12:23:37.1776133Z     [90m450| [39m    [35mconst[39m { prisma[33m,[39m buildApp[33m,[39m signAccessToken } [33m=[39m [35mawait[39m [34minitRuntime[39m()[33m;[39m
+2026-04-20T12:23:37.1794530Z     [90m451| [39m    [35mif[39m ([33m![39mdbReady) {
+2026-04-20T12:23:37.1800951Z 
+2026-04-20T12:23:37.1802289Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/29]⎯[22m[39m
+2026-04-20T12:23:37.1805745Z 
+2026-04-20T12:23:37.1807094Z [41m[1m FAIL [22m[49m tests/integration/companyInvitesFlow.spec.ts[2m > [22mcompany invites flow[2m > [22mblocks accepting a revoked invite
+2026-04-20T12:23:37.1812763Z [31m[1mError[22m: Test timed out in 25000ms.
+2026-04-20T12:23:37.1814295Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:23:37.1815748Z [36m [2m❯[22m tests/integration/companyInvitesFlow.spec.ts:[2m555:3[22m[39m
+2026-04-20T12:23:37.1816750Z     [90m553| [39m  }[33m,[39m [34m25_000[39m)[33m;[39m
+2026-04-20T12:23:37.1817345Z     [90m554| [39m
+2026-04-20T12:23:37.1818491Z     [90m555| [39m  [34mit[39m([32m"blocks accepting a revoked invite"[39m[33m,[39m [35masync[39m () [33m=>[39m {
+2026-04-20T12:23:37.1819115Z 
+2026-04-20T12:23:37.1819436Z     [90m   | [39m  [31m^[39m
+2026-04-20T12:23:37.1820665Z     [90m556| [39m    [35mconst[39m { prisma[33m,[39m buildApp[33m,[39m signAccessToken } [33m=[39m [35mawait[39m [34minitRuntime[39m()[33m;[39m
+2026-04-20T12:23:37.1821960Z     [90m557| [39m    [35mif[39m ([33m![39mdbReady) {
+2026-04-20T12:23:37.1822492Z 
+2026-04-20T12:23:37.1822952Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/29]⎯[22m[39m
+2026-04-20T12:23:37.1823346Z 
+2026-04-20T12:23:37.1824714Z [41m[1m FAIL [22m[49m tests/integration/companyInvitesFlow.spec.ts[2m > [22mcompany invites flow[2m > [22mblocks reusing an already accepted invite token
+2026-04-20T12:23:37.1826457Z [2m Test Files [22m [1m[31m11 failed[39m[22m[2m | [22m[1m[32m19 passed[39m[22m[90m (30)[39m
+2026-04-20T12:23:37.1827805Z [31m[1mError[22m: Test timed out in 25000ms.
+2026-04-20T12:23:37.1829122Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:23:37.1830471Z [36m [2m❯[22m tests/integration/companyInvitesFlow.spec.ts:[2m640:3[22m[39m
+2026-04-20T12:23:37.1831475Z     [90m638| [39m  }[33m,[39m [34m25_000[39m)[33m;[39m
+2026-04-20T12:23:37.1832104Z     [90m639| [39m
+2026-04-20T12:23:37.1833231Z     [90m640| [39m  [34mit[39m([32m"blocks reusing an already accepted invite token"[39m[33m,[39m [35masync[39m () [33m=>[39m {
+2026-04-20T12:23:37.1834473Z     [90m   | [39m  [31m^[39m
+2026-04-20T12:23:37.1835798Z     [90m641| [39m    [35mconst[39m { prisma[33m,[39m buildApp[33m,[39m signAccessToken } [33m=[39m [35mawait[39m [34minitRuntime[39m()[33m;[39m
+2026-04-20T12:23:37.1837036Z     [90m642| [39m    [35mif[39m ([33m![39mdbReady) {
+2026-04-20T12:23:37.1837462Z 
+2026-04-20T12:23:37.1837892Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/29]⎯[22m[39m
+2026-04-20T12:23:37.1838308Z 
+2026-04-20T12:23:37.1839669Z [41m[1m FAIL [22m[49m tests/integration/jobApplicationsScenario.spec.ts[2m > [22mjob applications scenario[2m > [22msupports job seeker listing and company submission
+2026-04-20T12:23:37.1841156Z [31m[1mError[22m: Test timed out in 20000ms.
+2026-04-20T12:23:37.1842400Z [2m      Tests [22m [1m[31m29 failed[39m[22m[2m | [22m[1m[32m66 passed[39m[22m[90m (95)[39m
+2026-04-20T12:23:37.1844164Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:23:37.1845781Z [36m [2m❯[22m tests/integration/jobApplicationsScenario.spec.ts:[2m14:3[22m[39m
+2026-04-20T12:23:37.1846667Z     [90m 12| [39m  })[33m;[39m
+2026-04-20T12:23:37.1847164Z     [90m 13| [39m
+2026-04-20T12:23:37.1847956Z     [90m 14| [39m  it("supports job seeker listing and company submission", async () =>…
+2026-04-20T12:23:37.1848811Z     [90m   | [39m  [31m^[39m
+2026-04-20T12:23:37.1850101Z     [90m 15| [39m    [35mconst[39m { prisma[33m,[39m buildApp[33m,[39m signAccessToken } [33m=[39m [35mawait[39m [34minitRuntime[39m()[33m;[39m
+2026-04-20T12:23:37.1851357Z     [90m 16| [39m    [35mif[39m ([33m![39mdbReady) {
+2026-04-20T12:23:37.1851746Z 
+2026-04-20T12:23:37.1852240Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/29]⎯[22m[39m
+2026-04-20T12:23:37.1852687Z 
+2026-04-20T12:23:37.1854484Z [41m[1m FAIL [22m[49m tests/integration/jobSeekerBilling.spec.ts[2m > [22mjob seeker billing endpoints[2m > [22mforbids company admin from accessing job seeker wallet endpoint
+2026-04-20T12:23:37.1855990Z [2m     Errors [22m [1m[31m27 errors[39m[22m
+2026-04-20T12:23:37.1856813Z [31m[1mError[22m: Test timed out in 20000ms.
+2026-04-20T12:23:37.1858261Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:23:37.1859782Z [36m [2m❯[22m tests/integration/jobSeekerBilling.spec.ts:[2m83:3[22m[39m
+2026-04-20T12:23:37.1860719Z     [90m 81| [39m  }[33m,[39m [34m20_000[39m)[33m;[39m
+2026-04-20T12:23:37.1861363Z     [90m 82| [39m
+2026-04-20T12:23:37.1862185Z     [90m 83| [39m  it("forbids company admin from accessing job seeker wallet endpoint"…
+2026-04-20T12:23:37.1863102Z     [90m   | [39m  [31m^[39m
+2026-04-20T12:23:37.1864638Z     [90m 84| [39m    [35mconst[39m { prisma[33m,[39m buildApp[33m,[39m signAccessToken } [33m=[39m [35mawait[39m [34minitRuntime[39m()[33m;[39m
+2026-04-20T12:23:37.1865967Z     [90m 85| [39m    [35mif[39m ([33m![39mdbReady) {
+2026-04-20T12:23:37.1866359Z 
+2026-04-20T12:23:37.1866849Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/29]⎯[22m[39m
+2026-04-20T12:23:37.1867254Z 
+2026-04-20T12:23:37.1868937Z [41m[1m FAIL [22m[49m tests/integration/jobSeekerBilling.spec.ts[2m > [22mjob seeker billing endpoints[2m > [22mreturns feature disabled for admin credit adjustment when internal flag is off
+2026-04-20T12:23:37.1870967Z [31m[1mError[22m: Test timed out in 20000ms.
+2026-04-20T12:23:37.1872359Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:23:37.1873968Z [36m [2m❯[22m tests/integration/jobSeekerBilling.spec.ts:[2m130:3[22m[39m
+2026-04-20T12:23:37.1874882Z [2m   Start at [22m 12:12:48
+2026-04-20T12:23:37.1875618Z     [90m128| [39m  }[33m,[39m [34m20_000[39m)[33m;[39m
+2026-04-20T12:23:37.1876278Z     [90m129| [39m
+2026-04-20T12:23:37.1877100Z     [90m130| [39m  it("returns feature disabled for admin credit adjustment when intern…
+2026-04-20T12:23:37.1877925Z     [90m   | [39m  [31m^[39m
+2026-04-20T12:23:37.1879242Z     [90m131| [39m    [35mconst[39m { prisma[33m,[39m buildApp[33m,[39m signAccessToken } [33m=[39m [35mawait[39m [34minitRuntime[39m()[33m;[39m
+2026-04-20T12:23:37.1880551Z     [90m132| [39m    [35mif[39m ([33m![39mdbReady) {
+2026-04-20T12:23:37.1880978Z 
+2026-04-20T12:23:37.1881471Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/29]⎯[22m[39m
+2026-04-20T12:23:37.1881868Z 
+2026-04-20T12:23:37.1883635Z [41m[1m FAIL [22m[49m tests/integration/marketplaceEndToEnd.spec.ts[2m > [22mmarketplace end-to-end flows[2m > [22mruns company FREE flow: register -> posts -> bid -> contract -> invite -> company job listing
+2026-04-20T12:23:37.1886581Z [2m   Duration [22m 648.94s[2m (transform 1.17s, setup 0ms, collect 3.42s, tests 639.72s, environment 7ms, prepare 2.00s)[22m
+2026-04-20T12:23:37.1887885Z [31m[1mError[22m: Test timed out in 35000ms.
+2026-04-20T12:23:37.1889258Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:23:37.1890797Z [36m [2m❯[22m tests/integration/marketplaceEndToEnd.spec.ts:[2m14:3[22m[39m
+2026-04-20T12:23:37.1891696Z     [90m 12| [39m  })[33m;[39m
+2026-04-20T12:23:37.1892269Z     [90m 13| [39m
+2026-04-20T12:23:37.1893169Z     [90m 14| [39m  it("runs company FREE flow: register -> posts -> bid -> contract -> …
+2026-04-20T12:23:37.1894181Z     [90m   | [39m  [31m^[39m
+2026-04-20T12:23:37.1895550Z     [90m 15| [39m    [35mconst[39m { prisma[33m,[39m buildApp[33m,[39m signAccessToken } [33m=[39m [35mawait[39m [34minitRuntime[39m()[33m;[39m
+2026-04-20T12:23:37.1896852Z     [90m 16| [39m    [35mif[39m ([33m![39mdbReady) {
+2026-04-20T12:23:37.1897336Z 
+2026-04-20T12:23:37.1897835Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/29]⎯[22m[39m
+2026-04-20T12:23:37.1898252Z 
+2026-04-20T12:23:37.1899575Z [41m[1m FAIL [22m[49m tests/integration/postUsageLimits.spec.ts[2m > [22mpost usage limits[2m > [22mblocks promoted posts on FREE and allows them on PRO
+2026-04-20T12:23:37.1901009Z [31m[1mError[22m: Test timed out in 25000ms.
+2026-04-20T12:23:37.1902433Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:23:37.1904106Z [36m [2m❯[22m tests/integration/postUsageLimits.spec.ts:[2m228:3[22m[39m
+2026-04-20T12:23:37.1904658Z 
+2026-04-20T12:23:37.1905188Z     [90m226| [39m  }[33m,[39m [34m25_000[39m)[33m;[39m
+2026-04-20T12:23:37.1905838Z     [90m227| [39m
+2026-04-20T12:23:37.1906697Z     [90m228| [39m  it("blocks promoted posts on FREE and allows them on PRO", async () …
+2026-04-20T12:23:37.1907602Z     [90m   | [39m  [31m^[39m
+2026-04-20T12:23:37.1908943Z     [90m229| [39m    [35mconst[39m { prisma[33m,[39m buildApp[33m,[39m signAccessToken } [33m=[39m [35mawait[39m [34minitRuntime[39m()[33m;[39m
+2026-04-20T12:23:37.1910298Z     [90m230| [39m    [35mif[39m ([33m![39mdbReady) {
+2026-04-20T12:23:37.1910740Z 
+2026-04-20T12:23:37.1911226Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/29]⎯[22m[39m
+2026-04-20T12:23:37.1911621Z 
+2026-04-20T12:23:37.1913164Z [41m[1m FAIL [22m[49m tests/integration/releaseSmokeChain.spec.ts[2m > [22mrelease smoke chain[2m > [22mcovers registration -> marketplace -> webhook idempotency in one chain
+2026-04-20T12:23:37.1915205Z [31m[1mError[22m: Test timed out in 30000ms.
+2026-04-20T12:23:37.1916587Z If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+2026-04-20T12:23:37.1918136Z [36m [2m❯[22m tests/integration/releaseSmokeChain.spec.ts:[2m14:3[22m[39m
+2026-04-20T12:23:37.1918997Z     [90m 12| [39m  })[33m;[39m
+2026-04-20T12:23:37.1919526Z     [90m 13| [39m
+2026-04-20T12:23:37.1920396Z     [90m 14| [39m  it("covers registration -> marketplace -> webhook idempotency in one…
+2026-04-20T12:23:37.1921231Z     [90m   | [39m  [31m^[39m
+2026-04-20T12:23:37.1922653Z     [90m 15| [39m    [35mconst[39m { prisma[33m,[39m buildApp[33m,[39m signAccessToken } [33m=[39m [35mawait[39m [34minitRuntime[39m()[33m;[39m
+2026-04-20T12:23:37.1924066Z     [90m 16| [39m    [35mif[39m ([33m![39mdbReady) {
+2026-04-20T12:23:37.1924461Z 
+2026-04-20T12:23:37.1924578Z 
+2026-04-20T12:23:37.1925069Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/29]⎯[22m[39m
+2026-04-20T12:23:37.1925492Z 
+2026-04-20T12:23:37.1926060Z [31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Errors [49m[22m[31m⎯⎯⎯⎯⎯⎯[39m
+2026-04-20T12:23:37.1926753Z [31m[1m
+2026-04-20T12:23:37.1927367Z Vitest caught 27 unhandled errors during the test run.
+2026-04-20T12:23:37.1928683Z This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.[22m[39m
+2026-04-20T12:23:37.1942508Z 
+2026-04-20T12:23:37.1943313Z [31m⎯⎯⎯⎯[39m[1m[41m Unhandled Rejection [49m[22m[31m⎯⎯⎯⎯⎯[39m
+2026-04-20T12:23:37.1992217Z ##[error]AppError: Invite accept OTP requires authenticated email channel
+ ❯ AuthService.requestOtp src/modules/auth/auth.service.ts:623:15
+ ❯ requestOtp src/modules/auth/auth.controller.ts:323:30
+ ❯ Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:95:5
+ ❯ next node_modules/express/lib/router/route.js:149:13
+ ❯ src/shared/middleware/validate.middleware.ts:13:5
+ ❯ Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:95:5
+ ❯ next node_modules/express/lib/router/route.js:149:13
+ ❯ node_modules/express-rate-limit/dist/index.mjs:779:7
+ ❯ processTicksAndRejections node:internal/process/task_queues:103:5
+ ❯ node_modules/express-rate-limit/dist/index.mjs:663:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { statusCode: 400, code: 'OTP_INVALID_CONTEXT', details: undefined }
+This error originated in "tests/integration/companyInvitesFlow.spec.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "allows company admin to invite and user to accept invite". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+2026-04-20T12:23:37.2010831Z [31m[1mAppError[22m: Invite accept OTP requires authenticated email channel[39m
+2026-04-20T12:23:37.2011694Z 
+2026-04-20T12:23:37.2012645Z [36m [2m❯[22m AuthService.requestOtp src/modules/auth/auth.service.ts:[2m623:15[22m[39m
+2026-04-20T12:23:37.2014325Z     [90m621| [39m    [35mif[39m (input[33m.[39mpurpose [33m===[39m [33mOtpPurpose[39m[33m.[39m[33mINVITE_ACCEPT[39m) {
+2026-04-20T12:23:37.2029092Z ##[error]AppError: Invite accept OTP requires authenticated email channel
+ ❯ AuthService.requestOtp src/modules/auth/auth.service.ts:623:15
+ ❯ requestOtp src/modules/auth/auth.controller.ts:323:30
+ ❯ Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:95:5
+ ❯ next node_modules/express/lib/router/route.js:149:13
+ ❯ src/shared/middleware/validate.middleware.ts:13:5
+ ❯ Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:95:5
+ ❯ next node_modules/express/lib/router/route.js:149:13
+ ❯ node_modules/express-rate-limit/dist/index.mjs:779:7
+ ❯ processTicksAndRejections node:internal/process/task_queues:103:5
+ ❯ node_modules/express-rate-limit/dist/index.mjs:663:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { statusCode: 400, code: 'OTP_INVALID_CONTEXT', details: undefined }
+This error originated in "tests/integration/companyInvitesFlow.spec.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "requires a verified INVITE_ACCEPT OTP before accepting invite". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+2026-04-20T12:23:37.2267238Z     [90m622| [39m      [35mif[39m (input[33m.[39mchannel [33m!==[39m [33mOtpChannel[39m[33m.[39m[33mEMAIL[39m [33m||[39m [33m![39minput[33m.[39muserId) {
+2026-04-20T12:23:37.2268666Z     [90m623| [39m        throw new AppError(400, "OTP_INVALID_CONTEXT", "Invite accept …
+2026-04-20T12:23:37.2269384Z     [90m   | [39m              [31m^[39m
+2026-04-20T12:23:37.2269871Z     [90m624| [39m      }
+2026-04-20T12:23:37.2270249Z     [90m625| [39m
+2026-04-20T12:23:37.2271043Z [90m [2m❯[22m requestOtp src/modules/auth/auth.controller.ts:[2m323:30[22m[39m
+2026-04-20T12:23:37.2272346Z [90m [2m❯[22m Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:[2m95:5[22m[39m
+2026-04-20T12:23:37.2274709Z [90m [2m❯[22m next node_modules/express/lib/router/route.js:[2m149:13[22m[39m
+2026-04-20T12:23:37.2275821Z [90m [2m❯[22m src/shared/middleware/validate.middleware.ts:[2m13:5[22m[39m
+2026-04-20T12:23:37.2277205Z [90m [2m❯[22m Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:[2m95:5[22m[39m
+2026-04-20T12:23:37.2278581Z [90m [2m❯[22m next node_modules/express/lib/router/route.js:[2m149:13[22m[39m
+2026-04-20T12:23:37.2279689Z [90m [2m❯[22m node_modules/express-rate-limit/dist/index.mjs:[2m779:7[22m[39m
+2026-04-20T12:23:37.2280977Z [90m [2m❯[22m processTicksAndRejections node:internal/process/task_queues:[2m103:5[22m[39m
+2026-04-20T12:23:37.2282171Z [90m [2m❯[22m node_modules/express-rate-limit/dist/index.mjs:[2m663:5[22m[39m
+2026-04-20T12:23:37.2282615Z 
+2026-04-20T12:23:37.2282980Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+2026-04-20T12:23:37.2284338Z [31m[1mSerialized Error:[22m[39m [90m{ statusCode: 400, code: 'OTP_INVALID_CONTEXT', details: undefined }[39m
+2026-04-20T12:23:37.2286324Z [31mThis error originated in "[1mtests/integration/companyInvitesFlow.spec.ts[22m" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.[39m
+2026-04-20T12:23:37.2288409Z [31mThe latest test that might've caused the error is "[1mallows company admin to invite and user to accept invite[22m". It might mean one of the following:
+2026-04-20T12:23:37.2289592Z - The error was thrown, while Vitest was running this test.
+2026-04-20T12:23:37.2290813Z - If the error occurred after the test had been completed, this was the last documented test before it was thrown.[39m
+2026-04-20T12:23:37.2291756Z 
+2026-04-20T12:23:37.2292238Z [31m⎯⎯⎯⎯[39m[1m[41m Unhandled Rejection [49m[22m[31m⎯⎯⎯⎯⎯[39m
+2026-04-20T12:23:37.2293235Z [31m[1mAppError[22m: Invite accept OTP requires authenticated email channel[39m
+2026-04-20T12:23:37.2294637Z [36m [2m❯[22m AuthService.requestOtp src/modules/auth/auth.service.ts:[2m623:15[22m[39m
+2026-04-20T12:23:37.2296014Z     [90m621| [39m    [35mif[39m (input[33m.[39mpurpose [33m===[39m [33mOtpPurpose[39m[33m.[39m[33mINVITE_ACCEPT[39m) {
+2026-04-20T12:23:37.2297707Z     [90m622| [39m      [35mif[39m (input[33m.[39mchannel [33m!==[39m [33mOtpChannel[39m[33m.[39m[33mEMAIL[39m [33m||[39m [33m![39minput[33m.[39muserId) {
+2026-04-20T12:23:37.2301664Z     [90m623| [39m        throw new AppError(400, "OTP_INVALID_CONTEXT", "Invite accept …
+2026-04-20T12:23:37.2302510Z     [90m   | [39m              [31m^[39m
+2026-04-20T12:23:37.2302998Z     [90m624| [39m      }
+2026-04-20T12:23:37.2303383Z     [90m625| [39m
+2026-04-20T12:23:37.2304379Z [90m [2m❯[22m requestOtp src/modules/auth/auth.controller.ts:[2m323:30[22m[39m
+2026-04-20T12:23:37.2305638Z [90m [2m❯[22m Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:[2m95:5[22m[39m
+2026-04-20T12:23:37.2306829Z [90m [2m❯[22m next node_modules/express/lib/router/route.js:[2m149:13[22m[39m
+2026-04-20T12:23:37.2309141Z [90m [2m❯[22m src/shared/middleware/validate.middleware.ts:[2m13:5[22m[39m
+2026-04-20T12:23:37.2334715Z [90m [2m❯[22m Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:[2m95:5[22m[39m
+2026-04-20T12:23:37.2336275Z [90m [2m❯[22m next node_modules/express/lib/router/route.js:[2m149:13[22m[39m
+2026-04-20T12:23:37.2337619Z [90m [2m❯[22m node_modules/express-rate-limit/dist/index.mjs:[2m779:7[22m[39m
+2026-04-20T12:23:37.2338732Z [90m [2m❯[22m processTicksAndRejections node:internal/process/task_queues:[2m103:5[22m[39m
+2026-04-20T12:23:37.2339898Z [90m [2m❯[22m node_modules/express-rate-limit/dist/index.mjs:[2m663:5[22m[39m
+2026-04-20T12:23:37.2340405Z 
+2026-04-20T12:23:37.2340778Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+2026-04-20T12:23:37.2341830Z [31m[1mSerialized Error:[22m[39m [90m{ statusCode: 400, code: 'OTP_INVALID_CONTEXT', details: undefined }[39m
+2026-04-20T12:23:37.2344194Z [31mThis error originated in "[1mtests/integration/companyInvitesFlow.spec.ts[22m" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.[39m
+2026-04-20T12:23:37.2346601Z [31mThe latest test that might've caused the error is "[1mrequires a verified INVITE_ACCEPT OTP before accepting invite[22m". It might mean one of the following:
+2026-04-20T12:23:37.2347911Z - The error was thrown, while Vitest was running this test.
+2026-04-20T12:23:37.2349286Z - If the error occurred after the test had been completed, this was the last documented test before it was thrown.[39m
+2026-04-20T12:23:37.2350018Z 
+2026-04-20T12:23:37.2350581Z [31m⎯⎯⎯⎯[39m[1m[41m Unhandled Rejection [49m[22m[31m⎯⎯⎯⎯⎯[39m
+2026-04-20T12:23:37.2351660Z [31m[1mAppError[22m: Invite accept OTP requires authenticated email channel[39m
+2026-04-20T12:23:37.2352912Z [36m [2m❯[22m AuthService.requestOtp src/modules/auth/auth.service.ts:[2m623:15[22m[39m
+2026-04-20T12:23:37.2354797Z     [90m621| [39m    [35mif[39m (input[33m.[39mpurpose [33m===[39m [33mOtpPurpose[39m[33m.[39m[33mINVITE_ACCEPT[39m) {
+2026-04-20T12:23:37.2356442Z     [90m622| [39m      [35mif[39m (input[33m.[39mchannel [33m!==[39m [33mOtpChannel[39m[33m.[39m[33mEMAIL[39m [33m||[39m [33m![39minput[33m.[39muserId) {
+2026-04-20T12:23:37.2357767Z     [90m623| [39m        throw new AppError(400, "OTP_INVALID_CONTEXT", "Invite accept …
+2026-04-20T12:23:37.2358435Z     [90m   | [39m              [31m^[39m
+2026-04-20T12:23:37.2358857Z     [90m624| [39m      }
+2026-04-20T12:23:37.2359229Z     [90m625| [39m
+2026-04-20T12:23:37.2360215Z [90m [2m❯[22m requestOtp src/modules/auth/auth.controller.ts:[2m323:30[22m[39m
+2026-04-20T12:23:37.2361629Z [90m [2m❯[22m Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:[2m95:5[22m[39m
+2026-04-20T12:23:37.2362835Z [90m [2m❯[22m next node_modules/express/lib/router/route.js:[2m149:13[22m[39m
+2026-04-20T12:23:37.2364104Z [90m [2m❯[22m src/shared/middleware/validate.middleware.ts:[2m13:5[22m[39m
+2026-04-20T12:23:37.2365482Z [90m [2m❯[22m Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:[2m95:5[22m[39m
+2026-04-20T12:23:37.2366738Z [90m [2m❯[22m next node_modules/express/lib/router/route.js:[2m149:13[22m[39m
+2026-04-20T12:23:37.2367883Z [90m [2m❯[22m node_modules/express-rate-limit/dist/index.mjs:[2m779:7[22m[39m
+2026-04-20T12:23:37.2369136Z [90m [2m❯[22m processTicksAndRejections node:internal/process/task_queues:[2m103:5[22m[39m
+2026-04-20T12:23:37.2370353Z [90m [2m❯[22m node_modules/express-rate-limit/dist/index.mjs:[2m663:5[22m[39m
+2026-04-20T12:23:37.2370905Z 
+2026-04-20T12:23:37.2371336Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+2026-04-20T12:23:37.2372535Z [31m[1mSerialized Error:[22m[39m [90m{ statusCode: 400, code: 'OTP_INVALID_CONTEXT', details: undefined }[39m
+2026-04-20T12:23:37.2374863Z [31mThis error originated in "[1mtests/integration/companyInvitesFlow.spec.ts[22m" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.[39m
+2026-04-20T12:23:37.2377677Z [31mThe latest test that might've caused the error is "[1mconsumes verified invite OTP even when acceptance fails and blocks OTP reuse[22m". It might mean one of the following:
+2026-04-20T12:23:37.2379124Z - The error was thrown, while Vitest was running this test.
+2026-04-20T12:23:37.2380482Z - If the error occurred after the test had been completed, this was the last documented test before it was thrown.[39m
+2026-04-20T12:23:37.2381226Z 
+2026-04-20T12:23:37.2381744Z [31m⎯⎯⎯⎯[39m[1m[41m Unhandled Rejection [49m[22m[31m⎯⎯⎯⎯⎯[39m
+2026-04-20T12:23:37.2382790Z [31m[1mAppError[22m: Invite accept OTP requires authenticated email channel[39m
+2026-04-20T12:23:37.2384107Z [36m [2m❯[22m AuthService.requestOtp src/modules/auth/auth.service.ts:[2m623:15[22m[39m
+2026-04-20T12:23:37.2385568Z     [90m621| [39m    [35mif[39m (input[33m.[39mpurpose [33m===[39m [33mOtpPurpose[39m[33m.[39m[33mINVITE_ACCEPT[39m) {
+2026-04-20T12:23:37.2387371Z     [90m622| [39m      [35mif[39m (input[33m.[39mchannel [33m!==[39m [33mOtpChannel[39m[33m.[39m[33mEMAIL[39m [33m||[39m [33m![39minput[33m.[39muserId) {
+2026-04-20T12:23:37.2388874Z     [90m623| [39m        throw new AppError(400, "OTP_INVALID_CONTEXT", "Invite accept …
+2026-04-20T12:23:37.2389686Z     [90m   | [39m              [31m^[39m
+2026-04-20T12:23:37.2390228Z     [90m624| [39m      }
+2026-04-20T12:23:37.2390657Z     [90m625| [39m
+2026-04-20T12:23:37.2391535Z [90m [2m❯[22m requestOtp src/modules/auth/auth.controller.ts:[2m323:30[22m[39m
+2026-04-20T12:23:37.2392939Z [90m [2m❯[22m Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:[2m95:5[22m[39m
+2026-04-20T12:23:37.2394288Z [90m [2m❯[22m next node_modules/express/lib/router/route.js:[2m149:13[22m[39m
+2026-04-20T12:23:37.2395425Z [90m [2m❯[22m src/shared/middleware/validate.middleware.ts:[2m13:5[22m[39m
+2026-04-20T12:23:37.2396791Z [90m [2m❯[22m Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:[2m95:5[22m[39m
+2026-04-20T12:23:37.2397993Z [90m [2m❯[22m next node_modules/express/lib/router/route.js:[2m149:13[22m[39m
+2026-04-20T12:23:37.2399058Z [90m [2m❯[22m node_modules/express-rate-limit/dist/index.mjs:[2m779:7[22m[39m
+2026-04-20T12:23:37.2400285Z [90m [2m❯[22m processTicksAndRejections node:internal/process/task_queues:[2m103:5[22m[39m
+2026-04-20T12:23:37.2401457Z [90m [2m❯[22m node_modules/express-rate-limit/dist/index.mjs:[2m663:5[22m[39m
+2026-04-20T12:23:37.2402146Z 
+2026-04-20T12:23:37.2402587Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+2026-04-20T12:23:37.2403850Z [31m[1mSerialized Error:[22m[39m [90m{ statusCode: 400, code: 'OTP_INVALID_CONTEXT', details: undefined }[39m
+2026-04-20T12:23:37.2405970Z [31mThis error originated in "[1mtests/integration/companyInvitesFlow.spec.ts[22m" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.[39m
+2026-04-20T12:23:37.2408290Z [31mThe latest test that might've caused the error is "[1mblocks accepting an expired invite and marks it as expired[22m". It might mean one of the following:
+2026-04-20T12:23:37.2409549Z - The error was thrown, while Vitest was running this test.
+2026-04-20T12:23:37.2410815Z - If the error occurred after the test had been completed, this was the last documented test before it was thrown.[39m
+2026-04-20T12:23:37.2411508Z 
+2026-04-20T12:23:37.2412039Z [31m⎯⎯⎯⎯[39m[1m[41m Unhandled Rejection [49m[22m[31m⎯⎯⎯⎯⎯[39m
+2026-04-20T12:23:37.2412779Z [31m[1mAppError[22m: Invite has been revoked[39m
+2026-04-20T12:23:37.2416973Z [36m [2m❯[22m CompanyInvitesService.accept src/modules/companyInvites/companyInvites.service.ts:[2m95:13[22m[39m
+2026-04-20T12:23:37.2417875Z     [90m 93| [39m
+2026-04-20T12:23:37.2418749Z     [90m 94| [39m    [35mif[39m (invite[33m.[39mstatus [33m===[39m [33mCompanyInviteStatus[39m[33m.[39m[33mREVOKED[39m) {
+2026-04-20T12:23:37.2420225Z     [90m 95| [39m      throw new AppError(410, "INVITE_REVOKED", "Invite has been revok…
+2026-04-20T12:23:37.2421042Z     [90m   | [39m            [31m^[39m
+2026-04-20T12:23:37.2421581Z     [90m 96| [39m    }
+2026-04-20T12:23:37.2422050Z     [90m 97| [39m
+2026-04-20T12:23:37.2423249Z [90m [2m❯[22m acceptCompanyInvite src/modules/companyInvites/companyInvites.controller.ts:[2m27:16[22m[39m
+2026-04-20T12:23:37.2424072Z 
+2026-04-20T12:23:37.2424471Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+2026-04-20T12:23:37.2425602Z [31m[1mSerialized Error:[22m[39m [90m{ statusCode: 410, code: 'INVITE_REVOKED', details: undefined }[39m
+2026-04-20T12:23:37.2427719Z [31mThis error originated in "[1mtests/integration/companyInvitesFlow.spec.ts[22m" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.[39m
+2026-04-20T12:23:37.2429836Z [31mThe latest test that might've caused the error is "[1mblocks accepting a revoked invite[22m". It might mean one of the following:
+2026-04-20T12:23:37.2430988Z - The error was thrown, while Vitest was running this test.
+2026-04-20T12:23:37.2432289Z - If the error occurred after the test had been completed, this was the last documented test before it was thrown.[39m
+2026-04-20T12:23:37.2432969Z 
+2026-04-20T12:23:37.2433439Z [31m⎯⎯⎯⎯[39m[1m[41m Unhandled Rejection [49m[22m[31m⎯⎯⎯⎯⎯[39m
+2026-04-20T12:23:37.2434497Z [31m[1mAppError[22m: Invite accept OTP requires authenticated email channel[39m
+2026-04-20T12:23:37.2435698Z [36m [2m❯[22m AuthService.requestOtp src/modules/auth/auth.service.ts:[2m623:15[22m[39m
+2026-04-20T12:23:37.2437044Z     [90m621| [39m    [35mif[39m (input[33m.[39mpurpose [33m===[39m [33mOtpPurpose[39m[33m.[39m[33mINVITE_ACCEPT[39m) {
+2026-04-20T12:23:37.2438738Z     [90m622| [39m      [35mif[39m (input[33m.[39mchannel [33m!==[39m [33mOtpChannel[39m[33m.[39m[33mEMAIL[39m [33m||[39m [33m![39minput[33m.[39muserId) {
+2026-04-20T12:23:37.2440010Z     [90m623| [39m        throw new AppError(400, "OTP_INVALID_CONTEXT", "Invite accept …
+2026-04-20T12:23:37.2440685Z     [90m   | [39m              [31m^[39m
+2026-04-20T12:23:37.2441131Z     [90m624| [39m      }
+2026-04-20T12:23:37.2441504Z     [90m625| [39m
+2026-04-20T12:23:37.2442362Z [90m [2m❯[22m requestOtp src/modules/auth/auth.controller.ts:[2m323:30[22m[39m
+2026-04-20T12:23:37.2443634Z [90m [2m❯[22m Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:[2m95:5[22m[39m
+2026-04-20T12:23:37.2445276Z [90m [2m❯[22m next node_modules/express/lib/router/route.js:[2m149:13[22m[39m
+2026-04-20T12:23:37.2446433Z [90m [2m❯[22m src/shared/middleware/validate.middleware.ts:[2m13:5[22m[39m
+2026-04-20T12:23:37.2447711Z [90m [2m❯[22m Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:[2m95:5[22m[39m
+2026-04-20T12:23:37.2449075Z [90m [2m❯[22m next node_modules/express/lib/router/route.js:[2m149:13[22m[39m
+2026-04-20T12:23:37.2450343Z [90m [2m❯[22m node_modules/express-rate-limit/dist/index.mjs:[2m779:7[22m[39m
+2026-04-20T12:23:37.2451729Z [90m [2m❯[22m processTicksAndRejections node:internal/process/task_queues:[2m103:5[22m[39m
+2026-04-20T12:23:37.2452870Z [90m [2m❯[22m node_modules/express-rate-limit/dist/index.mjs:[2m663:5[22m[39m
+2026-04-20T12:23:37.2453407Z 
+2026-04-20T12:23:37.2454180Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+2026-04-20T12:23:37.2455304Z [31m[1mSerialized Error:[22m[39m [90m{ statusCode: 400, code: 'OTP_INVALID_CONTEXT', details: undefined }[39m
+2026-04-20T12:23:37.2457690Z [31mThis error originated in "[1mtests/integration/companyInvitesFlow.spec.ts[22m" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.[39m
+2026-04-20T12:23:37.2460167Z [31mThe latest test that might've caused the error is "[1mblocks reusing an already accepted invite token[22m". It might mean one of the following:
+2026-04-20T12:23:37.2461686Z - The error was thrown, while Vitest was running this test.
+2026-04-20T12:23:37.2462964Z - If the error occurred after the test had been completed, this was the last documented test before it was thrown.[39m
+2026-04-20T12:23:37.2464143Z 
+2026-04-20T12:23:37.2464696Z [31m⎯⎯⎯⎯[39m[1m[41m Unhandled Rejection [49m[22m[31m⎯⎯⎯⎯⎯[39m
+2026-04-20T12:23:37.2465600Z [31m[1mAppError[22m: Please wait before requesting another OTP[39m
+2026-04-20T12:23:37.2466635Z [36m [2m❯[22m AuthService.resendOtp src/modules/auth/auth.service.ts:[2m770:13[22m[39m
+2026-04-20T12:23:37.2467340Z     [90m768| [39m
+2026-04-20T12:23:37.2468059Z     [90m769| [39m    if (challenge.nextResendAt && challenge.nextResendAt.getTime() > D…
+2026-04-20T12:23:37.2469020Z     [90m770| [39m      throw new AppError(429, "OTP_RESEND_COOLDOWN", "Please wait befo…
+2026-04-20T12:23:37.2469756Z     [90m   | [39m            [31m^[39m
+2026-04-20T12:23:37.2470189Z     [90m771| [39m    }
+2026-04-20T12:23:37.2470628Z     [90m772| [39m
+2026-04-20T12:23:37.2471440Z [90m [2m❯[22m resendOtp src/modules/auth/auth.controller.ts:[2m366:16[22m[39m
+2026-04-20T12:23:37.2471967Z 
+2026-04-20T12:23:37.2472361Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+2026-04-20T12:23:37.2473602Z [31m[1mSerialized Error:[22m[39m [90m{ statusCode: 429, code: 'OTP_RESEND_COOLDOWN', details: undefined }[39m
+2026-04-20T12:23:37.2476107Z [31mThis error originated in "[1mtests/integration/authOtpFlows.spec.ts[22m" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.[39m
+2026-04-20T12:23:37.2478435Z [31mThe latest test that might've caused the error is "[1msupports simulated SMS OTP and enforces resend cooldown[22m". It might mean one of the following:
+2026-04-20T12:23:37.2479532Z - The error was thrown, while Vitest was running this test.
+2026-04-20T12:23:37.2480678Z - If the error occurred after the test had been completed, this was the last documented test before it was thrown.[39m
+2026-04-20T12:23:37.2481278Z 
+2026-04-20T12:23:37.2481779Z [31m⎯⎯⎯⎯[39m[1m[41m Unhandled Rejection [49m[22m[31m⎯⎯⎯⎯⎯[39m
+2026-04-20T12:23:37.2482579Z [31m[1mAppError[22m: A verified registration OTP is required[39m
+2026-04-20T12:23:37.2483658Z [36m [2m❯[22m AuthService.register src/modules/auth/auth.service.ts:[2m384:13[22m[39m
+2026-04-20T12:23:37.2486775Z     [90m382| [39m
+2026-04-20T12:23:37.2487324Z     [90m383| [39m    [35mif[39m ([33m![39misOtpConsumed) {
+2026-04-20T12:23:37.2488161Z     [90m384| [39m      throw new AppError(400, "OTP_REQUIRED", "A verified registration…
+2026-04-20T12:23:37.2489127Z     [90m   | [39m            [31m^[39m
+2026-04-20T12:23:37.2489568Z     [90m385| [39m    }
+2026-04-20T12:23:37.2489932Z     [90m386| [39m
+2026-04-20T12:23:37.2490609Z [90m [2m❯[22m register src/modules/auth/auth.controller.ts:[2m70:16[22m[39m
+2026-04-20T12:23:37.2491028Z 
+2026-04-20T12:23:37.2491386Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+2026-04-20T12:23:37.2492441Z [31m[1mSerialized Error:[22m[39m [90m{ statusCode: 400, code: 'OTP_REQUIRED', details: undefined }[39m
+2026-04-20T12:23:37.2494466Z [31mThis error originated in "[1mtests/integration/authOtpFlows.spec.ts[22m" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.[39m
+2026-04-20T12:23:37.2496640Z [31mThe latest test that might've caused the error is "[1mrequires verified REGISTER_VERIFY OTP before user registration[22m". It might mean one of the following:
+2026-04-20T12:23:37.2497890Z - The error was thrown, while Vitest was running this test.
+2026-04-20T12:23:37.2499221Z - If the error occurred after the test had been completed, this was the last documented test before it was thrown.[39m
+2026-04-20T12:23:37.2499912Z 
+2026-04-20T12:23:37.2500471Z [31m⎯⎯⎯⎯[39m[1m[41m Unhandled Rejection [49m[22m[31m⎯⎯⎯⎯⎯[39m
+2026-04-20T12:23:37.2501317Z [31m[1mAppError[22m: A verified login OTP is required[39m
+2026-04-20T12:23:37.2502813Z [36m [2m❯[22m AuthService.loginWithVerifiedOtp src/modules/auth/auth.service.ts:[2m333:13[22m[39m
+2026-04-20T12:23:37.2503635Z     [90m331| [39m
+2026-04-20T12:23:37.2504386Z     [90m332| [39m    [35mif[39m ([33m![39misOtpConsumed) {
+2026-04-20T12:23:37.2505314Z     [90m333| [39m      throw new AppError(400, "OTP_REQUIRED", "A verified login OTP is…
+2026-04-20T12:23:37.2506110Z     [90m   | [39m            [31m^[39m
+2026-04-20T12:23:37.2506596Z     [90m334| [39m    }
+2026-04-20T12:23:37.2507008Z     [90m335| [39m
+2026-04-20T12:23:37.2507786Z [90m [2m❯[22m loginVerifyOtp src/modules/auth/auth.controller.ts:[2m52:16[22m[39m
+2026-04-20T12:23:37.2508257Z 
+2026-04-20T12:23:37.2508661Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+2026-04-20T12:23:37.2509766Z [31m[1mSerialized Error:[22m[39m [90m{ statusCode: 400, code: 'OTP_REQUIRED', details: undefined }[39m
+2026-04-20T12:23:37.2511799Z [31mThis error originated in "[1mtests/integration/authOtpFlows.spec.ts[22m" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.[39m
+2026-04-20T12:23:37.2514392Z [31mThe latest test that might've caused the error is "[1mcompletes login with verified LOGIN_MFA OTP and rejects challenge reuse[22m". It might mean one of the following:
+2026-04-20T12:23:37.2515627Z - The error was thrown, while Vitest was running this test.
+2026-04-20T12:23:37.2516900Z - If the error occurred after the test had been completed, this was the last documented test before it was thrown.[39m
+2026-04-20T12:23:37.2518035Z 
+2026-04-20T12:23:37.2518858Z [31m⎯⎯⎯⎯[39m[1m[41m Unhandled Rejection [49m[22m[31m⎯⎯⎯⎯⎯[39m
+2026-04-20T12:23:37.2519819Z [31m[1mAppError[22m: OTP challenge expired[39m
+2026-04-20T12:23:37.2520779Z [36m [2m❯[22m AuthService.verifyOtp src/modules/auth/auth.service.ts:[2m725:13[22m[39m
+2026-04-20T12:23:37.2522227Z     [90m723| [39m    [35mif[39m (challenge[33m.[39mexpiresAt[33m.[39m[34mgetTime[39m() [33m<=[39m [33mDate[39m[33m.[39m[34mnow[39m()) {
+2026-04-20T12:23:37.2527857Z     [90m724| [39m      [35mawait[39m repo[33m.[39m[34mmarkOtpExpired[39m(challenge[33m.[39mid)[33m;[39m
+2026-04-20T12:23:37.2529820Z     [90m725| [39m      [35mthrow[39m [35mnew[39m [33mAppError[39m([34m400[39m[33m,[39m [32m"OTP_EXPIRED"[39m[33m,[39m [32m"OTP challenge expired"[39m)[33m;[39m
+2026-04-20T12:23:37.2531086Z     [90m   | [39m            [31m^[39m
+2026-04-20T12:23:37.2531608Z     [90m726| [39m    }
+2026-04-20T12:23:37.2532049Z     [90m727| [39m
+2026-04-20T12:23:37.2532965Z [90m [2m❯[22m verifyOtp src/modules/auth/auth.controller.ts:[2m346:16[22m[39m
+2026-04-20T12:23:37.2533540Z 
+2026-04-20T12:23:37.2534063Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+2026-04-20T12:23:37.2535484Z [31m[1mSerialized Error:[22m[39m [90m{ statusCode: 400, code: 'OTP_EXPIRED', details: undefined }[39m
+2026-04-20T12:23:37.2537810Z [31mThis error originated in "[1mtests/integration/authOtpFlows.spec.ts[22m" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.[39m
+2026-04-20T12:23:37.2540199Z [31mThe latest test that might've caused the error is "[1mrejects expired OTP challenges for verify and resend[22m". It might mean one of the following:
+2026-04-20T12:23:37.2541567Z - The error was thrown, while Vitest was running this test.
+2026-04-20T12:23:37.2542823Z - If the error occurred after the test had been completed, this was the last documented test before it was thrown.[39m
+2026-04-20T12:23:37.2543463Z 
+2026-04-20T12:23:37.2544691Z [31m⎯⎯⎯⎯[39m[1m[41m Unhandled Rejection [49m[22m[31m⎯⎯⎯⎯⎯[39m
+2026-04-20T12:23:37.2545373Z [31m[1mAppError[22m: Invalid OTP code[39m
+2026-04-20T12:23:37.2546361Z [36m [2m❯[22m AuthService.verifyOtp src/modules/auth/auth.service.ts:[2m737:13[22m[39m
+2026-04-20T12:23:37.2547199Z     [90m735| [39m      }
+2026-04-20T12:23:37.2547563Z     [90m736| [39m
+2026-04-20T12:23:37.2549027Z     [90m737| [39m      [35mthrow[39m [35mnew[39m [33mAppError[39m([34m400[39m[33m,[39m [32m"OTP_INVALID"[39m[33m,[39m [32m"Invalid OTP code"[39m)[33m;[39m
+2026-04-20T12:23:37.2549960Z     [90m   | [39m            [31m^[39m
+2026-04-20T12:23:37.2550338Z     [90m738| [39m    }
+2026-04-20T12:23:37.2550651Z     [90m739| [39m
+2026-04-20T12:23:37.2551332Z [90m [2m❯[22m verifyOtp src/modules/auth/auth.controller.ts:[2m346:16[22m[39m
+2026-04-20T12:23:37.2551869Z 
+2026-04-20T12:23:37.2552279Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+2026-04-20T12:23:37.2553437Z [31m[1mSerialized Error:[22m[39m [90m{ statusCode: 400, code: 'OTP_INVALID', details: undefined }[39m
+2026-04-20T12:23:37.2555221Z [31mThis error originated in "[1mtests/integration/authOtpFlows.spec.ts[22m" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.[39m
+2026-04-20T12:23:37.2557586Z [31mThe latest test that might've caused the error is "[1mlocks OTP challenge after max invalid attempts and blocks further verification[22m". It might mean one of the following:
+2026-04-20T12:23:37.2558961Z - The error was thrown, while Vitest was running this test.
+2026-04-20T12:23:37.2560187Z - If the error occurred after the test had been completed, this was the last documented test before it was thrown.[39m
+2026-04-20T12:23:37.2560923Z 
+2026-04-20T12:23:37.2561457Z [31m⎯⎯⎯⎯[39m[1m[41m Unhandled Rejection [49m[22m[31m⎯⎯⎯⎯⎯[39m
+2026-04-20T12:23:37.2562279Z [31m[1mAppError[22m: Please wait before requesting another OTP[39m
+2026-04-20T12:23:37.2563442Z [36m [2m❯[22m AuthService.resendOtp src/modules/auth/auth.service.ts:[2m770:13[22m[39m
+2026-04-20T12:23:37.2564492Z     [90m768| [39m
+2026-04-20T12:23:37.2565177Z     [90m769| [39m    if (challenge.nextResendAt && challenge.nextResendAt.getTime() > D…
+2026-04-20T12:23:37.2566200Z     [90m770| [39m      throw new AppError(429, "OTP_RESEND_COOLDOWN", "Please wait befo…
+2026-04-20T12:23:37.2566992Z     [90m   | [39m            [31m^[39m
+2026-04-20T12:23:37.2567475Z     [90m771| [39m    }
+2026-04-20T12:23:37.2567865Z     [90m772| [39m
+2026-04-20T12:23:37.2568676Z [90m [2m❯[22m resendOtp src/modules/auth/auth.controller.ts:[2m366:16[22m[39m
+2026-04-20T12:23:37.2569041Z 
+2026-04-20T12:23:37.2569259Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+2026-04-20T12:23:37.2569894Z [31m[1mSerialized Error:[22m[39m [90m{ statusCode: 429, code: 'OTP_RESEND_COOLDOWN', details: undefined }[39m
+2026-04-20T12:23:37.2570996Z [31mThis error originated in "[1mtests/integration/authOtpFlows.spec.ts[22m" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.[39m
+2026-04-20T12:23:37.2572260Z [31mThe latest test that might've caused the error is "[1mrotates OTP on resend after cooldown and invalidates previous code[22m". It might mean one of the following:
+2026-04-20T12:23:37.2572981Z - The error was thrown, while Vitest was running this test.
+2026-04-20T12:23:37.2573898Z - If the error occurred after the test had been completed, this was the last documented test before it was thrown.[39m
+2026-04-20T12:23:37.2574333Z 
+2026-04-20T12:23:37.2574620Z [31m⎯⎯⎯⎯[39m[1m[41m Unhandled Rejection [49m[22m[31m⎯⎯⎯⎯⎯[39m
+2026-04-20T12:23:37.2575051Z [31m[1mAppError[22m: Invalid OTP challenge[39m
+2026-04-20T12:23:37.2575622Z [36m [2m❯[22m AuthService.verifyOtp src/modules/auth/auth.service.ts:[2m720:13[22m[39m
+2026-04-20T12:23:37.2576021Z     [90m718| [39m
+2026-04-20T12:23:37.2576681Z     [90m719| [39m    [35mif[39m ([33m![39mchallenge [33m||[39m challenge[33m.[39mstatus [33m!==[39m [33mOtpStatus[39m[33m.[39m[33mPENDING[39m) {
+2026-04-20T12:23:37.2577720Z     [90m720| [39m      [35mthrow[39m [35mnew[39m [33mAppError[39m([34m400[39m[33m,[39m [32m"OTP_INVALID"[39m[33m,[39m [32m"Invalid OTP challenge"[39m)[33m;[39m
+2026-04-20T12:23:37.2578344Z     [90m   | [39m            [31m^[39m
+2026-04-20T12:23:37.2578749Z     [90m721| [39m    }
+2026-04-20T12:23:37.2578970Z     [90m722| [39m
+2026-04-20T12:23:37.2579412Z [90m [2m❯[22m verifyOtp src/modules/auth/auth.controller.ts:[2m346:16[22m[39m
+2026-04-20T12:23:37.2579697Z 
+2026-04-20T12:23:37.2579908Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+2026-04-20T12:23:37.2580514Z [31m[1mSerialized Error:[22m[39m [90m{ statusCode: 400, code: 'OTP_INVALID', details: undefined }[39m
+2026-04-20T12:23:37.2581614Z [31mThis error originated in "[1mtests/integration/authOtpFlows.spec.ts[22m" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.[39m
+2026-04-20T12:23:37.2582859Z [31mThe latest test that might've caused the error is "[1mtreats verified OTP challenge as single-use at verify endpoint[22m". It might mean one of the following:
+2026-04-20T12:23:37.2583566Z - The error was thrown, while Vitest was running this test.
+2026-04-20T12:23:37.2584457Z - If the error occurred after the test had been completed, this was the last documented test before it was thrown.[39m
+2026-04-20T12:23:37.2584863Z 
+2026-04-20T12:23:37.2585131Z [31m⎯⎯⎯⎯[39m[1m[41m Unhandled Rejection [49m[22m[31m⎯⎯⎯⎯⎯[39m
+2026-04-20T12:23:37.2585687Z [31m[1mAppError[22m: Invite accept OTP requires authenticated email channel[39m
+2026-04-20T12:23:37.2586349Z [36m [2m❯[22m AuthService.requestOtp src/modules/auth/auth.service.ts:[2m623:15[22m[39m
+2026-04-20T12:23:37.2587102Z     [90m621| [39m    [35mif[39m (input[33m.[39mpurpose [33m===[39m [33mOtpPurpose[39m[33m.[39m[33mINVITE_ACCEPT[39m) {
+2026-04-20T12:23:37.2588188Z     [90m622| [39m      [35mif[39m (input[33m.[39mchannel [33m!==[39m [33mOtpChannel[39m[33m.[39m[33mEMAIL[39m [33m||[39m [33m![39minput[33m.[39muserId) {
+2026-04-20T12:23:37.2589714Z     [90m623| [39m        throw new AppError(400, "OTP_INVALID_CONTEXT", "Invite accept …
+2026-04-20T12:23:37.2590588Z     [90m   | [39m              [31m^[39m
+2026-04-20T12:23:37.2590948Z     [90m624| [39m      }
+2026-04-20T12:23:37.2591179Z     [90m625| [39m
+2026-04-20T12:23:37.2591635Z [90m [2m❯[22m requestOtp src/modules/auth/auth.controller.ts:[2m323:30[22m[39m
+2026-04-20T12:23:37.2592354Z [90m [2m❯[22m Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:[2m95:5[22m[39m
+2026-04-20T12:23:37.2593021Z [90m [2m❯[22m next node_modules/express/lib/router/route.js:[2m149:13[22m[39m
+2026-04-20T12:23:37.2593598Z [90m [2m❯[22m src/shared/middleware/validate.middleware.ts:[2m13:5[22m[39m
+2026-04-20T12:23:37.2594562Z [90m [2m❯[22m Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:[2m95:5[22m[39m
+2026-04-20T12:23:37.2595248Z [90m [2m❯[22m next node_modules/express/lib/router/route.js:[2m149:13[22m[39m
+2026-04-20T12:23:37.2595852Z [90m [2m❯[22m node_modules/express-rate-limit/dist/index.mjs:[2m779:7[22m[39m
+2026-04-20T12:23:37.2596521Z [90m [2m❯[22m processTicksAndRejections node:internal/process/task_queues:[2m103:5[22m[39m
+2026-04-20T12:23:37.2597179Z [90m [2m❯[22m node_modules/express-rate-limit/dist/index.mjs:[2m663:5[22m[39m
+2026-04-20T12:23:37.2597450Z 
+2026-04-20T12:23:37.2597670Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+2026-04-20T12:23:37.2598297Z [31m[1mSerialized Error:[22m[39m [90m{ statusCode: 400, code: 'OTP_INVALID_CONTEXT', details: undefined }[39m
+2026-04-20T12:23:37.2599448Z [31mThis error originated in "[1mtests/integration/marketplaceEndToEnd.spec.ts[22m" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.[39m
+2026-04-20T12:23:37.2600849Z [31mThe latest test that might've caused the error is "[1mruns company FREE flow: register -> posts -> bid -> contract -> invite -> company job listing[22m". It might mean one of the following:
+2026-04-20T12:23:37.2601641Z - The error was thrown, while Vitest was running this test.
+2026-04-20T12:23:37.2602345Z - If the error occurred after the test had been completed, this was the last documented test before it was thrown.[39m
+2026-04-20T12:23:37.2602848Z 
+2026-04-20T12:23:37.2603122Z [31m⎯⎯⎯⎯[39m[1m[41m Unhandled Rejection [49m[22m[31m⎯⎯⎯⎯⎯[39m
+2026-04-20T12:23:37.2603589Z [31m[1mAppError[22m: Missing Stripe signature header[39m
+2026-04-20T12:23:37.2604757Z [36m [2m❯[22m verifyAndConstructStripeEvent src/shared/stripe/stripeSignature.ts:[2m22:11[22m[39m
+2026-04-20T12:23:37.2605454Z     [90m 20| [39m  const signatureValue = Array.isArray(signatureHeader) ? signatureHea…
+2026-04-20T12:23:37.2605961Z     [90m 21| [39m  [35mif[39m ([33m![39msignatureValue) {
+2026-04-20T12:23:37.2606457Z     [90m 22| [39m    throw new AppError(400, "INVALID_WEBHOOK_SIGNATURE", "Missing Stri…
+2026-04-20T12:23:37.2606888Z     [90m   | [39m          [31m^[39m
+2026-04-20T12:23:37.2607150Z     [90m 23| [39m  }
+2026-04-20T12:23:37.2607373Z     [90m 24| [39m
+2026-04-20T12:23:37.2607888Z [90m [2m❯[22m handleStripeWebhook src/modules/webhooks/webhooks.controller.ts:[2m12:17[22m[39m
+2026-04-20T12:23:37.2608659Z [90m [2m❯[22m Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:[2m95:5[22m[39m
+2026-04-20T12:23:37.2609320Z [90m [2m❯[22m next node_modules/express/lib/router/route.js:[2m149:13[22m[39m
+2026-04-20T12:23:37.2609866Z [90m [2m❯[22m node_modules/body-parser/lib/read.js:[2m137:5[22m[39m
+2026-04-20T12:23:37.2610448Z [90m [2m❯[22m AsyncResource.runInAsyncScope node:async_hooks:[2m214:14[22m[39m
+2026-04-20T12:23:37.2611052Z [90m [2m❯[22m invokeCallback node_modules/raw-body/index.js:[2m238:16[22m[39m
+2026-04-20T12:23:37.2611588Z [90m [2m❯[22m done node_modules/raw-body/index.js:[2m227:7[22m[39m
+2026-04-20T12:23:37.2612267Z [90m [2m❯[22m IncomingMessage.onEnd node_modules/raw-body/index.js:[2m287:7[22m[39m
+2026-04-20T12:23:37.2612843Z [90m [2m❯[22m IncomingMessage.emit node:events:[2m519:28[22m[39m
+2026-04-20T12:23:37.2613075Z 
+2026-04-20T12:23:37.2613297Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+2026-04-20T12:23:37.2614158Z [31m[1mSerialized Error:[22m[39m [90m{ statusCode: 400, code: 'INVALID_WEBHOOK_SIGNATURE', details: undefined }[39m
+2026-04-20T12:23:37.2615358Z [31mThis error originated in "[1mtests/integration/billingWebhookLifecycle.spec.ts[22m" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.[39m
+2026-04-20T12:23:37.2616799Z [31mThe latest test that might've caused the error is "[1mprocesses checkout.session.completed idempotently for company and job seeker checkout lanes[22m". It might mean one of the following:
+2026-04-20T12:23:37.2617622Z - The error was thrown, while Vitest was running this test.
+2026-04-20T12:23:37.2618338Z - If the error occurred after the test had been completed, this was the last documented test before it was thrown.[39m
+2026-04-20T12:23:37.2618724Z 
+2026-04-20T12:23:37.2619002Z [31m⎯⎯⎯⎯[39m[1m[41m Unhandled Rejection [49m[22m[31m⎯⎯⎯⎯⎯[39m
+2026-04-20T12:23:37.2619467Z [31m[1mAppError[22m: Missing Stripe signature header[39m
+2026-04-20T12:23:37.2620196Z [36m [2m❯[22m verifyAndConstructStripeEvent src/shared/stripe/stripeSignature.ts:[2m22:11[22m[39m
+2026-04-20T12:23:37.2620867Z     [90m 20| [39m  const signatureValue = Array.isArray(signatureHeader) ? signatureHea…
+2026-04-20T12:23:37.2621370Z     [90m 21| [39m  [35mif[39m ([33m![39msignatureValue) {
+2026-04-20T12:23:37.2621874Z     [90m 22| [39m    throw new AppError(400, "INVALID_WEBHOOK_SIGNATURE", "Missing Stri…
+2026-04-20T12:23:37.2622288Z     [90m   | [39m          [31m^[39m
+2026-04-20T12:23:37.2622578Z     [90m 23| [39m  }
+2026-04-20T12:23:37.2622807Z     [90m 24| [39m
+2026-04-20T12:23:37.2623332Z [90m [2m❯[22m handleStripeWebhook src/modules/webhooks/webhooks.controller.ts:[2m12:17[22m[39m
+2026-04-20T12:23:37.2624222Z [90m [2m❯[22m Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:[2m95:5[22m[39m
+2026-04-20T12:23:37.2624883Z [90m [2m❯[22m next node_modules/express/lib/router/route.js:[2m149:13[22m[39m
+2026-04-20T12:23:37.2625437Z [90m [2m❯[22m node_modules/body-parser/lib/read.js:[2m137:5[22m[39m
+2026-04-20T12:23:37.2626017Z [90m [2m❯[22m AsyncResource.runInAsyncScope node:async_hooks:[2m214:14[22m[39m
+2026-04-20T12:23:37.2626628Z [90m [2m❯[22m invokeCallback node_modules/raw-body/index.js:[2m238:16[22m[39m
+2026-04-20T12:23:37.2627156Z [90m [2m❯[22m done node_modules/raw-body/index.js:[2m227:7[22m[39m
+2026-04-20T12:23:37.2627735Z [90m [2m❯[22m IncomingMessage.onEnd node_modules/raw-body/index.js:[2m287:7[22m[39m
+2026-04-20T12:23:37.2628297Z [90m [2m❯[22m IncomingMessage.emit node:events:[2m519:28[22m[39m
+2026-04-20T12:23:37.2628540Z 
+2026-04-20T12:23:37.2628752Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+2026-04-20T12:23:37.2629410Z [31m[1mSerialized Error:[22m[39m [90m{ statusCode: 400, code: 'INVALID_WEBHOOK_SIGNATURE', details: undefined }[39m
+2026-04-20T12:23:37.2630592Z [31mThis error originated in "[1mtests/integration/billingWebhookLifecycle.spec.ts[22m" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.[39m
+2026-04-20T12:23:37.2632031Z [31mThe latest test that might've caused the error is "[1mapplies subscription created/deleted webhook lifecycle and keeps a single current subscription[22m". It might mean one of the following:
+2026-04-20T12:23:37.2632847Z - The error was thrown, while Vitest was running this test.
+2026-04-20T12:23:37.2633551Z - If the error occurred after the test had been completed, this was the last documented test before it was thrown.[39m
+2026-04-20T12:23:37.2634097Z 
+2026-04-20T12:23:37.2634483Z [31m⎯⎯⎯⎯[39m[1m[41m Unhandled Rejection [49m[22m[31m⎯⎯⎯⎯⎯[39m
+2026-04-20T12:23:37.2634950Z [31m[1mAppError[22m: Missing Stripe signature header[39m
+2026-04-20T12:23:37.2635584Z [36m [2m❯[22m verifyAndConstructStripeEvent src/shared/stripe/stripeSignature.ts:[2m22:11[22m[39m
+2026-04-20T12:23:37.2636247Z     [90m 20| [39m  const signatureValue = Array.isArray(signatureHeader) ? signatureHea…
+2026-04-20T12:23:37.2636757Z     [90m 21| [39m  [35mif[39m ([33m![39msignatureValue) {
+2026-04-20T12:23:37.2637259Z     [90m 22| [39m    throw new AppError(400, "INVALID_WEBHOOK_SIGNATURE", "Missing Stri…
+2026-04-20T12:23:37.2637678Z     [90m   | [39m          [31m^[39m
+2026-04-20T12:23:37.2637932Z     [90m 23| [39m  }
+2026-04-20T12:23:37.2638150Z     [90m 24| [39m
+2026-04-20T12:23:37.2638674Z [90m [2m❯[22m handleStripeWebhook src/modules/webhooks/webhooks.controller.ts:[2m12:17[22m[39m
+2026-04-20T12:23:37.2639445Z [90m [2m❯[22m Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:[2m95:5[22m[39m
+2026-04-20T12:23:37.2640114Z [90m [2m❯[22m next node_modules/express/lib/router/route.js:[2m149:13[22m[39m
+2026-04-20T12:23:37.2640655Z [90m [2m❯[22m node_modules/body-parser/lib/read.js:[2m137:5[22m[39m
+2026-04-20T12:23:37.2641231Z [90m [2m❯[22m AsyncResource.runInAsyncScope node:async_hooks:[2m214:14[22m[39m
+2026-04-20T12:23:37.2641902Z [90m [2m❯[22m invokeCallback node_modules/raw-body/index.js:[2m238:16[22m[39m
+2026-04-20T12:23:37.2642448Z [90m [2m❯[22m done node_modules/raw-body/index.js:[2m227:7[22m[39m
+2026-04-20T12:23:37.2643035Z [90m [2m❯[22m IncomingMessage.onEnd node_modules/raw-body/index.js:[2m287:7[22m[39m
+2026-04-20T12:23:37.2643593Z [90m [2m❯[22m IncomingMessage.emit node:events:[2m519:28[22m[39m
+2026-04-20T12:23:37.2643980Z 
+2026-04-20T12:23:37.2644199Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+2026-04-20T12:23:37.2644860Z [31m[1mSerialized Error:[22m[39m [90m{ statusCode: 400, code: 'INVALID_WEBHOOK_SIGNATURE', details: undefined }[39m
+2026-04-20T12:23:37.2646053Z [31mThis error originated in "[1mtests/integration/billingWebhookLifecycle.spec.ts[22m" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.[39m
+2026-04-20T12:23:37.2647419Z [31mThe latest test that might've caused the error is "[1mhandles subscription.updated replay idempotently without extra version bumps[22m". It might mean one of the following:
+2026-04-20T12:23:37.2648191Z - The error was thrown, while Vitest was running this test.
+2026-04-20T12:23:37.2648897Z - If the error occurred after the test had been completed, this was the last documented test before it was thrown.[39m
+2026-04-20T12:23:37.2649292Z 
+2026-04-20T12:23:37.2649563Z [31m⎯⎯⎯⎯[39m[1m[41m Unhandled Rejection [49m[22m[31m⎯⎯⎯⎯⎯[39m
+2026-04-20T12:23:37.2650029Z [31m[1mAppError[22m: Missing Stripe signature header[39m
+2026-04-20T12:23:37.2650679Z [36m [2m❯[22m verifyAndConstructStripeEvent src/shared/stripe/stripeSignature.ts:[2m22:11[22m[39m
+2026-04-20T12:23:37.2651347Z     [90m 20| [39m  const signatureValue = Array.isArray(signatureHeader) ? signatureHea…
+2026-04-20T12:23:37.2651850Z     [90m 21| [39m  [35mif[39m ([33m![39msignatureValue) {
+2026-04-20T12:23:37.2652351Z     [90m 22| [39m    throw new AppError(400, "INVALID_WEBHOOK_SIGNATURE", "Missing Stri…
+2026-04-20T12:23:37.2652775Z     [90m   | [39m          [31m^[39m
+2026-04-20T12:23:37.2653031Z     [90m 23| [39m  }
+2026-04-20T12:23:37.2653239Z     [90m 24| [39m
+2026-04-20T12:23:37.2653896Z [90m [2m❯[22m handleStripeWebhook src/modules/webhooks/webhooks.controller.ts:[2m12:17[22m[39m
+2026-04-20T12:23:37.2654682Z [90m [2m❯[22m Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:[2m95:5[22m[39m
+2026-04-20T12:23:37.2655348Z [90m [2m❯[22m next node_modules/express/lib/router/route.js:[2m149:13[22m[39m
+2026-04-20T12:23:37.2655894Z [90m [2m❯[22m node_modules/body-parser/lib/read.js:[2m137:5[22m[39m
+2026-04-20T12:23:37.2656568Z [90m [2m❯[22m AsyncResource.runInAsyncScope node:async_hooks:[2m214:14[22m[39m
+2026-04-20T12:23:37.2657182Z [90m [2m❯[22m invokeCallback node_modules/raw-body/index.js:[2m238:16[22m[39m
+2026-04-20T12:23:37.2657722Z [90m [2m❯[22m done node_modules/raw-body/index.js:[2m227:7[22m[39m
+2026-04-20T12:23:37.2658320Z [90m [2m❯[22m IncomingMessage.onEnd node_modules/raw-body/index.js:[2m287:7[22m[39m
+2026-04-20T12:23:37.2658903Z [90m [2m❯[22m IncomingMessage.emit node:events:[2m519:28[22m[39m
+2026-04-20T12:23:37.2659143Z 
+2026-04-20T12:23:37.2659357Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+2026-04-20T12:23:37.2660020Z [31m[1mSerialized Error:[22m[39m [90m{ statusCode: 400, code: 'INVALID_WEBHOOK_SIGNATURE', details: undefined }[39m
+2026-04-20T12:23:37.2661222Z [31mThis error originated in "[1mtests/integration/billingWebhookLifecycle.spec.ts[22m" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.[39m
+2026-04-20T12:23:37.2662663Z [31mThe latest test that might've caused the error is "[1mhandles invoice replay idempotently and keeps single billing event rows per provider event id[22m". It might mean one of the following:
+2026-04-20T12:23:37.2663482Z - The error was thrown, while Vitest was running this test.
+2026-04-20T12:23:37.2664297Z - If the error occurred after the test had been completed, this was the last documented test before it was thrown.[39m
+2026-04-20T12:23:37.2664756Z 
+2026-04-20T12:23:37.2665029Z [31m⎯⎯⎯⎯[39m[1m[41m Unhandled Rejection [49m[22m[31m⎯⎯⎯⎯⎯[39m
+2026-04-20T12:23:37.2665455Z [31m[1mPrismaClientKnownRequestError[22m: 
+2026-04-20T12:23:37.2665836Z Invalid `prisma.usageCounter.upsert()` invocation in
+2026-04-20T12:23:37.2666453Z /home/runner/work/cargo-agent-backend/cargo-agent-backend/src/shared/billing/entitlements.service.ts:144:51
+2026-04-20T12:23:37.2666842Z 
+2026-04-20T12:23:37.2666925Z   141   },
+2026-04-20T12:23:37.2667095Z   142 });
+2026-04-20T12:23:37.2667268Z   143 
+2026-04-20T12:23:37.2667610Z → 144 const counter = await prisma.usageCounter.upsert(
+2026-04-20T12:23:37.2668166Z Unique constraint failed on the fields: (`companyId`,`metric`,`periodStart`)[39m
+2026-04-20T12:23:37.2668929Z [90m [2m❯[22m ei.handleRequestError node_modules/@prisma/client/src/runtime/RequestHandler.ts:[2m228:13[22m[39m
+2026-04-20T12:23:37.2669837Z [90m [2m❯[22m ei.handleAndLogRequestError node_modules/@prisma/client/src/runtime/RequestHandler.ts:[2m174:12[22m[39m
+2026-04-20T12:23:37.2670659Z [90m [2m❯[22m ei.request node_modules/@prisma/client/src/runtime/RequestHandler.ts:[2m143:12[22m[39m
+2026-04-20T12:23:37.2671376Z [90m [2m❯[22m a node_modules/@prisma/client/src/runtime/getPrismaClient.ts:[2m833:24[22m[39m
+2026-04-20T12:23:37.2672151Z [36m [2m❯[22m EntitlementsService.getUsage src/shared/billing/entitlements.service.ts:[2m144:25[22m[39m
+2026-04-20T12:23:37.2672663Z     [90m142| [39m        })[33m;[39m
+2026-04-20T12:23:37.2672922Z     [90m143| [39m
+2026-04-20T12:23:37.2673497Z     [90m144| [39m        [35mconst[39m counter [33m=[39m [35mawait[39m prisma[33m.[39musageCounter[33m.[39m[34mupsert[39m({
+2026-04-20T12:23:37.2674253Z     [90m   | [39m                        [31m^[39m
+2026-04-20T12:23:37.2674594Z     [90m145| [39m          where[33m:[39m {
+2026-04-20T12:23:37.2674992Z     [90m146| [39m            companyId_metric_periodStart[33m:[39m {
+2026-04-20T12:23:37.2675611Z [90m [2m❯[22m UsageService.getUsage src/shared/billing/usage.service.ts:[2m10:19[22m[39m
+2026-04-20T12:23:37.2676324Z [90m [2m❯[22m UsageService.assertCanUse src/shared/billing/usage.service.ts:[2m21:19[22m[39m
+2026-04-20T12:23:37.2677017Z [90m [2m❯[22m src/shared/middleware/enforceUsageLimit.middleware.ts:[2m16:20[22m[39m
+2026-04-20T12:23:37.2677324Z 
+2026-04-20T12:23:37.2677553Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+2026-04-20T12:23:37.2678566Z [31m[1mSerialized Error:[22m[39m [90m{ code: 'P2002', meta: { modelName: 'UsageCounter', target: [ 'companyId', 'metric', 'periodStart' ] }, clientVersion: '6.19.2', batchRequestIdx: undefined }[39m
+2026-04-20T12:23:37.2680033Z [31mThis error originated in "[1mtests/integration/bidUsageLimits.spec.ts[22m" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.[39m
+2026-04-20T12:23:37.2681246Z [31mThe latest test that might've caused the error is "[1mallows only one concurrent bid when monthly limit is 1[22m". It might mean one of the following:
+2026-04-20T12:23:37.2681941Z - The error was thrown, while Vitest was running this test.
+2026-04-20T12:23:37.2682655Z - If the error occurred after the test had been completed, this was the last documented test before it was thrown.[39m
+2026-04-20T12:23:37.2683039Z 
+2026-04-20T12:23:37.2683326Z [31m⎯⎯⎯⎯[39m[1m[41m Unhandled Rejection [49m[22m[31m⎯⎯⎯⎯⎯[39m
+2026-04-20T12:23:37.2683970Z [31m[1mAppError[22m: Your plan does not include this feature[39m
+2026-04-20T12:23:37.2684580Z [36m [2m❯[22m PostsService.create src/modules/posts/posts.service.ts:[2m81:9[22m[39m
+2026-04-20T12:23:37.2685201Z     [90m 79| [39m   const feature = await entitlementsService.hasFeature(companyId, "PR…
+2026-04-20T12:23:37.2685729Z     [90m 80| [39m   [35mif[39m ([33m![39mfeature[33m.[39mallowed) {
+2026-04-20T12:23:37.2686251Z     [90m 81| [39m  throw new AppError(403, "PLAN_FEATURE_REQUIRED", "Your plan does not…
+2026-04-20T12:23:37.2686748Z     [90m   | [39m        [31m^[39m
+2026-04-20T12:23:37.2687147Z     [90m 82| [39m    feature[33m:[39m [32m"PROMOTED_POSTS"[39m[33m,[39m
+2026-04-20T12:23:37.2687733Z     [90m 83| [39m    planCode[33m:[39m feature[33m.[39mentitlements[33m.[39mplanCode[33m,[39m
+2026-04-20T12:23:37.2688380Z [90m [2m❯[22m createPost src/modules/posts/posts.controller.ts:[2m23:16[22m[39m
+2026-04-20T12:23:37.2688663Z 
+2026-04-20T12:23:37.2688883Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+2026-04-20T12:23:37.2689879Z [31m[1mSerialized Error:[22m[39m [90m{ statusCode: 403, code: 'PLAN_FEATURE_REQUIRED', details: { feature: 'PROMOTED_POSTS', planCode: 'FREE', companyId: 'cmo75xuej000r3f2u5x49shic' } }[39m
+2026-04-20T12:23:37.2691251Z [31mThis error originated in "[1mtests/integration/postUsageLimits.spec.ts[22m" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.[39m
+2026-04-20T12:23:37.2692485Z [31mThe latest test that might've caused the error is "[1mblocks promoted posts on FREE and allows them on PRO[22m". It might mean one of the following:
+2026-04-20T12:23:37.2693168Z - The error was thrown, while Vitest was running this test.
+2026-04-20T12:23:37.2694003Z - If the error occurred after the test had been completed, this was the last documented test before it was thrown.[39m
+2026-04-20T12:23:37.2694391Z 
+2026-04-20T12:23:37.2694673Z [31m⎯⎯⎯⎯[39m[1m[41m Unhandled Rejection [49m[22m[31m⎯⎯⎯⎯⎯[39m
+2026-04-20T12:23:37.2695182Z [31m[1mAppError[22m: Company does not have a Stripe customer yet[39m
+2026-04-20T12:23:37.2696121Z [36m [2m❯[22m SubscriptionsService.createBillingPortalSession src/modules/subscriptions/subscriptions.service.ts:[2m219:13[22m[39m
+2026-04-20T12:23:37.2696720Z     [90m217| [39m
+2026-04-20T12:23:37.2697109Z     [90m218| [39m    [35mif[39m ([33m![39mcompany[33m.[39mstripeCustomerId) {
+2026-04-20T12:23:37.2697674Z     [90m219| [39m      throw new AppError(409, "STRIPE_CUSTOMER_NOT_FOUND", "Company do…
+2026-04-20T12:23:37.2698103Z     [90m   | [39m            [31m^[39m
+2026-04-20T12:23:37.2698359Z     [90m220| [39m    }
+2026-04-20T12:23:37.2698589Z     [90m221| [39m
+2026-04-20T12:23:37.2699202Z [90m [2m❯[22m createBillingPortalSession src/modules/subscriptions/subscriptions.controller.ts:[2m28:16[22m[39m
+2026-04-20T12:23:37.2699606Z 
+2026-04-20T12:23:37.2699824Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+2026-04-20T12:23:37.2700475Z [31m[1mSerialized Error:[22m[39m [90m{ statusCode: 409, code: 'STRIPE_CUSTOMER_NOT_FOUND', details: undefined }[39m
+2026-04-20T12:23:37.2701609Z [31mThis error originated in "[1mtests/integration/billingPlans.spec.ts[22m" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.[39m
+2026-04-20T12:23:37.2702945Z [31mThe latest test that might've caused the error is "[1mreturns provider-not-configured for billing portal when Stripe keys are missing[22m". It might mean one of the following:
+2026-04-20T12:23:37.2703780Z - The error was thrown, while Vitest was running this test.
+2026-04-20T12:23:37.2704478Z - If the error occurred after the test had been completed, this was the last documented test before it was thrown.[39m
+2026-04-20T12:23:37.2704867Z 
+2026-04-20T12:23:37.2705138Z [31m⎯⎯⎯⎯[39m[1m[41m Unhandled Rejection [49m[22m[31m⎯⎯⎯⎯⎯[39m
+2026-04-20T12:23:37.2705629Z [31m[1mAppError[22m: Only job seekers can access this resource[39m
+2026-04-20T12:23:37.2706337Z [36m [2m❯[22m requireJobSeeker src/modules/jobSeekerBilling/jobSeekerBilling.helpers.ts:[2m12:11[22m[39m
+2026-04-20T12:23:37.2707150Z     [90m 10| [39m[35mexport[39m [35mfunction[39m [34mrequireJobSeeker[39m(auth[33m:[39m [33mAuthContext[39m) {
+2026-04-20T12:23:37.2708057Z     [90m 11| [39m  [35mif[39m ([33m![39mauth[33m.[39muserId [33m||[39m auth[33m.[39mrole [33m!==[39m [33mUserRole[39m[33m.[39m[33mJOB_SEEKER[39m) {
+2026-04-20T12:23:37.2708868Z     [90m 12| [39m    throw new AppError(403, "FORBIDDEN", "Only job seekers can access …
+2026-04-20T12:23:37.2709283Z     [90m   | [39m          [31m^[39m
+2026-04-20T12:23:37.2709534Z     [90m 13| [39m  }
+2026-04-20T12:23:37.2709751Z     [90m 14| [39m}
+2026-04-20T12:23:37.2710418Z [90m [2m❯[22m JobSeekerBillingService.getWallet src/modules/jobSeekerBilling/jobSeekerBilling.service.ts:[2m17:5[22m[39m
+2026-04-20T12:23:37.2711311Z [90m [2m❯[22m getMyWallet src/modules/jobSeekerBilling/jobSeekerBilling.controller.ts:[2m10:30[22m[39m
+2026-04-20T12:23:37.2712105Z [90m [2m❯[22m Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:[2m95:5[22m[39m
+2026-04-20T12:23:37.2712768Z [90m [2m❯[22m next node_modules/express/lib/router/route.js:[2m149:13[22m[39m
+2026-04-20T12:23:37.2713353Z [90m [2m❯[22m src/shared/middleware/validate.middleware.ts:[2m13:5[22m[39m
+2026-04-20T12:23:37.2714106Z [90m [2m❯[22m Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:[2m95:5[22m[39m
+2026-04-20T12:23:37.2714774Z [90m [2m❯[22m next node_modules/express/lib/router/route.js:[2m149:13[22m[39m
+2026-04-20T12:23:37.2715389Z [90m [2m❯[22m requireAuth src/shared/middleware/auth.middleware.ts:[2m46:12[22m[39m
+2026-04-20T12:23:37.2715684Z 
+2026-04-20T12:23:37.2715896Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+2026-04-20T12:23:37.2716490Z [31m[1mSerialized Error:[22m[39m [90m{ statusCode: 403, code: 'FORBIDDEN', details: undefined }[39m
+2026-04-20T12:23:37.2717590Z [31mThis error originated in "[1mtests/integration/jobSeekerBilling.spec.ts[22m" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.[39m
+2026-04-20T12:23:37.2718969Z [31mThe latest test that might've caused the error is "[1mforbids company admin from accessing job seeker wallet endpoint[22m". It might mean one of the following:
+2026-04-20T12:23:37.2719692Z - The error was thrown, while Vitest was running this test.
+2026-04-20T12:23:37.2720391Z - If the error occurred after the test had been completed, this was the last documented test before it was thrown.[39m
+2026-04-20T12:23:37.2720789Z 
+2026-04-20T12:23:37.2721060Z [31m⎯⎯⎯⎯[39m[1m[41m Unhandled Rejection [49m[22m[31m⎯⎯⎯⎯⎯[39m
+2026-04-20T12:23:37.2721560Z [31m[1mAppError[22m: Manual credit adjustments are disabled[39m
+2026-04-20T12:23:37.2722440Z [36m [2m❯[22m JobSeekerBillingService.adminAdjustCredits src/modules/jobSeekerBilling/jobSeekerBilling.service.ts:[2m181:13[22m[39m
+2026-04-20T12:23:37.2723052Z     [90m179| [39m  ) {
+2026-04-20T12:23:37.2723535Z     [90m180| [39m    [35mif[39m ([33m![39menv[33m.[39m[33mINTERNAL_ADMIN_ADJUSTMENTS_ENABLED[39m) {
+2026-04-20T12:23:37.2724198Z     [90m181| [39m      throw new AppError(403, "FEATURE_DISABLED", "Manual credit adjus…
+2026-04-20T12:23:37.2724621Z     [90m   | [39m            [31m^[39m
+2026-04-20T12:23:37.2724888Z     [90m182| [39m    }
+2026-04-20T12:23:37.2725124Z     [90m183| [39m
+2026-04-20T12:23:37.2725769Z [90m [2m❯[22m adminAdjustJobSeekerCredits src/modules/jobSeekerBilling/jobSeekerBilling.controller.ts:[2m49:30[22m[39m
+2026-04-20T12:23:37.2726636Z [90m [2m❯[22m Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:[2m95:5[22m[39m
+2026-04-20T12:23:37.2727293Z [90m [2m❯[22m next node_modules/express/lib/router/route.js:[2m149:13[22m[39m
+2026-04-20T12:23:37.2727875Z [90m [2m❯[22m src/shared/middleware/validate.middleware.ts:[2m13:5[22m[39m
+2026-04-20T12:23:37.2728560Z [90m [2m❯[22m Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:[2m95:5[22m[39m
+2026-04-20T12:23:37.2729213Z [90m [2m❯[22m next node_modules/express/lib/router/route.js:[2m149:13[22m[39m
+2026-04-20T12:23:37.2729825Z [90m [2m❯[22m requireAuth src/shared/middleware/auth.middleware.ts:[2m46:12[22m[39m
+2026-04-20T12:23:37.2730122Z 
+2026-04-20T12:23:37.2730330Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+2026-04-20T12:23:37.2731025Z [31m[1mSerialized Error:[22m[39m [90m{ statusCode: 403, code: 'FEATURE_DISABLED', details: undefined }[39m
+2026-04-20T12:23:37.2732142Z [31mThis error originated in "[1mtests/integration/jobSeekerBilling.spec.ts[22m" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.[39m
+2026-04-20T12:23:37.2733479Z [31mThe latest test that might've caused the error is "[1mreturns feature disabled for admin credit adjustment when internal flag is off[22m". It might mean one of the following:
+2026-04-20T12:23:37.2734291Z - The error was thrown, while Vitest was running this test.
+2026-04-20T12:23:37.2735004Z - If the error occurred after the test had been completed, this was the last documented test before it was thrown.[39m
+2026-04-20T12:23:37.2735398Z 
+2026-04-20T12:23:37.2735667Z [31m⎯⎯⎯⎯[39m[1m[41m Unhandled Rejection [49m[22m[31m⎯⎯⎯⎯⎯[39m
+2026-04-20T12:23:37.2736135Z [31m[1mAppError[22m: Missing Stripe signature header[39m
+2026-04-20T12:23:37.2736788Z [36m [2m❯[22m verifyAndConstructStripeEvent src/shared/stripe/stripeSignature.ts:[2m22:11[22m[39m
+2026-04-20T12:23:37.2737451Z     [90m 20| [39m  const signatureValue = Array.isArray(signatureHeader) ? signatureHea…
+2026-04-20T12:23:37.2737955Z     [90m 21| [39m  [35mif[39m ([33m![39msignatureValue) {
+2026-04-20T12:23:37.2738456Z     [90m 22| [39m    throw new AppError(400, "INVALID_WEBHOOK_SIGNATURE", "Missing Stri…
+2026-04-20T12:23:37.2738875Z     [90m   | [39m          [31m^[39m
+2026-04-20T12:23:37.2739136Z     [90m 23| [39m  }
+2026-04-20T12:23:37.2739351Z     [90m 24| [39m
+2026-04-20T12:23:37.2739949Z [90m [2m❯[22m handleStripeWebhook src/modules/webhooks/webhooks.controller.ts:[2m12:17[22m[39m
+2026-04-20T12:23:37.2740718Z [90m [2m❯[22m Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:[2m95:5[22m[39m
+2026-04-20T12:23:37.2741379Z [90m [2m❯[22m next node_modules/express/lib/router/route.js:[2m149:13[22m[39m
+2026-04-20T12:23:37.2741926Z [90m [2m❯[22m node_modules/body-parser/lib/read.js:[2m137:5[22m[39m
+2026-04-20T12:23:37.2742503Z [90m [2m❯[22m AsyncResource.runInAsyncScope node:async_hooks:[2m214:14[22m[39m
+2026-04-20T12:23:37.2743113Z [90m [2m❯[22m invokeCallback node_modules/raw-body/index.js:[2m238:16[22m[39m
+2026-04-20T12:23:37.2743650Z [90m [2m❯[22m done node_modules/raw-body/index.js:[2m227:7[22m[39m
+2026-04-20T12:23:37.2744292Z [90m [2m❯[22m IncomingMessage.onEnd node_modules/raw-body/index.js:[2m287:7[22m[39m
+2026-04-20T12:23:37.2744850Z [90m [2m❯[22m IncomingMessage.emit node:events:[2m519:28[22m[39m
+2026-04-20T12:23:37.2745099Z 
+2026-04-20T12:23:37.2745312Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+2026-04-20T12:23:37.2745986Z [31m[1mSerialized Error:[22m[39m [90m{ statusCode: 400, code: 'INVALID_WEBHOOK_SIGNATURE', details: undefined }[39m
+2026-04-20T12:23:37.2747137Z [31mThis error originated in "[1mtests/integration/releaseSmokeChain.spec.ts[22m" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.[39m
+2026-04-20T12:23:37.2748513Z [31mThe latest test that might've caused the error is "[1mcovers registration -> marketplace -> webhook idempotency in one chain[22m". It might mean one of the following:
+2026-04-20T12:23:37.2749248Z - The error was thrown, while Vitest was running this test.
+2026-04-20T12:23:37.2749940Z - If the error occurred after the test had been completed, this was the last documented test before it was thrown.[39m
+2026-04-20T12:23:37.2750335Z 
+2026-04-20T12:23:37.2750607Z [31m⎯⎯⎯⎯[39m[1m[41m Unhandled Rejection [49m[22m[31m⎯⎯⎯⎯⎯[39m
+2026-04-20T12:23:37.2751065Z [31m[1mAppError[22m: Invalid email or password[39m
+2026-04-20T12:23:37.2751623Z [36m [2m❯[22m AuthService.login src/modules/auth/auth.service.ts:[2m248:13[22m[39m
+2026-04-20T12:23:37.2752022Z     [90m246| [39m
+2026-04-20T12:23:37.2752353Z     [90m247| [39m    [35mif[39m ([33m![39misPasswordValid) {
+2026-04-20T12:23:37.2752869Z     [90m248| [39m      throw new AppError(401, "INVALID_CREDENTIALS", "Invalid email or…
+2026-04-20T12:23:37.2753285Z     [90m   | [39m            [31m^[39m
+2026-04-20T12:23:37.2753555Z     [90m249| [39m    }
+2026-04-20T12:23:37.2753827Z     [90m250| [39m
+2026-04-20T12:23:37.2754239Z [90m [2m❯[22m login src/modules/auth/auth.controller.ts:[2m10:16[22m[39m
+2026-04-20T12:23:37.2754498Z 
+2026-04-20T12:23:37.2754710Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+2026-04-20T12:23:37.2755343Z [31m[1mSerialized Error:[22m[39m [90m{ statusCode: 401, code: 'INVALID_CREDENTIALS', details: undefined }[39m
+2026-04-20T12:23:37.2756491Z [31mThis error originated in "[1mtests/integration/authPasswordFlows.spec.ts[22m" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.[39m
+2026-04-20T12:23:37.2757703Z [31mThe latest test that might've caused the error is "[1mresets password and invalidates old access token[22m". It might mean one of the following:
+2026-04-20T12:23:37.2758375Z - The error was thrown, while Vitest was running this test.
+2026-04-20T12:23:37.2759076Z - If the error occurred after the test had been completed, this was the last documented test before it was thrown.[39m
+2026-04-20T12:23:37.2759466Z 
+2026-04-20T12:23:37.2759739Z [31m⎯⎯⎯⎯[39m[1m[41m Unhandled Rejection [49m[22m[31m⎯⎯⎯⎯⎯[39m
+2026-04-20T12:23:37.2760179Z [31m[1mAppError[22m: Invalid email or password[39m
+2026-04-20T12:23:37.2760729Z [36m [2m❯[22m AuthService.login src/modules/auth/auth.service.ts:[2m248:13[22m[39m
+2026-04-20T12:23:37.2761110Z     [90m246| [39m
+2026-04-20T12:23:37.2761510Z     [90m247| [39m    [35mif[39m ([33m![39misPasswordValid) {
+2026-04-20T12:23:37.2762014Z     [90m248| [39m      throw new AppError(401, "INVALID_CREDENTIALS", "Invalid email or…
+2026-04-20T12:23:37.2762431Z     [90m   | [39m            [31m^[39m
+2026-04-20T12:23:37.2762694Z     [90m249| [39m    }
+2026-04-20T12:23:37.2762907Z     [90m250| [39m
+2026-04-20T12:23:37.2763325Z [90m [2m❯[22m login src/modules/auth/auth.controller.ts:[2m10:16[22m[39m
+2026-04-20T12:23:37.2763580Z 
+2026-04-20T12:23:37.2763857Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+2026-04-20T12:23:37.2764490Z [31m[1mSerialized Error:[22m[39m [90m{ statusCode: 401, code: 'INVALID_CREDENTIALS', details: undefined }[39m
+2026-04-20T12:23:37.2765614Z [31mThis error originated in "[1mtests/integration/authPasswordFlows.spec.ts[22m" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.[39m
+2026-04-20T12:23:37.2766938Z [31mThe latest test that might've caused the error is "[1mchanges password for authenticated user and revokes previous token version[22m". It might mean one of the following:
+2026-04-20T12:23:37.2767698Z - The error was thrown, while Vitest was running this test.
+2026-04-20T12:23:37.2768398Z - If the error occurred after the test had been completed, this was the last documented test before it was thrown.[39m
+2026-04-20T12:23:37.2768847Z 
+2026-04-20T12:23:37.2769126Z [31m⎯⎯⎯⎯[39m[1m[41m Unhandled Rejection [49m[22m[31m⎯⎯⎯⎯⎯[39m
+2026-04-20T12:23:37.2769649Z [31m[1mAppError[22m: You cannot apply to your own job application[39m
+2026-04-20T12:23:37.2770415Z [36m [2m❯[22m JobApplicationsService.apply src/modules/jobApplications/jobApplications.service.ts:[2m72:13[22m[39m
+2026-04-20T12:23:37.2770938Z     [90m 70| [39m
+2026-04-20T12:23:37.2771480Z     [90m 71| [39m    [35mif[39m (listing[33m.[39mcreatedByUserId [33m===[39m input[33m.[39mauth[33m.[39muserId) {
+2026-04-20T12:23:37.2772139Z     [90m 72| [39m      throw new AppError(400, "CANNOT_APPLY_TO_OWN_LISTING", "You cann…
+2026-04-20T12:23:37.2772560Z     [90m   | [39m            [31m^[39m
+2026-04-20T12:23:37.2772816Z     [90m 73| [39m    }
+2026-04-20T12:23:37.2773044Z     [90m 74| [39m
+2026-04-20T12:23:37.2773660Z [90m [2m❯[22m applyToJobApplication src/modules/jobApplications/jobApplications.controller.ts:[2m28:16[22m[39m
+2026-04-20T12:23:37.2774120Z 
+2026-04-20T12:23:37.2774343Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+2026-04-20T12:23:37.2775013Z [31m[1mSerialized Error:[22m[39m [90m{ statusCode: 400, code: 'CANNOT_APPLY_TO_OWN_LISTING', details: undefined }[39m
+2026-04-20T12:23:37.2776197Z [31mThis error originated in "[1mtests/integration/jobApplicationsScenario.spec.ts[22m" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.[39m
+2026-04-20T12:23:37.2777443Z [31mThe latest test that might've caused the error is "[1msupports job seeker listing and company submission[22m". It might mean one of the following:
+2026-04-20T12:23:37.2778131Z - The error was thrown, while Vitest was running this test.
+2026-04-20T12:23:37.2778836Z - If the error occurred after the test had been completed, this was the last documented test before it was thrown.[39m
+2026-04-20T12:23:37.2779419Z [31m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[39m
+2026-04-20T12:23:37.2779580Z 
+2026-04-20T12:23:37.2779608Z 
+2026-04-20T12:23:37.2788582Z ##[error]AppError: Invite accept OTP requires authenticated email channel
+ ❯ AuthService.requestOtp src/modules/auth/auth.service.ts:623:15
+ ❯ requestOtp src/modules/auth/auth.controller.ts:323:30
+ ❯ Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:95:5
+ ❯ next node_modules/express/lib/router/route.js:149:13
+ ❯ src/shared/middleware/validate.middleware.ts:13:5
+ ❯ Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:95:5
+ ❯ next node_modules/express/lib/router/route.js:149:13
+ ❯ node_modules/express-rate-limit/dist/index.mjs:779:7
+ ❯ processTicksAndRejections node:internal/process/task_queues:103:5
+ ❯ node_modules/express-rate-limit/dist/index.mjs:663:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { statusCode: 400, code: 'OTP_INVALID_CONTEXT', details: undefined }
+This error originated in "tests/integration/companyInvitesFlow.spec.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "consumes verified invite OTP even when acceptance fails and blocks OTP reuse". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+2026-04-20T12:23:37.2793401Z 
+2026-04-20T12:23:37.2801762Z ##[error]AppError: Invite accept OTP requires authenticated email channel
+ ❯ AuthService.requestOtp src/modules/auth/auth.service.ts:623:15
+ ❯ requestOtp src/modules/auth/auth.controller.ts:323:30
+ ❯ Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:95:5
+ ❯ next node_modules/express/lib/router/route.js:149:13
+ ❯ src/shared/middleware/validate.middleware.ts:13:5
+ ❯ Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:95:5
+ ❯ next node_modules/express/lib/router/route.js:149:13
+ ❯ node_modules/express-rate-limit/dist/index.mjs:779:7
+ ❯ processTicksAndRejections node:internal/process/task_queues:103:5
+ ❯ node_modules/express-rate-limit/dist/index.mjs:663:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { statusCode: 400, code: 'OTP_INVALID_CONTEXT', details: undefined }
+This error originated in "tests/integration/companyInvitesFlow.spec.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "blocks accepting an expired invite and marks it as expired". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+2026-04-20T12:23:37.2806308Z 
+2026-04-20T12:23:37.2811487Z ##[error]AppError: Invite has been revoked
+ ❯ CompanyInvitesService.accept src/modules/companyInvites/companyInvites.service.ts:95:13
+ ❯ acceptCompanyInvite src/modules/companyInvites/companyInvites.controller.ts:27:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { statusCode: 410, code: 'INVITE_REVOKED', details: undefined }
+This error originated in "tests/integration/companyInvitesFlow.spec.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "blocks accepting a revoked invite". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+2026-04-20T12:23:37.2814324Z 
+2026-04-20T12:23:37.2822501Z ##[error]AppError: Invite accept OTP requires authenticated email channel
+ ❯ AuthService.requestOtp src/modules/auth/auth.service.ts:623:15
+ ❯ requestOtp src/modules/auth/auth.controller.ts:323:30
+ ❯ Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:95:5
+ ❯ next node_modules/express/lib/router/route.js:149:13
+ ❯ src/shared/middleware/validate.middleware.ts:13:5
+ ❯ Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:95:5
+ ❯ next node_modules/express/lib/router/route.js:149:13
+ ❯ node_modules/express-rate-limit/dist/index.mjs:779:7
+ ❯ processTicksAndRejections node:internal/process/task_queues:103:5
+ ❯ node_modules/express-rate-limit/dist/index.mjs:663:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { statusCode: 400, code: 'OTP_INVALID_CONTEXT', details: undefined }
+This error originated in "tests/integration/companyInvitesFlow.spec.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "blocks reusing an already accepted invite token". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+2026-04-20T12:23:37.2827033Z 
+2026-04-20T12:23:37.2831971Z ##[error]AppError: Please wait before requesting another OTP
+ ❯ AuthService.resendOtp src/modules/auth/auth.service.ts:770:13
+ ❯ resendOtp src/modules/auth/auth.controller.ts:366:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { statusCode: 429, code: 'OTP_RESEND_COOLDOWN', details: undefined }
+This error originated in "tests/integration/authOtpFlows.spec.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "supports simulated SMS OTP and enforces resend cooldown". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+2026-04-20T12:23:37.2834686Z 
+2026-04-20T12:23:37.2839630Z ##[error]AppError: A verified registration OTP is required
+ ❯ AuthService.register src/modules/auth/auth.service.ts:384:13
+ ❯ register src/modules/auth/auth.controller.ts:70:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { statusCode: 400, code: 'OTP_REQUIRED', details: undefined }
+This error originated in "tests/integration/authOtpFlows.spec.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "requires verified REGISTER_VERIFY OTP before user registration". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+2026-04-20T12:23:37.2842358Z 
+2026-04-20T12:23:37.2847460Z ##[error]AppError: A verified login OTP is required
+ ❯ AuthService.loginWithVerifiedOtp src/modules/auth/auth.service.ts:333:13
+ ❯ loginVerifyOtp src/modules/auth/auth.controller.ts:52:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { statusCode: 400, code: 'OTP_REQUIRED', details: undefined }
+This error originated in "tests/integration/authOtpFlows.spec.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "completes login with verified LOGIN_MFA OTP and rejects challenge reuse". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+2026-04-20T12:23:37.2850180Z 
+2026-04-20T12:23:37.2854964Z ##[error]AppError: OTP challenge expired
+ ❯ AuthService.verifyOtp src/modules/auth/auth.service.ts:725:13
+ ❯ verifyOtp src/modules/auth/auth.controller.ts:346:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { statusCode: 400, code: 'OTP_EXPIRED', details: undefined }
+This error originated in "tests/integration/authOtpFlows.spec.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "rejects expired OTP challenges for verify and resend". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+2026-04-20T12:23:37.2857628Z 
+2026-04-20T12:23:37.2862485Z ##[error]AppError: Invalid OTP code
+ ❯ AuthService.verifyOtp src/modules/auth/auth.service.ts:737:13
+ ❯ verifyOtp src/modules/auth/auth.controller.ts:346:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { statusCode: 400, code: 'OTP_INVALID', details: undefined }
+This error originated in "tests/integration/authOtpFlows.spec.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "locks OTP challenge after max invalid attempts and blocks further verification". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+2026-04-20T12:23:37.2865209Z 
+2026-04-20T12:23:37.2870193Z ##[error]AppError: Please wait before requesting another OTP
+ ❯ AuthService.resendOtp src/modules/auth/auth.service.ts:770:13
+ ❯ resendOtp src/modules/auth/auth.controller.ts:366:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { statusCode: 429, code: 'OTP_RESEND_COOLDOWN', details: undefined }
+This error originated in "tests/integration/authOtpFlows.spec.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "rotates OTP on resend after cooldown and invalidates previous code". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+2026-04-20T12:23:37.2872967Z 
+2026-04-20T12:23:37.2877827Z ##[error]AppError: Invalid OTP challenge
+ ❯ AuthService.verifyOtp src/modules/auth/auth.service.ts:720:13
+ ❯ verifyOtp src/modules/auth/auth.controller.ts:346:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { statusCode: 400, code: 'OTP_INVALID', details: undefined }
+This error originated in "tests/integration/authOtpFlows.spec.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "treats verified OTP challenge as single-use at verify endpoint". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+2026-04-20T12:23:37.2880534Z 
+2026-04-20T12:23:37.2890682Z ##[error]AppError: Invite accept OTP requires authenticated email channel
+ ❯ AuthService.requestOtp src/modules/auth/auth.service.ts:623:15
+ ❯ requestOtp src/modules/auth/auth.controller.ts:323:30
+ ❯ Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:95:5
+ ❯ next node_modules/express/lib/router/route.js:149:13
+ ❯ src/shared/middleware/validate.middleware.ts:13:5
+ ❯ Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:95:5
+ ❯ next node_modules/express/lib/router/route.js:149:13
+ ❯ node_modules/express-rate-limit/dist/index.mjs:779:7
+ ❯ processTicksAndRejections node:internal/process/task_queues:103:5
+ ❯ node_modules/express-rate-limit/dist/index.mjs:663:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { statusCode: 400, code: 'OTP_INVALID_CONTEXT', details: undefined }
+This error originated in "tests/integration/marketplaceEndToEnd.spec.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "runs company FREE flow: register -> posts -> bid -> contract -> invite -> company job listing". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+2026-04-20T12:23:37.2896310Z 
+2026-04-20T12:23:37.2904819Z ##[error]AppError: Missing Stripe signature header
+ ❯ verifyAndConstructStripeEvent src/shared/stripe/stripeSignature.ts:22:11
+ ❯ handleStripeWebhook src/modules/webhooks/webhooks.controller.ts:12:17
+ ❯ Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:95:5
+ ❯ next node_modules/express/lib/router/route.js:149:13
+ ❯ node_modules/body-parser/lib/read.js:137:5
+ ❯ AsyncResource.runInAsyncScope node:async_hooks:214:14
+ ❯ invokeCallback node_modules/raw-body/index.js:238:16
+ ❯ done node_modules/raw-body/index.js:227:7
+ ❯ IncomingMessage.onEnd node_modules/raw-body/index.js:287:7
+ ❯ IncomingMessage.emit node:events:519:28
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { statusCode: 400, code: 'INVALID_WEBHOOK_SIGNATURE', details: undefined }
+This error originated in "tests/integration/billingWebhookLifecycle.spec.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "processes checkout.session.completed idempotently for company and job seeker checkout lanes". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+2026-04-20T12:23:37.2909429Z 
+2026-04-20T12:23:37.2917727Z ##[error]AppError: Missing Stripe signature header
+ ❯ verifyAndConstructStripeEvent src/shared/stripe/stripeSignature.ts:22:11
+ ❯ handleStripeWebhook src/modules/webhooks/webhooks.controller.ts:12:17
+ ❯ Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:95:5
+ ❯ next node_modules/express/lib/router/route.js:149:13
+ ❯ node_modules/body-parser/lib/read.js:137:5
+ ❯ AsyncResource.runInAsyncScope node:async_hooks:214:14
+ ❯ invokeCallback node_modules/raw-body/index.js:238:16
+ ❯ done node_modules/raw-body/index.js:227:7
+ ❯ IncomingMessage.onEnd node_modules/raw-body/index.js:287:7
+ ❯ IncomingMessage.emit node:events:519:28
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { statusCode: 400, code: 'INVALID_WEBHOOK_SIGNATURE', details: undefined }
+This error originated in "tests/integration/billingWebhookLifecycle.spec.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "applies subscription created/deleted webhook lifecycle and keeps a single current subscription". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+2026-04-20T12:23:37.2922196Z 
+2026-04-20T12:23:37.2930349Z ##[error]AppError: Missing Stripe signature header
+ ❯ verifyAndConstructStripeEvent src/shared/stripe/stripeSignature.ts:22:11
+ ❯ handleStripeWebhook src/modules/webhooks/webhooks.controller.ts:12:17
+ ❯ Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:95:5
+ ❯ next node_modules/express/lib/router/route.js:149:13
+ ❯ node_modules/body-parser/lib/read.js:137:5
+ ❯ AsyncResource.runInAsyncScope node:async_hooks:214:14
+ ❯ invokeCallback node_modules/raw-body/index.js:238:16
+ ❯ done node_modules/raw-body/index.js:227:7
+ ❯ IncomingMessage.onEnd node_modules/raw-body/index.js:287:7
+ ❯ IncomingMessage.emit node:events:519:28
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { statusCode: 400, code: 'INVALID_WEBHOOK_SIGNATURE', details: undefined }
+This error originated in "tests/integration/billingWebhookLifecycle.spec.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "handles subscription.updated replay idempotently without extra version bumps". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+2026-04-20T12:23:37.2934821Z 
+2026-04-20T12:23:37.2942973Z ##[error]AppError: Missing Stripe signature header
+ ❯ verifyAndConstructStripeEvent src/shared/stripe/stripeSignature.ts:22:11
+ ❯ handleStripeWebhook src/modules/webhooks/webhooks.controller.ts:12:17
+ ❯ Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:95:5
+ ❯ next node_modules/express/lib/router/route.js:149:13
+ ❯ node_modules/body-parser/lib/read.js:137:5
+ ❯ AsyncResource.runInAsyncScope node:async_hooks:214:14
+ ❯ invokeCallback node_modules/raw-body/index.js:238:16
+ ❯ done node_modules/raw-body/index.js:227:7
+ ❯ IncomingMessage.onEnd node_modules/raw-body/index.js:287:7
+ ❯ IncomingMessage.emit node:events:519:28
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { statusCode: 400, code: 'INVALID_WEBHOOK_SIGNATURE', details: undefined }
+This error originated in "tests/integration/billingWebhookLifecycle.spec.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "handles invoice replay idempotently and keeps single billing event rows per provider event id". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+2026-04-20T12:23:37.2947542Z 
+2026-04-20T12:23:37.2958204Z ##[error]PrismaClientKnownRequestError: 
+Invalid `prisma.usageCounter.upsert()` invocation in
+/home/runner/work/cargo-agent-backend/cargo-agent-backend/src/shared/billing/entitlements.service.ts:144:51
+
+  141   },
+  142 });
+  143 
+→ 144 const counter = await prisma.usageCounter.upsert(
+Unique constraint failed on the fields: (`companyId`,`metric`,`periodStart`)
+ ❯ ei.handleRequestError node_modules/@prisma/client/src/runtime/RequestHandler.ts:228:13
+ ❯ ei.handleAndLogRequestError node_modules/@prisma/client/src/runtime/RequestHandler.ts:174:12
+ ❯ ei.request node_modules/@prisma/client/src/runtime/RequestHandler.ts:143:12
+ ❯ a node_modules/@prisma/client/src/runtime/getPrismaClient.ts:833:24
+ ❯ EntitlementsService.getUsage src/shared/billing/entitlements.service.ts:144:25
+ ❯ UsageService.getUsage src/shared/billing/usage.service.ts:10:19
+ ❯ UsageService.assertCanUse src/shared/billing/usage.service.ts:21:19
+ ❯ src/shared/middleware/enforceUsageLimit.middleware.ts:16:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'P2002', meta: { modelName: 'UsageCounter', target: [ 'companyId', 'metric', 'periodStart' ] }, clientVersion: '6.19.2', batchRequestIdx: undefined }
+This error originated in "tests/integration/bidUsageLimits.spec.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "allows only one concurrent bid when monthly limit is 1". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+2026-04-20T12:23:37.2963782Z 
+2026-04-20T12:23:37.2969211Z ##[error]AppError: Your plan does not include this feature
+ ❯ PostsService.create src/modules/posts/posts.service.ts:81:9
+ ❯ createPost src/modules/posts/posts.controller.ts:23:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { statusCode: 403, code: 'PLAN_FEATURE_REQUIRED', details: { feature: 'PROMOTED_POSTS', planCode: 'FREE', companyId: 'cmo75xuej000r3f2u5x49shic' } }
+This error originated in "tests/integration/postUsageLimits.spec.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "blocks promoted posts on FREE and allows them on PRO". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+2026-04-20T12:23:37.2972172Z 
+2026-04-20T12:23:37.2978071Z ##[error]AppError: Company does not have a Stripe customer yet
+ ❯ SubscriptionsService.createBillingPortalSession src/modules/subscriptions/subscriptions.service.ts:219:13
+ ❯ createBillingPortalSession src/modules/subscriptions/subscriptions.controller.ts:28:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { statusCode: 409, code: 'STRIPE_CUSTOMER_NOT_FOUND', details: undefined }
+This error originated in "tests/integration/billingPlans.spec.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "returns provider-not-configured for billing portal when Stripe keys are missing". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+2026-04-20T12:23:37.2981138Z 
+2026-04-20T12:23:37.2989558Z ##[error]AppError: Only job seekers can access this resource
+ ❯ requireJobSeeker src/modules/jobSeekerBilling/jobSeekerBilling.helpers.ts:12:11
+ ❯ JobSeekerBillingService.getWallet src/modules/jobSeekerBilling/jobSeekerBilling.service.ts:17:5
+ ❯ getMyWallet src/modules/jobSeekerBilling/jobSeekerBilling.controller.ts:10:30
+ ❯ Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:95:5
+ ❯ next node_modules/express/lib/router/route.js:149:13
+ ❯ src/shared/middleware/validate.middleware.ts:13:5
+ ❯ Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:95:5
+ ❯ next node_modules/express/lib/router/route.js:149:13
+ ❯ requireAuth src/shared/middleware/auth.middleware.ts:46:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { statusCode: 403, code: 'FORBIDDEN', details: undefined }
+This error originated in "tests/integration/jobSeekerBilling.spec.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "forbids company admin from accessing job seeker wallet endpoint". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+2026-04-20T12:23:37.2994156Z 
+2026-04-20T12:23:37.3002308Z ##[error]AppError: Manual credit adjustments are disabled
+ ❯ JobSeekerBillingService.adminAdjustCredits src/modules/jobSeekerBilling/jobSeekerBilling.service.ts:181:13
+ ❯ adminAdjustJobSeekerCredits src/modules/jobSeekerBilling/jobSeekerBilling.controller.ts:49:30
+ ❯ Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:95:5
+ ❯ next node_modules/express/lib/router/route.js:149:13
+ ❯ src/shared/middleware/validate.middleware.ts:13:5
+ ❯ Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:95:5
+ ❯ next node_modules/express/lib/router/route.js:149:13
+ ❯ requireAuth src/shared/middleware/auth.middleware.ts:46:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { statusCode: 403, code: 'FEATURE_DISABLED', details: undefined }
+This error originated in "tests/integration/jobSeekerBilling.spec.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "returns feature disabled for admin credit adjustment when internal flag is off". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+2026-04-20T12:23:37.3006792Z 
+2026-04-20T12:23:37.3014812Z ##[error]AppError: Missing Stripe signature header
+ ❯ verifyAndConstructStripeEvent src/shared/stripe/stripeSignature.ts:22:11
+ ❯ handleStripeWebhook src/modules/webhooks/webhooks.controller.ts:12:17
+ ❯ Layer.handle [as handle_request] node_modules/express/lib/router/layer.js:95:5
+ ❯ next node_modules/express/lib/router/route.js:149:13
+ ❯ node_modules/body-parser/lib/read.js:137:5
+ ❯ AsyncResource.runInAsyncScope node:async_hooks:214:14
+ ❯ invokeCallback node_modules/raw-body/index.js:238:16
+ ❯ done node_modules/raw-body/index.js:227:7
+ ❯ IncomingMessage.onEnd node_modules/raw-body/index.js:287:7
+ ❯ IncomingMessage.emit node:events:519:28
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { statusCode: 400, code: 'INVALID_WEBHOOK_SIGNATURE', details: undefined }
+This error originated in "tests/integration/releaseSmokeChain.spec.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "covers registration -> marketplace -> webhook idempotency in one chain". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+2026-04-20T12:23:37.3019571Z 
+2026-04-20T12:23:37.3024503Z ##[error]AppError: Invalid email or password
+ ❯ AuthService.login src/modules/auth/auth.service.ts:248:13
+ ❯ login src/modules/auth/auth.controller.ts:10:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { statusCode: 401, code: 'INVALID_CREDENTIALS', details: undefined }
+This error originated in "tests/integration/authPasswordFlows.spec.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "resets password and invalidates old access token". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+2026-04-20T12:23:37.3027205Z 
+2026-04-20T12:23:37.3032175Z ##[error]AppError: Invalid email or password
+ ❯ AuthService.login src/modules/auth/auth.service.ts:248:13
+ ❯ login src/modules/auth/auth.controller.ts:10:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { statusCode: 401, code: 'INVALID_CREDENTIALS', details: undefined }
+This error originated in "tests/integration/authPasswordFlows.spec.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "changes password for authenticated user and revokes previous token version". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+2026-04-20T12:23:37.3034911Z 
+2026-04-20T12:23:37.3040459Z ##[error]AppError: You cannot apply to your own job application
+ ❯ JobApplicationsService.apply src/modules/jobApplications/jobApplications.service.ts:72:13
+ ❯ applyToJobApplication src/modules/jobApplications/jobApplications.controller.ts:28:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { statusCode: 400, code: 'CANNOT_APPLY_TO_OWN_LISTING', details: undefined }
+This error originated in "tests/integration/jobApplicationsScenario.spec.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "supports job seeker listing and company submission". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+2026-04-20T12:23:37.3043504Z 
+2026-04-20T12:23:37.3045096Z ##[error]Error: Test timed out in 20000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/authOtpFlows.spec.ts:61:3
+
+
+2026-04-20T12:23:37.3046106Z 
+2026-04-20T12:23:37.3047607Z ##[error]Error: Test timed out in 20000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/authOtpFlows.spec.ts:109:3
+
+
+2026-04-20T12:23:37.3048610Z 
+2026-04-20T12:23:37.3050100Z ##[error]Error: Test timed out in 20000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/authOtpFlows.spec.ts:269:3
+
+
+2026-04-20T12:23:37.3051204Z 
+2026-04-20T12:23:37.3052688Z ##[error]Error: Test timed out in 20000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/authOtpFlows.spec.ts:379:3
+
+
+2026-04-20T12:23:37.3053842Z 
+2026-04-20T12:23:37.3055358Z ##[error]Error: Test timed out in 20000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/authOtpFlows.spec.ts:445:3
+
+
+2026-04-20T12:23:37.3056388Z 
+2026-04-20T12:23:37.3057881Z ##[error]Error: Test timed out in 20000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/authOtpFlows.spec.ts:512:3
+
+
+2026-04-20T12:23:37.3058894Z 
+2026-04-20T12:23:37.3060387Z ##[error]Error: Test timed out in 20000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/authOtpFlows.spec.ts:578:3
+
+
+2026-04-20T12:23:37.3061404Z 
+2026-04-20T12:23:37.3062917Z ##[error]Error: Test timed out in 20000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/authPasswordFlows.spec.ts:15:3
+
+
+2026-04-20T12:23:37.3063986Z 
+2026-04-20T12:23:37.3065524Z ##[error]Error: Test timed out in 20000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/authPasswordFlows.spec.ts:92:3
+
+
+2026-04-20T12:23:37.3066550Z 
+2026-04-20T12:23:37.3068047Z ##[error]Error: Test timed out in 25000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/bidUsageLimits.spec.ts:259:3
+
+
+2026-04-20T12:23:37.3069065Z 
+2026-04-20T12:23:37.3075032Z ##[error]PrismaClientKnownRequestError: 
+Invalid `prisma.plan.create()` invocation in
+/home/runner/work/cargo-agent-backend/cargo-agent-backend/tests/integration/billingPlans.spec.ts:23:42
+
+  20 const app = buildApp();
+  21 const suffix = Date.now().toString();
+  22 
+→ 23 const activePlan = await prisma.plan.create(
+Unique constraint failed on the fields: (`code`)
+ ❯ ei.handleRequestError node_modules/@prisma/client/src/runtime/RequestHandler.ts:228:13
+ ❯ ei.handleAndLogRequestError node_modules/@prisma/client/src/runtime/RequestHandler.ts:174:12
+ ❯ ei.request node_modules/@prisma/client/src/runtime/RequestHandler.ts:143:12
+ ❯ a node_modules/@prisma/client/src/runtime/getPrismaClient.ts:833:24
+ ❯ tests/integration/billingPlans.spec.ts:23:24
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'P2002', meta: { modelName: 'Plan', target: [ 'code' ] }, clientVersion: '6.19.2', batchRequestIdx: undefined }
+
+2026-04-20T12:23:37.3078220Z 
+2026-04-20T12:23:37.3079763Z ##[error]Error: Test timed out in 20000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/billingPlans.spec.ts:119:3
+
+
+2026-04-20T12:23:37.3080771Z 
+2026-04-20T12:23:37.3082352Z ##[error]Error: Test timed out in 25000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/billingWebhookLifecycle.spec.ts:14:3
+
+
+2026-04-20T12:23:37.3083392Z 
+2026-04-20T12:23:37.3085043Z ##[error]Error: Test timed out in 25000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/billingWebhookLifecycle.spec.ts:186:3
+
+
+2026-04-20T12:23:37.3086097Z 
+2026-04-20T12:23:37.3087685Z ##[error]Error: Test timed out in 25000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/billingWebhookLifecycle.spec.ts:332:3
+
+
+2026-04-20T12:23:37.3088788Z 
+2026-04-20T12:23:37.3090376Z ##[error]Error: Test timed out in 25000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/billingWebhookLifecycle.spec.ts:476:3
+
+
+2026-04-20T12:23:37.3091419Z 
+2026-04-20T12:23:37.3092946Z ##[error]Error: Test timed out in 25000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/companyInvitesFlow.spec.ts:14:3
+
+
+2026-04-20T12:23:37.3094028Z 
+2026-04-20T12:23:37.3095275Z ##[error]AssertionError: expected 400 to be 403 // Object.is equality
+
+- Expected
++ Received
+
+- 403
++ 400
+
+ ❯ tests/integration/companyInvitesFlow.spec.ts:208:46
+
+
+2026-04-20T12:23:37.3096141Z 
+2026-04-20T12:23:37.3097677Z ##[error]Error: Test timed out in 25000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/companyInvitesFlow.spec.ts:218:3
+
+
+2026-04-20T12:23:37.3098700Z 
+2026-04-20T12:23:37.3100233Z ##[error]Error: Test timed out in 25000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/companyInvitesFlow.spec.ts:307:3
+
+
+2026-04-20T12:23:37.3101258Z 
+2026-04-20T12:23:37.3102782Z ##[error]Error: Test timed out in 25000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/companyInvitesFlow.spec.ts:449:3
+
+
+2026-04-20T12:23:37.3103859Z 
+2026-04-20T12:23:37.3105370Z ##[error]Error: Test timed out in 25000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/companyInvitesFlow.spec.ts:555:3
+
+
+2026-04-20T12:23:37.3106374Z 
+2026-04-20T12:23:37.3107925Z ##[error]Error: Test timed out in 25000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/companyInvitesFlow.spec.ts:640:3
+
+
+2026-04-20T12:23:37.3108947Z 
+2026-04-20T12:23:37.3110508Z ##[error]Error: Test timed out in 20000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/jobApplicationsScenario.spec.ts:14:3
+
+
+2026-04-20T12:23:37.3111536Z 
+2026-04-20T12:23:37.3113100Z ##[error]Error: Test timed out in 20000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/jobSeekerBilling.spec.ts:83:3
+
+
+2026-04-20T12:23:37.3114291Z 
+2026-04-20T12:23:37.3115834Z ##[error]Error: Test timed out in 20000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/jobSeekerBilling.spec.ts:130:3
+
+
+2026-04-20T12:23:37.3116842Z 
+2026-04-20T12:23:37.3118410Z ##[error]Error: Test timed out in 35000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/marketplaceEndToEnd.spec.ts:14:3
+
+
+2026-04-20T12:23:37.3119426Z 
+2026-04-20T12:23:37.3120921Z ##[error]Error: Test timed out in 25000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/postUsageLimits.spec.ts:228:3
+
+
+2026-04-20T12:23:37.3121925Z 
+2026-04-20T12:23:37.3123471Z ##[error]Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/releaseSmokeChain.spec.ts:14:3
+
+
+2026-04-20T12:23:37.3126977Z ##[error]Process completed with exit code 1.
