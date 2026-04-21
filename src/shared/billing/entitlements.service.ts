@@ -141,27 +141,49 @@ export class EntitlementsService {
           },
         });
 
-        const counter = await prisma.usageCounter.upsert({
-          where: {
-            companyId_metric_periodStart: {
+        try {
+          const counter = await prisma.usageCounter.upsert({
+            where: {
+              companyId_metric_periodStart: {
+                companyId,
+                metric: PrismaUsageMetric.BIDS_PER_MONTH,
+                periodStart,
+              },
+            },
+            update: {},
+            create: {
               companyId,
               metric: PrismaUsageMetric.BIDS_PER_MONTH,
               periodStart,
+              used: seeded,
+              limitSnapshot: entitlements.limits.BIDS_PER_MONTH,
+              planCodeSnapshot: entitlements.planCode,
             },
-          },
-          update: {},
-          create: {
-            companyId,
-            metric: PrismaUsageMetric.BIDS_PER_MONTH,
-            periodStart,
-            used: seeded,
-            limitSnapshot: entitlements.limits.BIDS_PER_MONTH,
-            planCodeSnapshot: entitlements.planCode,
-          },
-          select: { used: true },
-        });
+            select: { used: true },
+          });
 
-        used = counter.used;
+          used = counter.used;
+        } catch (error) {
+          const isUniqueCollision =
+            typeof error === "object" && error !== null && "code" in error && (error as { code?: string }).code === "P2002";
+
+          if (!isUniqueCollision) {
+            throw error;
+          }
+
+          const createdByConcurrentRequest = await prisma.usageCounter.findUnique({
+            where: {
+              companyId_metric_periodStart: {
+                companyId,
+                metric: PrismaUsageMetric.BIDS_PER_MONTH,
+                periodStart,
+              },
+            },
+            select: { used: true },
+          });
+
+          used = createdByConcurrentRequest?.used ?? seeded;
+        }
       }
     }
 

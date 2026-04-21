@@ -7,26 +7,30 @@ const usageService = new UsageService();
 
 export function enforceUsageLimit(metric: UsageMetric) {
   return async (req: Request, _res: Response, next: NextFunction) => {
-    const companyId = req.auth?.companyId;
+    try {
+      const companyId = req.auth?.companyId;
 
-    if (!companyId) {
-      return next(new AppError(401, "UNAUTHENTICATED", "Authentication required"));
+      if (!companyId) {
+        return next(new AppError(401, "UNAUTHENTICATED", "Authentication required"));
+      }
+
+      const result = await usageService.assertCanUse(companyId, metric);
+      if (!result.allowed) {
+        return next(
+          new AppError(403, "USAGE_LIMIT_REACHED", "Plan usage limit reached", {
+            metric,
+            planCode: result.planCode,
+            used: result.used,
+            limit: result.limit,
+            periodStart: result.periodStart,
+            companyId,
+          }),
+        );
+      }
+
+      return next();
+    } catch (error) {
+      return next(error);
     }
-
-    const result = await usageService.assertCanUse(companyId, metric);
-    if (!result.allowed) {
-      return next(
-        new AppError(403, "USAGE_LIMIT_REACHED", "Plan usage limit reached", {
-          metric,
-          planCode: result.planCode,
-          used: result.used,
-          limit: result.limit,
-          periodStart: result.periodStart,
-          companyId,
-        }),
-      );
-    }
-
-    return next();
   };
 }

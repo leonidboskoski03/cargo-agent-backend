@@ -59,6 +59,9 @@ describe("marketplace end-to-end flows", () => {
     });
 
     let companyId: string | null = null;
+    let createdOriginLocationId: string | null = null;
+    let createdDestinationLocationId: string | null = null;
+    let createdRouteId: string | null = null;
 
     try {
       const start = await request(app).post("/api/v1/auth/registration/start").send({
@@ -129,12 +132,14 @@ describe("marketplace end-to-end flows", () => {
         .set("Authorization", shipperToken)
         .send({ countryCode: "MK", city: "Skopje" });
       expect(origin.statusCode).toBe(201);
+      createdOriginLocationId = origin.body.data.id as string;
 
       const destination = await request(app)
         .post("/api/v1/locations")
         .set("Authorization", shipperToken)
         .send({ countryCode: "RS", city: "Belgrade" });
       expect(destination.statusCode).toBe(201);
+      createdDestinationLocationId = destination.body.data.id as string;
 
       const route = await request(app)
         .post("/api/v1/routes")
@@ -145,6 +150,7 @@ describe("marketplace end-to-end flows", () => {
           distanceKm: 430,
         });
       expect(route.statusCode).toBe(201);
+      createdRouteId = route.body.data.id as string;
 
       const post1 = await request(app)
         .post("/api/v1/posts")
@@ -243,8 +249,18 @@ describe("marketplace end-to-end flows", () => {
       await prisma.contract.deleteMany({ where: { post: { title: { contains: suffix } } } });
       await prisma.bid.deleteMany({ where: { post: { title: { contains: suffix } } } });
       await prisma.post.deleteMany({ where: { title: { contains: suffix } } });
-      await prisma.route.deleteMany({ where: { originLocation: { city: "Skopje" }, destinationLocation: { city: "Belgrade" } } });
-      await prisma.location.deleteMany({ where: { city: { in: ["Skopje", "Belgrade"] } } });
+      if (createdRouteId) {
+        await prisma.route.deleteMany({ where: { id: createdRouteId } });
+      }
+      if (createdOriginLocationId || createdDestinationLocationId) {
+        await prisma.location.deleteMany({
+          where: {
+            id: {
+              in: [createdOriginLocationId, createdDestinationLocationId].filter((id): id is string => Boolean(id)),
+            },
+          },
+        });
+      }
       await prisma.jobApplicationSubmission.deleteMany({
         where: {
           OR: [{ submittedByUserId: invitedUser.id }, { submittedByUserId: carrierAdmin.id }],
