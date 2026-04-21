@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { asyncRoute } from "../../shared/http/asyncRoute.js";
 import { requireAuth } from "../../shared/middleware/auth.middleware.js";
 import { validate } from "../../shared/middleware/validate.middleware.js";
 import {
@@ -20,30 +21,30 @@ import {
 
 export const vehicleAssignmentsRouter = Router();
 
-vehicleAssignmentsRouter.get("/", requireAuth, validate(listVehicleAssignmentsSchema), listVehicleAssignments);
+vehicleAssignmentsRouter.get("/", requireAuth, validate(listVehicleAssignmentsSchema), asyncRoute(listVehicleAssignments));
 vehicleAssignmentsRouter.get(
   "/:assignmentId",
   requireAuth,
   validate(getVehicleAssignmentByIdSchema),
-  getVehicleAssignmentById,
+  asyncRoute(getVehicleAssignmentById),
 );
-vehicleAssignmentsRouter.post("/", requireAuth, validate(createVehicleAssignmentSchema), createVehicleAssignment);
+vehicleAssignmentsRouter.post("/", requireAuth, validate(createVehicleAssignmentSchema), asyncRoute(createVehicleAssignment));
 vehicleAssignmentsRouter.patch(
   "/:assignmentId",
   requireAuth,
   validate(updateVehicleAssignmentSchema),
-  updateVehicleAssignment,
+  asyncRoute(updateVehicleAssignment),
 );
 vehicleAssignmentsRouter.delete(
   "/:assignmentId",
   requireAuth,
   validate(deleteVehicleAssignmentSchema),
-  deleteVehicleAssignment,
+  asyncRoute(deleteVehicleAssignment),
 );
 vehicleAssignmentsRouter.post(
   "/:assignmentId/restore",
   requireAuth,
   validate(restoreVehicleAssignmentSchema),
-  restoreVehicleAssignment,
+  asyncRoute(restoreVehicleAssignment),
 );
 

@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { asyncRoute } from "../../shared/http/asyncRoute.js";
 import { requireAuth } from "../../shared/middleware/auth.middleware.js";
 import { validate } from "../../shared/middleware/validate.middleware.js";
 import {
@@ -22,26 +23,26 @@ import {
 
 export const jobSeekerBillingRouter = Router();
 
-jobSeekerBillingRouter.get("/wallet", requireAuth, validate(getWalletSchema), getMyWallet);
-jobSeekerBillingRouter.get("/usage", requireAuth, validate(getUsageSchema), getMyUsage);
-jobSeekerBillingRouter.get("/packs", requireAuth, validate(listCreditPacksSchema), listCreditPacks);
-jobSeekerBillingRouter.get("/transactions", requireAuth, validate(listTransactionsSchema), listMyTransactions);
+jobSeekerBillingRouter.get("/wallet", requireAuth, validate(getWalletSchema), asyncRoute(getMyWallet));
+jobSeekerBillingRouter.get("/usage", requireAuth, validate(getUsageSchema), asyncRoute(getMyUsage));
+jobSeekerBillingRouter.get("/packs", requireAuth, validate(listCreditPacksSchema), asyncRoute(listCreditPacks));
+jobSeekerBillingRouter.get("/transactions", requireAuth, validate(listTransactionsSchema), asyncRoute(listMyTransactions));
 jobSeekerBillingRouter.post(
   "/checkout-sessions",
   requireAuth,
   validate(createCheckoutSessionSchema),
-  createCreditCheckoutSession,
+  asyncRoute(createCreditCheckoutSession),
 );
 jobSeekerBillingRouter.get(
   "/checkout-sessions/:sessionId",
   requireAuth,
   validate(getCheckoutSessionSchema),
-  getMyCheckoutSession,
+  asyncRoute(getMyCheckoutSession),
 );
 jobSeekerBillingRouter.post(
   "/admin/adjustments",
   requireAuth,
   validate(adminAdjustCreditsSchema),
-  adminAdjustJobSeekerCredits,
+  asyncRoute(adminAdjustJobSeekerCredits),
 );
 

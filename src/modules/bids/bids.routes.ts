@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { asyncRoute } from "../../shared/http/asyncRoute.js";
 import { requireAuth } from "../../shared/middleware/auth.middleware.js";
 import { enforceUsageLimit } from "../../shared/middleware/enforceUsageLimit.middleware.js";
 import { validate } from "../../shared/middleware/validate.middleware.js";
@@ -23,10 +24,10 @@ import {
 
 export const bidsRouter = Router();
 
-bidsRouter.get("/", requireAuth, validate(listBidsSchema), listBids);
-bidsRouter.get("/:bidId", requireAuth, validate(getBidByIdSchema), getBidById);
-bidsRouter.post("/", requireAuth, enforceUsageLimit("BIDS_PER_MONTH"), validate(createBidSchema), createBid);
-bidsRouter.patch("/:bidId", requireAuth, validate(updateBidSchema), updateBid);
-bidsRouter.patch("/:bidId/status", requireAuth, validate(changeBidStatusSchema), changeBidStatus);
-bidsRouter.delete("/:bidId", requireAuth, validate(deleteBidSchema), deleteBid);
-bidsRouter.post("/:bidId/restore", requireAuth, validate(restoreBidSchema), restoreBid);
+bidsRouter.get("/", requireAuth, validate(listBidsSchema), asyncRoute(listBids));
+bidsRouter.get("/:bidId", requireAuth, validate(getBidByIdSchema), asyncRoute(getBidById));
+bidsRouter.post("/", requireAuth, enforceUsageLimit("BIDS_PER_MONTH"), validate(createBidSchema), asyncRoute(createBid));
+bidsRouter.patch("/:bidId", requireAuth, validate(updateBidSchema), asyncRoute(updateBid));
+bidsRouter.patch("/:bidId/status", requireAuth, validate(changeBidStatusSchema), asyncRoute(changeBidStatus));
+bidsRouter.delete("/:bidId", requireAuth, validate(deleteBidSchema), asyncRoute(deleteBid));
+bidsRouter.post("/:bidId/restore", requireAuth, validate(restoreBidSchema), asyncRoute(restoreBid));
