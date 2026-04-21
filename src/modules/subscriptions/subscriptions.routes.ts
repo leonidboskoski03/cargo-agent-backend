@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { asyncRoute } from "../../shared/http/asyncRoute.js";
 import { Roles } from "../../shared/auth/permissions.js";
 import { requireAuth, requireRole } from "../../shared/middleware/auth.middleware.js";
 import { validate } from "../../shared/middleware/validate.middleware.js";
@@ -19,32 +20,32 @@ import {
 
 export const subscriptionsRouter = Router();
 
-subscriptionsRouter.get("/me", requireAuth, validate(getMySubscriptionSchema), getMySubscription);
+subscriptionsRouter.get("/me", requireAuth, validate(getMySubscriptionSchema), asyncRoute(getMySubscription));
 subscriptionsRouter.post(
   "/checkout-session",
   requireAuth,
   requireRole([Roles.COMPANY_ADMIN]),
   validate(createCheckoutSessionSchema),
-  createSubscriptionCheckoutSession,
+  asyncRoute(createSubscriptionCheckoutSession),
 );
 subscriptionsRouter.post(
   "/cancel-at-period-end",
   requireAuth,
   requireRole([Roles.COMPANY_ADMIN]),
   validate(cancelSubscriptionSchema),
-  cancelSubscriptionAtPeriodEnd,
+  asyncRoute(cancelSubscriptionAtPeriodEnd),
 );
 subscriptionsRouter.post(
   "/cancel-revert",
   requireAuth,
   requireRole([Roles.COMPANY_ADMIN]),
   validate(cancelRevertSubscriptionSchema),
-  revertSubscriptionCancelAtPeriodEnd,
+  asyncRoute(revertSubscriptionCancelAtPeriodEnd),
 );
 subscriptionsRouter.post(
   "/portal-session",
   requireAuth,
   requireRole([Roles.COMPANY_ADMIN]),
   validate(createBillingPortalSessionSchema),
-  createBillingPortalSession,
+  asyncRoute(createBillingPortalSession),
 );

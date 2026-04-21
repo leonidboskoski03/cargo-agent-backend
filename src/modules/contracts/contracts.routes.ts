@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { asyncRoute } from "../../shared/http/asyncRoute.js";
 import { requireAuth } from "../../shared/middleware/auth.middleware.js";
 import { validate } from "../../shared/middleware/validate.middleware.js";
 import {
@@ -20,10 +21,10 @@ import {
 
 export const contractsRouter = Router();
 
-contractsRouter.get("/", requireAuth, validate(listContractsSchema), listContracts);
-contractsRouter.get("/:contractId", requireAuth, validate(getContractByIdSchema), getContractById);
-contractsRouter.post("/", requireAuth, validate(createContractSchema), createContract);
-contractsRouter.patch("/:contractId/status", requireAuth, validate(changeContractStatusSchema), changeContractStatus);
-contractsRouter.delete("/:contractId", requireAuth, validate(deleteContractSchema), deleteContract);
-contractsRouter.post("/:contractId/restore", requireAuth, validate(restoreContractSchema), restoreContract);
+contractsRouter.get("/", requireAuth, validate(listContractsSchema), asyncRoute(listContracts));
+contractsRouter.get("/:contractId", requireAuth, validate(getContractByIdSchema), asyncRoute(getContractById));
+contractsRouter.post("/", requireAuth, validate(createContractSchema), asyncRoute(createContract));
+contractsRouter.patch("/:contractId/status", requireAuth, validate(changeContractStatusSchema), asyncRoute(changeContractStatus));
+contractsRouter.delete("/:contractId", requireAuth, validate(deleteContractSchema), asyncRoute(deleteContract));
+contractsRouter.post("/:contractId/restore", requireAuth, validate(restoreContractSchema), asyncRoute(restoreContract));
 

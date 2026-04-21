@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { asyncRoute } from "../../shared/http/asyncRoute.js";
 import { requireAuth } from "../../shared/middleware/auth.middleware.js";
 import { validate } from "../../shared/middleware/validate.middleware.js";
 import {
@@ -24,12 +25,12 @@ import {
 
 export const usersRouter = Router();
 
-usersRouter.get("/", requireAuth, validate(listUsersSchema), listUsers);
-usersRouter.get("/me", requireAuth, validate(getMeSchema), getMyUser);
-usersRouter.get("/me/profile-completion", requireAuth, validate(getMyProfileCompletionSchema), getMyProfileCompletion);
-usersRouter.get("/:userId", requireAuth, validate(getUserByIdSchema), getUserById);
-usersRouter.patch("/me", requireAuth, validate(updateMyProfileSchema), updateMyUser);
-usersRouter.patch("/:userId/membership", requireAuth, validate(updateUserMembershipSchema), updateUserMembership);
-usersRouter.delete("/:userId", requireAuth, validate(deleteUserSchema), deleteUser);
-usersRouter.post("/:userId/restore", requireAuth, validate(restoreUserSchema), restoreUser);
+usersRouter.get("/", requireAuth, validate(listUsersSchema), asyncRoute(listUsers));
+usersRouter.get("/me", requireAuth, validate(getMeSchema), asyncRoute(getMyUser));
+usersRouter.get("/me/profile-completion", requireAuth, validate(getMyProfileCompletionSchema), asyncRoute(getMyProfileCompletion));
+usersRouter.get("/:userId", requireAuth, validate(getUserByIdSchema), asyncRoute(getUserById));
+usersRouter.patch("/me", requireAuth, validate(updateMyProfileSchema), asyncRoute(updateMyUser));
+usersRouter.patch("/:userId/membership", requireAuth, validate(updateUserMembershipSchema), asyncRoute(updateUserMembership));
+usersRouter.delete("/:userId", requireAuth, validate(deleteUserSchema), asyncRoute(deleteUser));
+usersRouter.post("/:userId/restore", requireAuth, validate(restoreUserSchema), asyncRoute(restoreUser));
 

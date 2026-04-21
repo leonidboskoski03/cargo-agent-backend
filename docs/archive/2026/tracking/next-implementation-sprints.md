@@ -71,7 +71,6 @@ This plan focuses on closing MVP production risks first (money-path correctness,
 ## Sprint 3 - CI/CD + Observability + Frontend Integration Readiness
 
 ### 1) CI baseline and release gates
-- #TODO
 - Scope:
   - `package.json` scripts
   - `.github/workflows/ci.yml` (new)
@@ -79,6 +78,10 @@ This plan focuses on closing MVP production risks first (money-path correctness,
   - Every PR must pass `build`, `test`, and release smoke suite.
 - Acceptance:
   - Required checks block merge on failure.
+- Status: PARTIAL DONE (2026-04-17)
+- Notes:
+  - `.github/workflows/ci.yml` added and runs prisma validate/generate, migrate deploy, build, full tests, and release smoke tests.
+  - GitHub required-check enforcement remains a repo settings step.
 
 ### 2) Operational observability baseline
 - Scope:
@@ -89,6 +92,11 @@ This plan focuses on closing MVP production risks first (money-path correctness,
   - Traceable request/job/event logs with IDs for debugging incidents.
 - Acceptance:
   - Failures can be correlated by `requestId` / event / job IDs.
+- Status: DONE (2026-04-17)
+- Notes:
+  - Request logging now uses deterministic request IDs and includes user/company/session correlation fields.
+  - Worker logs include queue/job/event IDs plus attempts for failure tracing.
+  - Logger baseline includes service/env metadata and sensitive field redaction.
 
 ### 3) Frontend contract freeze (MVP APIs)
 - Scope:
@@ -98,6 +106,11 @@ This plan focuses on closing MVP production risks first (money-path correctness,
   - Stable response/error shapes for frontend implementation.
 - Acceptance:
   - FE can integrate without backend guesswork; UAT smoke scripts documented.
+- Status: PARTIAL DONE (2026-04-17)
+- Notes:
+  - Added contract docs for auth, company invites, and company billing/subscriptions.
+  - Existing job seeker billing contract retained.
+  - UAT smoke scripts still need explicit documentation pass.
 
 ---
 

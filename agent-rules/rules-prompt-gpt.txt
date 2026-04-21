@@ -1,0 +1,18 @@
+Deprecated: this legacy migration notebook is not an active rule source.
+
+Use the numbered IDE loader rules in `agent-rules/`:
+- `agent-rules/00-load-order.md`
+- `agent-rules/10-backend-default.md`
+- `agent-rules/20-contract-discipline.md`
+- `agent-rules/30-release-sensitive-work.md`
+- `agent-rules/40-doc-update-obligations.md`
+- `agent-rules/90-anti-drift.md`
+
+Canonical detailed guidance lives in:
+- `docs/README.md`
+- `docs/context/*`
+- `docs/contracts/api/*`
+- `docs/release/*`
+- `docs/delivery/*`
+- `docs/agent/backend-implementation-agent.md`
+

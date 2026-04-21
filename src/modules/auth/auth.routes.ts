@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { otpRequestRateLimitMiddleware, otpVerifyRateLimitMiddleware } from "../../config/security.js";
-import { requireActiveSession, requireAuth } from "../../shared/middleware/auth.middleware.js";
+import { optionalAuth, requireActiveSession, requireAuth } from "../../shared/middleware/auth.middleware.js";
+import { asyncRoute } from "../../shared/http/asyncRoute.js";
 import { validate } from "../../shared/middleware/validate.middleware.js";
 import { ok } from "../../shared/http/apiResponse.js";
 import {
@@ -47,22 +48,22 @@ import {
 export const authRouter = Router();
 
 authRouter.get("/", (_req, res) => ok(res, { module: "auth", status: "ready" }));
-authRouter.post("/register", validate(registerSchema), register);
-authRouter.post("/registration/start", validate(registrationStartSchema), startRegistration);
-authRouter.post("/registration/verify-otp", validate(registrationVerifyOtpSchema), verifyRegistrationOtp);
-authRouter.post("/registration/complete-job-seeker", validate(completeJobSeekerRegistrationSchema), completeJobSeekerRegistration);
-authRouter.post("/registration/complete-company", validate(completeCompanyRegistrationSchema), completeCompanyRegistration);
-authRouter.post("/login", validate(loginSchema), login);
-authRouter.post("/login/verify-otp", validate(loginVerifyOtpSchema), loginVerifyOtp);
-authRouter.post("/refresh", validate(refreshSessionSchema), refreshSession);
-authRouter.post("/logout", validate(logoutSchema), logout);
-authRouter.post("/logout-all", requireAuth, requireActiveSession, validate(logoutAllSchema), logoutAll);
-authRouter.get("/sessions", requireAuth, requireActiveSession, validate(listSessionsSchema), listSessions);
-authRouter.delete("/sessions/:sessionId", requireAuth, requireActiveSession, validate(revokeSessionSchema), revokeSession);
-authRouter.post("/forgot-password", validate(forgotPasswordSchema), forgotPassword);
-authRouter.post("/reset-password", validate(resetPasswordSchema), resetPassword);
-authRouter.post("/change-password", requireAuth, requireActiveSession, validate(changePasswordSchema), changePassword);
-authRouter.post("/otp/request", otpRequestRateLimitMiddleware, validate(requestOtpSchema), requestOtp);
-authRouter.post("/otp/verify", otpVerifyRateLimitMiddleware, validate(verifyOtpSchema), verifyOtp);
-authRouter.post("/otp/resend", validate(resendOtpSchema), resendOtp);
+authRouter.post("/register", validate(registerSchema), asyncRoute(register));
+authRouter.post("/registration/start", validate(registrationStartSchema), asyncRoute(startRegistration));
+authRouter.post("/registration/verify-otp", validate(registrationVerifyOtpSchema), asyncRoute(verifyRegistrationOtp));
+authRouter.post("/registration/complete-job-seeker", validate(completeJobSeekerRegistrationSchema), asyncRoute(completeJobSeekerRegistration));
+authRouter.post("/registration/complete-company", validate(completeCompanyRegistrationSchema), asyncRoute(completeCompanyRegistration));
+authRouter.post("/login", validate(loginSchema), asyncRoute(login));
+authRouter.post("/login/verify-otp", validate(loginVerifyOtpSchema), asyncRoute(loginVerifyOtp));
+authRouter.post("/refresh", validate(refreshSessionSchema), asyncRoute(refreshSession));
+authRouter.post("/logout", validate(logoutSchema), asyncRoute(logout));
+authRouter.post("/logout-all", requireAuth, requireActiveSession, validate(logoutAllSchema), asyncRoute(logoutAll));
+authRouter.get("/sessions", requireAuth, requireActiveSession, validate(listSessionsSchema), asyncRoute(listSessions));
+authRouter.delete("/sessions/:sessionId", requireAuth, requireActiveSession, validate(revokeSessionSchema), asyncRoute(revokeSession));
+authRouter.post("/forgot-password", validate(forgotPasswordSchema), asyncRoute(forgotPassword));
+authRouter.post("/reset-password", validate(resetPasswordSchema), asyncRoute(resetPassword));
+authRouter.post("/change-password", requireAuth, requireActiveSession, validate(changePasswordSchema), asyncRoute(changePassword));
+authRouter.post("/otp/request", optionalAuth, otpRequestRateLimitMiddleware, validate(requestOtpSchema), asyncRoute(requestOtp));
+authRouter.post("/otp/verify", otpVerifyRateLimitMiddleware, validate(verifyOtpSchema), asyncRoute(verifyOtp));
+authRouter.post("/otp/resend", validate(resendOtpSchema), asyncRoute(resendOtp));
 

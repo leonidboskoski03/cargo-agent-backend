@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { asyncRoute } from "../../shared/http/asyncRoute.js";
 import { requireAuth } from "../../shared/middleware/auth.middleware.js";
 import { validate } from "../../shared/middleware/validate.middleware.js";
 import {
@@ -18,8 +19,8 @@ import {
 
 export const documentsRouter = Router();
 
-documentsRouter.get("/", requireAuth, validate(listDocumentsSchema), listDocuments);
-documentsRouter.get("/:documentId", requireAuth, validate(getDocumentByIdSchema), getDocumentById);
-documentsRouter.post("/", requireAuth, validate(createDocumentSchema), createDocument);
-documentsRouter.delete("/:documentId", requireAuth, validate(deleteDocumentSchema), deleteDocument);
-documentsRouter.post("/:documentId/restore", requireAuth, validate(restoreDocumentSchema), restoreDocument);
+documentsRouter.get("/", requireAuth, validate(listDocumentsSchema), asyncRoute(listDocuments));
+documentsRouter.get("/:documentId", requireAuth, validate(getDocumentByIdSchema), asyncRoute(getDocumentById));
+documentsRouter.post("/", requireAuth, validate(createDocumentSchema), asyncRoute(createDocument));
+documentsRouter.delete("/:documentId", requireAuth, validate(deleteDocumentSchema), asyncRoute(deleteDocument));
+documentsRouter.post("/:documentId/restore", requireAuth, validate(restoreDocumentSchema), asyncRoute(restoreDocument));

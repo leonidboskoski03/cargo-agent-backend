@@ -203,7 +203,7 @@ describe("company invites flow", () => {
       const acceptWithWrongUser = await request(app)
         .post("/api/v1/company-invites/accept")
         .set("Authorization", otherToken)
-        .send({ token: acceptToken, otpChallengeId: "missing" });
+        .send({ token: acceptToken, otpChallengeId: "missing-id" });
 
       expect(acceptWithWrongUser.statusCode).toBe(403);
       expect(acceptWithWrongUser.body.error.code).toBe("INVITE_EMAIL_MISMATCH");

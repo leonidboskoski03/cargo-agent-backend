@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { asyncRoute } from "../../shared/http/asyncRoute.js";
 import { requireAuth } from "../../shared/middleware/auth.middleware.js";
 import { validate } from "../../shared/middleware/validate.middleware.js";
 import {
@@ -20,10 +21,10 @@ import {
 
 export const vehiclesRouter = Router();
 
-vehiclesRouter.get("/", requireAuth, validate(listVehiclesSchema), listVehicles);
-vehiclesRouter.get("/:vehicleId", requireAuth, validate(getVehicleByIdSchema), getVehicleById);
-vehiclesRouter.post("/", requireAuth, validate(createVehicleSchema), createVehicle);
-vehiclesRouter.patch("/:vehicleId", requireAuth, validate(updateVehicleSchema), updateVehicle);
-vehiclesRouter.delete("/:vehicleId", requireAuth, validate(deleteVehicleSchema), deleteVehicle);
-vehiclesRouter.post("/:vehicleId/restore", requireAuth, validate(restoreVehicleSchema), restoreVehicle);
+vehiclesRouter.get("/", requireAuth, validate(listVehiclesSchema), asyncRoute(listVehicles));
+vehiclesRouter.get("/:vehicleId", requireAuth, validate(getVehicleByIdSchema), asyncRoute(getVehicleById));
+vehiclesRouter.post("/", requireAuth, validate(createVehicleSchema), asyncRoute(createVehicle));
+vehiclesRouter.patch("/:vehicleId", requireAuth, validate(updateVehicleSchema), asyncRoute(updateVehicle));
+vehiclesRouter.delete("/:vehicleId", requireAuth, validate(deleteVehicleSchema), asyncRoute(deleteVehicle));
+vehiclesRouter.post("/:vehicleId/restore", requireAuth, validate(restoreVehicleSchema), asyncRoute(restoreVehicle));
 

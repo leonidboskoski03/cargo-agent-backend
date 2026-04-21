@@ -42,6 +42,8 @@ export function setTestEnv() {
   process.env.REDIS_URL = "redis://127.0.0.1:6379";
   process.env.BULLMQ_ENABLED = "false";
   process.env.CRON_ENABLED = "false";
+  // Integration specs post deterministic JSON webhook fixtures, not signed Stripe payloads.
+  process.env.STRIPE_WEBHOOK_SECRET = "";
 }
 
 export async function initRuntime(): Promise<Runtime> {

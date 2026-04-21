@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { asyncRoute } from "../../shared/http/asyncRoute.js";
 import { requireAuth } from "../../shared/middleware/auth.middleware.js";
 import { validate } from "../../shared/middleware/validate.middleware.js";
 import {
@@ -21,31 +22,31 @@ import {
 
 export const jobApplicationsRouter = Router();
 
-jobApplicationsRouter.get("/", requireAuth, validate(listJobApplicationsSchema), listJobApplicationFeed);
-jobApplicationsRouter.get("/mine", requireAuth, validate(listJobApplicationsSchema), listMyJobApplications);
-jobApplicationsRouter.post("/", requireAuth, validate(createJobApplicationSchema), createJobApplication);
+jobApplicationsRouter.get("/", requireAuth, validate(listJobApplicationsSchema), asyncRoute(listJobApplicationFeed));
+jobApplicationsRouter.get("/mine", requireAuth, validate(listJobApplicationsSchema), asyncRoute(listMyJobApplications));
+jobApplicationsRouter.post("/", requireAuth, validate(createJobApplicationSchema), asyncRoute(createJobApplication));
 jobApplicationsRouter.post(
   "/:jobApplicationId/promote",
   requireAuth,
   validate(promoteJobApplicationSchema),
-  promoteJobApplication,
+  asyncRoute(promoteJobApplication),
 );
 jobApplicationsRouter.post(
   "/:jobApplicationId/apply",
   requireAuth,
   validate(applyToJobApplicationSchema),
-  applyToJobApplication,
+  asyncRoute(applyToJobApplication),
 );
 jobApplicationsRouter.post(
   "/:jobApplicationId/submissions/:submissionId/promote",
   requireAuth,
   validate(promoteSubmissionSchema),
-  promoteJobApplicationSubmission,
+  asyncRoute(promoteJobApplicationSubmission),
 );
 jobApplicationsRouter.get(
   "/:jobApplicationId/submissions",
   requireAuth,
   validate(listMySubmissionsSchema),
-  listSubmissionsForMyListing,
+  asyncRoute(listSubmissionsForMyListing),
 );
 

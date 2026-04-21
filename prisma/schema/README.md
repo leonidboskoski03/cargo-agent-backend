@@ -14,9 +14,12 @@ This project uses a split Prisma schema under `prisma/schema/`.
 
 ## Commands
 
-Use package scripts so Prisma points to the folder schema:
+Use package scripts; they are wired to `--schema prisma/schema`:
 
 - `npm run prisma:generate`
 - `npm run prisma:migrate`
 - `npm run prisma:studio`
+- `npm run prisma:validate`
+
+`prisma/schema.prisma` is kept as a temporary fallback reference and is not the primary schema target.
 

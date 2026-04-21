@@ -20,8 +20,18 @@ describe("billing and plans endpoints", () => {
     const app = buildApp();
     const suffix = Date.now().toString();
 
-    const activePlan = await prisma.plan.create({
-      data: {
+    const existingPro = await prisma.plan.findUnique({ where: { code: PlanCode.PRO } });
+    const existingFree = await prisma.plan.findUnique({ where: { code: PlanCode.FREE } });
+
+    const activePlan = await prisma.plan.upsert({
+      where: { code: PlanCode.PRO },
+      update: {
+        name: `Pro ${suffix}`,
+        priceAmount: 49,
+        currency: "EUR",
+        isActive: true,
+      },
+      create: {
         code: PlanCode.PRO,
         name: `Pro ${suffix}`,
         priceAmount: 49,
@@ -30,8 +40,15 @@ describe("billing and plans endpoints", () => {
       },
     });
 
-    const inactivePlan = await prisma.plan.create({
-      data: {
+    const inactivePlan = await prisma.plan.upsert({
+      where: { code: PlanCode.FREE },
+      update: {
+        name: `Free ${suffix}`,
+        priceAmount: 0,
+        currency: "EUR",
+        isActive: false,
+      },
+      create: {
         code: PlanCode.FREE,
         name: `Free ${suffix}`,
         priceAmount: 0,
@@ -53,7 +70,45 @@ describe("billing and plans endpoints", () => {
       expect(allPlanIds).toContain(activePlan.id);
       expect(allPlanIds).toContain(inactivePlan.id);
     } finally {
-      await prisma.plan.deleteMany({ where: { id: { in: [activePlan.id, inactivePlan.id] } } });
+      if (existingPro) {
+        await prisma.plan.update({
+          where: { id: existingPro.id },
+          data: {
+            name: existingPro.name,
+            priceAmount: existingPro.priceAmount,
+            currency: existingPro.currency,
+            isActive: existingPro.isActive,
+            billingInterval: existingPro.billingInterval,
+            maxActivePosts: existingPro.maxActivePosts,
+            maxBidsPerMonth: existingPro.maxBidsPerMonth,
+            maxTeamMembers: existingPro.maxTeamMembers,
+            hasPromotedPosts: existingPro.hasPromotedPosts,
+            hasAnalytics: existingPro.hasAnalytics,
+            hasRouteAlerts: existingPro.hasRouteAlerts,
+            hasPrioritySupport: existingPro.hasPrioritySupport,
+          },
+        });
+      }
+
+      if (existingFree) {
+        await prisma.plan.update({
+          where: { id: existingFree.id },
+          data: {
+            name: existingFree.name,
+            priceAmount: existingFree.priceAmount,
+            currency: existingFree.currency,
+            isActive: existingFree.isActive,
+            billingInterval: existingFree.billingInterval,
+            maxActivePosts: existingFree.maxActivePosts,
+            maxBidsPerMonth: existingFree.maxBidsPerMonth,
+            maxTeamMembers: existingFree.maxTeamMembers,
+            hasPromotedPosts: existingFree.hasPromotedPosts,
+            hasAnalytics: existingFree.hasAnalytics,
+            hasRouteAlerts: existingFree.hasRouteAlerts,
+            hasPrioritySupport: existingFree.hasPrioritySupport,
+          },
+        });
+      }
     }
   }, 20_000);
 
@@ -116,7 +171,7 @@ describe("billing and plans endpoints", () => {
     }
   }, 20_000);
 
-  it("returns provider-not-configured for billing portal when Stripe keys are missing", async () => {
+  it("returns billing portal precondition errors consistently across env setup", async () => {
     const { prisma, buildApp, signAccessToken } = await initRuntime();
     if (!dbReady) {
       return;
@@ -155,8 +210,15 @@ describe("billing and plans endpoints", () => {
 
     try {
       const response = await request(app).post("/api/v1/subscriptions/portal-session").set("Authorization", token);
-      expect(response.statusCode).toBe(500);
-      expect(response.body.error.code).toBe("BILLING_PROVIDER_NOT_CONFIGURED");
+
+      const stripeConfigured = Boolean(process.env.STRIPE_SECRET_KEY?.trim());
+      if (stripeConfigured) {
+        expect(response.statusCode).toBe(409);
+        expect(response.body.error.code).toBe("STRIPE_CUSTOMER_NOT_FOUND");
+      } else {
+        expect(response.statusCode).toBe(500);
+        expect(response.body.error.code).toBe("BILLING_PROVIDER_NOT_CONFIGURED");
+      }
     } finally {
       await prisma.user.deleteMany({ where: { id: admin.id } });
       await prisma.company.deleteMany({ where: { id: company.id } });

@@ -10,10 +10,22 @@ if (!env.BULLMQ_ENABLED) {
   process.exit(0);
 }
 
+const redisTarget = new URL(env.REDIS_URL);
+
 const billingWebhookWorker = startBillingWebhookWorker();
 const notificationEventsWorker = startNotificationEventsWorker();
-logger.info("Billing webhook worker started");
-logger.info("Notification events worker started");
+logger.info(
+  {
+    pid: process.pid,
+    queues: ["billing_webhooks", "notification_events"],
+    redisHost: redisTarget.hostname,
+    redisPort: redisTarget.port ? Number(redisTarget.port) : 6379,
+    redisTls: redisTarget.protocol === "rediss:",
+  },
+  "Worker process started",
+);
+logger.info({ pid: process.pid }, "Billing webhook worker started");
+logger.info({ pid: process.pid }, "Notification events worker started");
 
 async function shutdown(signal: string) {
   logger.info({ signal }, "Worker graceful shutdown started");

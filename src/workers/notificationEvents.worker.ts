@@ -20,11 +20,28 @@ export function startNotificationEventsWorker() {
   );
 
   worker.on("completed", (job) => {
-    logger.debug({ jobId: job.id, type: job.data.type }, "Notification event job completed");
+    logger.debug(
+      {
+        queue: queueNames.notificationEvents,
+        jobId: job.id,
+        type: job.data.type,
+        attemptsMade: job.attemptsMade,
+      },
+      "Notification event job completed",
+    );
   });
 
   worker.on("failed", (job, error) => {
-    logger.error({ jobId: job?.id, type: job?.data.type, error }, "Notification event job failed");
+    logger.error(
+      {
+        queue: queueNames.notificationEvents,
+        jobId: job?.id,
+        type: job?.data.type,
+        attemptsMade: job?.attemptsMade,
+        error,
+      },
+      "Notification event job failed",
+    );
   });
 
   return worker;

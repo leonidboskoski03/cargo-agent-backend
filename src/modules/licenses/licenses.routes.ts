@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { asyncRoute } from "../../shared/http/asyncRoute.js";
 import { requireAuth } from "../../shared/middleware/auth.middleware.js";
 import { validate } from "../../shared/middleware/validate.middleware.js";
 import {
@@ -20,10 +21,10 @@ import {
 
 export const licensesRouter = Router();
 
-licensesRouter.get("/", requireAuth, validate(listLicensesSchema), listLicenses);
-licensesRouter.get("/:licenseId", requireAuth, validate(getLicenseByIdSchema), getLicenseById);
-licensesRouter.post("/", requireAuth, validate(createLicenseSchema), createLicense);
-licensesRouter.patch("/:licenseId", requireAuth, validate(updateLicenseSchema), updateLicense);
-licensesRouter.delete("/:licenseId", requireAuth, validate(deleteLicenseSchema), deleteLicense);
-licensesRouter.post("/:licenseId/restore", requireAuth, validate(restoreLicenseSchema), restoreLicense);
+licensesRouter.get("/", requireAuth, validate(listLicensesSchema), asyncRoute(listLicenses));
+licensesRouter.get("/:licenseId", requireAuth, validate(getLicenseByIdSchema), asyncRoute(getLicenseById));
+licensesRouter.post("/", requireAuth, validate(createLicenseSchema), asyncRoute(createLicense));
+licensesRouter.patch("/:licenseId", requireAuth, validate(updateLicenseSchema), asyncRoute(updateLicense));
+licensesRouter.delete("/:licenseId", requireAuth, validate(deleteLicenseSchema), asyncRoute(deleteLicense));
+licensesRouter.post("/:licenseId/restore", requireAuth, validate(restoreLicenseSchema), asyncRoute(restoreLicense));
 

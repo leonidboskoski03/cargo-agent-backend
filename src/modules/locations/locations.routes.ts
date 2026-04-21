@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { asyncRoute } from "../../shared/http/asyncRoute.js";
 import { requireAuth } from "../../shared/middleware/auth.middleware.js";
 import { validate } from "../../shared/middleware/validate.middleware.js";
 import {
@@ -20,10 +21,10 @@ import {
 
 export const locationsRouter = Router();
 
-locationsRouter.get("/", requireAuth, validate(listLocationsSchema), listLocations);
-locationsRouter.get("/:locationId", requireAuth, validate(getLocationByIdSchema), getLocationById);
-locationsRouter.post("/", requireAuth, validate(createLocationSchema), createLocation);
-locationsRouter.patch("/:locationId", requireAuth, validate(updateLocationSchema), updateLocation);
-locationsRouter.delete("/:locationId", requireAuth, validate(deleteLocationSchema), deleteLocation);
-locationsRouter.post("/:locationId/restore", requireAuth, validate(restoreLocationSchema), restoreLocation);
+locationsRouter.get("/", requireAuth, validate(listLocationsSchema), asyncRoute(listLocations));
+locationsRouter.get("/:locationId", requireAuth, validate(getLocationByIdSchema), asyncRoute(getLocationById));
+locationsRouter.post("/", requireAuth, validate(createLocationSchema), asyncRoute(createLocation));
+locationsRouter.patch("/:locationId", requireAuth, validate(updateLocationSchema), asyncRoute(updateLocation));
+locationsRouter.delete("/:locationId", requireAuth, validate(deleteLocationSchema), asyncRoute(deleteLocation));
+locationsRouter.post("/:locationId/restore", requireAuth, validate(restoreLocationSchema), asyncRoute(restoreLocation));
 
