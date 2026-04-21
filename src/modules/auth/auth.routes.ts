@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { otpRequestRateLimitMiddleware, otpVerifyRateLimitMiddleware } from "../../config/security.js";
-import { requireActiveSession, requireAuth } from "../../shared/middleware/auth.middleware.js";
+import { optionalAuth, requireActiveSession, requireAuth } from "../../shared/middleware/auth.middleware.js";
 import { validate } from "../../shared/middleware/validate.middleware.js";
 import { ok } from "../../shared/http/apiResponse.js";
 import {
@@ -62,7 +62,7 @@ authRouter.delete("/sessions/:sessionId", requireAuth, requireActiveSession, val
 authRouter.post("/forgot-password", validate(forgotPasswordSchema), forgotPassword);
 authRouter.post("/reset-password", validate(resetPasswordSchema), resetPassword);
 authRouter.post("/change-password", requireAuth, requireActiveSession, validate(changePasswordSchema), changePassword);
-authRouter.post("/otp/request", otpRequestRateLimitMiddleware, validate(requestOtpSchema), requestOtp);
+authRouter.post("/otp/request", optionalAuth, otpRequestRateLimitMiddleware, validate(requestOtpSchema), requestOtp);
 authRouter.post("/otp/verify", otpVerifyRateLimitMiddleware, validate(verifyOtpSchema), verifyOtp);
 authRouter.post("/otp/resend", validate(resendOtpSchema), resendOtp);
 
