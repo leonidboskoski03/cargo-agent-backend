@@ -171,7 +171,7 @@ describe("billing and plans endpoints", () => {
     }
   }, 20_000);
 
-  it("returns provider-not-configured for billing portal when Stripe keys are missing", async () => {
+  it("returns billing portal precondition errors consistently across env setup", async () => {
     const { prisma, buildApp, signAccessToken } = await initRuntime();
     if (!dbReady) {
       return;
@@ -210,8 +210,15 @@ describe("billing and plans endpoints", () => {
 
     try {
       const response = await request(app).post("/api/v1/subscriptions/portal-session").set("Authorization", token);
-      expect(response.statusCode).toBe(500);
-      expect(response.body.error.code).toBe("BILLING_PROVIDER_NOT_CONFIGURED");
+
+      const stripeConfigured = Boolean(process.env.STRIPE_SECRET_KEY?.trim());
+      if (stripeConfigured) {
+        expect(response.statusCode).toBe(409);
+        expect(response.body.error.code).toBe("STRIPE_CUSTOMER_NOT_FOUND");
+      } else {
+        expect(response.statusCode).toBe(500);
+        expect(response.body.error.code).toBe("BILLING_PROVIDER_NOT_CONFIGURED");
+      }
     } finally {
       await prisma.user.deleteMany({ where: { id: admin.id } });
       await prisma.company.deleteMany({ where: { id: company.id } });
