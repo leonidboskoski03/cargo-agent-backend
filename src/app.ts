@@ -18,7 +18,7 @@ export function buildApp() {
   app.use(rateLimitMiddleware);
   app.use("/webhooks", webhooksRouter);
   app.use(cookieParser());
-  app.use(express.json());
+  app.use(express.json({ limit: "5mb" }));
 
   app.use("/health", healthRouter);
   app.use("/api/v1", v1Router);

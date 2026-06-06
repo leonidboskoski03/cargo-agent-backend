@@ -63,7 +63,7 @@ export class DocumentsService {
     if (auth.role === Roles.JOB_SEEKER) {
       createInput.ownerUserId = auth.userId;
       createInput.ownerCompanyId = undefined;
-    } else if ((auth.role === Roles.COMPANY_ADMIN || auth.role === Roles.COMPANY_DRIVER) && auth.companyId) {
+    } else if (auth.role === Roles.COMPANY_ADMIN && auth.companyId) {
       createInput.ownerCompanyId = auth.companyId;
       createInput.ownerUserId = undefined;
     } else {
@@ -80,6 +80,10 @@ export class DocumentsService {
   async remove(auth: AuthContext, documentId: string) {
     requireAuth(auth);
 
+    if (auth.role === Roles.COMPANY_DRIVER) {
+      throw new AppError(403, "FORBIDDEN", "Company drivers cannot delete documents");
+    }
+
     const document = await this.repository.findById(documentId);
     if (!document || document.deletedAt) {
       throw new AppError(404, "DOCUMENT_NOT_FOUND", "Document not found");
@@ -95,6 +99,10 @@ export class DocumentsService {
 
   async restore(auth: AuthContext, documentId: string) {
     requireAuth(auth);
+
+    if (auth.role === Roles.COMPANY_DRIVER) {
+      throw new AppError(403, "FORBIDDEN", "Company drivers cannot restore documents");
+    }
 
     const document = await this.repository.findById(documentId);
     if (!document) {

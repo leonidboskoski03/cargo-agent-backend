@@ -65,7 +65,7 @@ export class PostsService {
 	  throw new AppError(403, "COMPANY_REQUIRED", "Company admins must belong to a company");
 	}
 
-	const route = await repo.findActiveRouteById(body.routeId);
+	const route = await repo.findActiveRouteById(body.routeId, companyId);
 	if (!route) {
 	  throw new AppError(404, "ROUTE_NOT_FOUND", "Route not found");
 	}
@@ -138,7 +138,7 @@ export class PostsService {
 	}
 
 	if (body.routeId) {
-	  const route = await repo.findActiveRouteById(body.routeId);
+	  const route = await repo.findActiveRouteById(body.routeId, existing.companyId);
 	  if (!route) {
 		throw new AppError(404, "ROUTE_NOT_FOUND", "Route not found");
 	  }

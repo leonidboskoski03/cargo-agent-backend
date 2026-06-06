@@ -1,9 +1,14 @@
 import type { Request, Response } from "express";
 import { created, ok } from "../../shared/http/apiResponse.js";
 import { authFromRequest, getStringParam } from "../../shared/http/controllerAuth.helpers.js";
+import { licenseTypes } from "./licenseTypes.service.js";
 import { LicensesService } from "./licenses.service.js";
 
 const service = new LicensesService();
+
+export async function listLicenseTypes(_req: Request, res: Response) {
+  return ok(res, licenseTypes);
+}
 
 
 export async function listLicenses(req: Request, res: Response) {
@@ -24,6 +29,8 @@ export async function createLicense(req: Request, res: Response) {
   const data = await service.create(authFromRequest(req), {
     userId: req.body.userId,
     licenseType: req.body.licenseType,
+    imageUrl: req.body.imageUrl,
+    documentUrl: req.body.documentUrl,
     issuedAt: req.body.issuedAt,
     expiresAt: req.body.expiresAt,
     isValid: req.body.isValid,
@@ -38,6 +45,8 @@ export async function updateLicense(req: Request, res: Response) {
     getStringParam(req.params.licenseId),
     {
       licenseType: req.body.licenseType,
+      imageUrl: req.body.imageUrl,
+      documentUrl: req.body.documentUrl,
       issuedAt: req.body.issuedAt,
       expiresAt: req.body.expiresAt,
       isValid: req.body.isValid,

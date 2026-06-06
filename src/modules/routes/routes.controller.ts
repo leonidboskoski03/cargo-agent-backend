@@ -33,6 +33,16 @@ export async function createRoute(req: Request, res: Response) {
   return created(res, data);
 }
 
+export async function estimateRoute(req: Request, res: Response) {
+  const data = await service.estimate(authFromRequest(req), {
+    originLocationId: req.body.originLocationId,
+    destinationLocationId: req.body.destinationLocationId,
+    vehicleProfile: req.body.vehicleProfile,
+  });
+
+  return ok(res, data);
+}
+
 export async function updateRoute(req: Request, res: Response) {
   const data = await service.update(authFromRequest(req), getStringParam(req.params.routeId), {
     originLocationId: req.body.originLocationId,

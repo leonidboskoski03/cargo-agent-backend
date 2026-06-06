@@ -28,7 +28,7 @@
     "prisma:seed": "tsx prisma/seed.ts",
     "prisma:studio": "prisma studio --schema prisma/schema",
     "prisma:validate": "prisma validate --schema prisma/schema",
-    "ci:prisma": "npm run prisma:validate; npm run prisma:generate"
+    "ci:prisma": "npm run prisma:validate && npm run prisma:generate"
   },
   "dependencies": {
     "@prisma/client": "^6.5.0",

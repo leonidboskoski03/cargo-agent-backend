@@ -4,6 +4,8 @@ import { prisma } from "../../shared/prisma/prismaClient.js";
 type LicenseCreateData = {
   userId: string;
   licenseType: string;
+  imageUrl?: string;
+  documentUrl?: string;
   issuedAt?: Date;
   expiresAt?: Date;
   isValid?: boolean;
@@ -11,6 +13,8 @@ type LicenseCreateData = {
 
 type LicenseUpdateData = {
   licenseType?: string;
+  imageUrl?: string | null;
+  documentUrl?: string | null;
   issuedAt?: Date | null;
   expiresAt?: Date | null;
   isValid?: boolean;
@@ -20,6 +24,8 @@ const licenseSelect = {
   id: true,
   userId: true,
   licenseType: true,
+  imageUrl: true,
+  documentUrl: true,
   issuedAt: true,
   expiresAt: true,
   isValid: true,
@@ -98,6 +104,8 @@ export class LicensesRepository {
       data: {
         userId: data.userId,
         licenseType: data.licenseType,
+        imageUrl: data.imageUrl,
+        documentUrl: data.documentUrl,
         issuedAt: data.issuedAt,
         expiresAt: data.expiresAt,
         isValid: data.isValid,

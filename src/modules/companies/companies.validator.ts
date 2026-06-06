@@ -2,6 +2,10 @@ import { CompanyType } from "@prisma/client";
 import { z } from "zod";
 
 const cuidParam = z.string().cuid();
+const imageValue = z.union([
+  z.string().trim().url(),
+  z.string().regex(/^data:image\/(png|jpe?g|webp);base64,/i),
+]);
 
 export const listCompaniesSchema = z.object({
   params: z.object({}),
@@ -36,8 +40,8 @@ export const updateMyCompanySchema = z.object({
       phone: z.string().trim().min(5).max(40).nullable().optional(),
       email: z.string().trim().email().nullable().optional(),
       website: z.string().trim().url().nullable().optional(),
-      logoUrl: z.string().trim().url().nullable().optional(),
-      bannerUrl: z.string().trim().url().nullable().optional(),
+      logoUrl: imageValue.nullable().optional(),
+      bannerUrl: imageValue.nullable().optional(),
       bio: z.string().trim().max(2000).nullable().optional(),
       foundedAt: z.coerce.date().nullable().optional(),
       employeeCount: z.number().int().min(0).nullable().optional(),

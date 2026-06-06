@@ -25,6 +25,7 @@ model Company {
 
   currentPlan              Plan?                      @relation("CompanyCurrentPlan", fields: [currentPlanId], references: [id])
   users                    User[]
+  routes                   Route[]
   vehicles                 Vehicle[]
   posts                    Post[]
   carrierBids              Bid[]                      @relation("CarrierCompanyBids")

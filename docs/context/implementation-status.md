@@ -4,7 +4,7 @@ doc_type: implementation-status
 status: active
 owner: backend-platform
 created: 2026-04-19
-updated: 2026-04-20
+updated: 2026-06-06
 summary: Factual snapshot of what is implemented, partial, missing, and risky for MVP closeout.
 related_docs:
   - docs/context/product-context.md
@@ -34,15 +34,15 @@ source_of_truth: true
 |---|---|---|---|---|
 | Companies | PARTIAL | `docs/context/architecture.md`, `docs/contracts/api/companies.md` | Core company and membership surface exists; release validation remains open. | Medium |
 | Users | PARTIAL | `docs/context/architecture.md`, `docs/contracts/api/users.md` | User lifecycle exists; final release evidence not complete. | Medium |
-| Fleet / vehicles / licenses | PARTIAL | `docs/context/architecture.md` | Domain implementation exists; full production-like UAT evidence pending. | Medium |
+| Fleet / vehicles / licenses | PARTIAL | `docs/context/architecture.md`, `docs/contracts/api/fleet.md` | Domain implementation exists with closeout integration coverage; full production-like UAT evidence pending. | Medium |
 | Locations / routes | PARTIAL | `docs/context/architecture.md`, `docs/context/product-context.md` | Route/location model exists; route integrity validation in release/UAT still open. | Medium |
 | Transport posts | PARTIAL | `docs/context/architecture.md` | Implemented in marketplace lane; release closeout evidence pending. | Medium |
 | Bids | PARTIAL | `docs/context/architecture.md` | Implemented with acceptance flow; release/UAT closure pending. | Medium |
 | Contracts | PARTIAL | `docs/context/architecture.md` | Implemented with lifecycle baseline; full UAT evidence pending. | Medium |
 | Job posts / job applications | PARTIAL | `docs/context/architecture.md`, `docs/contracts/api/job-applications.md` | Implemented in job-marketplace lane; release validation still open. | Medium |
-| Documents | PARTIAL | `docs/context/architecture.md` | Implemented baseline; optional-path UAT evidence remains open. | Medium |
-| Notifications | PARTIAL | `docs/context/architecture.md` | Implemented baseline/event paths; full production-like evidence pending. | Medium |
-| Audit logs | PARTIAL | `docs/context/architecture.md` | Implemented baseline; coverage/evidence closure pending. | Medium |
+| Documents | PARTIAL | `docs/context/architecture.md`, `docs/contracts/api/support-platform.md` | Implemented baseline with closeout integration coverage; optional-path UAT evidence remains open. | Medium |
+| Notifications | PARTIAL | `docs/context/architecture.md`, `docs/contracts/api/support-platform.md` | Implemented baseline/event paths with closeout integration coverage; full production-like evidence pending. | Medium |
+| Audit logs | PARTIAL | `docs/context/architecture.md`, `docs/contracts/api/support-platform.md` | Implemented baseline with closeout integration coverage; manual evidence closure pending. | Medium |
 | Plans | PARTIAL | `docs/contracts/api/company-billing-subscriptions.md` | Plan model exists; final release evidence dependencies remain open. | High |
 | Subscriptions / billing | PARTIAL | `docs/contracts/api/company-billing-subscriptions.md`, `docs/release/mvp-readiness.md` | Implemented foundation; RB-003 and RB-004 block release closure. | High |
 | Job seeker billing | PARTIAL | `docs/contracts/api/job-seeker-billing.md`, `docs/release/mvp-readiness.md` | Implemented wallet/credits/checkout flow; release evidence closure pending. | High |
@@ -60,6 +60,7 @@ Implemented:
 - Transport marketplace domains (posts/bids/contracts) are implemented at baseline.
 - Platform services (documents/notifications/audit logs) are implemented at baseline.
 - API contract system is normalized under `docs/contracts/api/*`.
+- Closeout integration coverage now covers fleet, billing authorization, support platform, and reviews for frontend-facing Stage 4-6 routes.
 
 Partial:
 
@@ -79,6 +80,7 @@ Missing:
 - CI required-check enforcement proof is incomplete (`RB-004`).
 - OTP delivery remains simulated and invite outbound delivery remains placeholder; if unacceptable for MVP, release must remain `NO-GO`.
 - Truth-alignment follow-ups remain open for known contract/code mismatches documented in canonical contracts (auth logout semantics, subscription cancel reason payload handling, job seeker packs query parsing).
+- Backend automation evidence has improved for fleet/support/reviews, but manual UAT and external artifacts are still required for GO.
 
 ## Release blockers (MVP)
 
@@ -87,6 +89,7 @@ Missing:
 - `RB-003`: Complete billing/webhook replay evidence.
 - `RB-004`: CI required-check proof and enforcement validation.
 - `RB-005`: Contract source-of-truth adoption verification.
+- `RB-006`: OTP/invite outbound delivery-mode decision or provider validation.
 
 ## 5) Known risks
 
@@ -129,6 +132,7 @@ Open decisions:
 - 2026-04-20: Release docs normalized under `docs/release/*` with centralized gate/evidence/UAT/go-no-go control.
 - 2026-04-20: Capability matrix expanded to full platform reality map (domain + release readiness).
 - 2026-04-20: Canonical contract truth-alignment pass completed for auth, company invites, company billing/subscriptions, job seeker billing, and job applications.
+- 2026-06-06: Added closeout integration coverage for fleet, support platform, and reviews; added canonical contracts for fleet, support platform, and reviews.
 
 ## Interpretation rule
 

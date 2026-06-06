@@ -2,11 +2,13 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../../shared/prisma/prismaClient.js";
 
 type RouteListFilters = {
+  companyId: string;
   originLocationId?: string;
   destinationLocationId?: string;
 };
 
 type RouteCreateData = {
+  companyId: string;
   originLocationId: string;
   destinationLocationId: string;
   distanceKm?: number;
@@ -24,6 +26,7 @@ type RouteUpdateData = {
 
 const routeSelect = {
   id: true,
+  companyId: true,
   originLocationId: true,
   destinationLocationId: true,
   distanceKm: true,
@@ -54,6 +57,7 @@ export class RoutesRepository {
   async listActive(filters: RouteListFilters) {
     return prisma.route.findMany({
       where: {
+        companyId: filters.companyId,
         deletedAt: null,
         ...(filters.originLocationId ? { originLocationId: filters.originLocationId } : {}),
         ...(filters.destinationLocationId ? { destinationLocationId: filters.destinationLocationId } : {}),
@@ -63,19 +67,20 @@ export class RoutesRepository {
     });
   }
 
-  async findActiveById(routeId: string) {
+  async findActiveById(routeId: string, companyId: string) {
     return prisma.route.findFirst({
       where: {
         id: routeId,
+        companyId,
         deletedAt: null,
       },
       select: routeSelect,
     });
   }
 
-  async findAnyById(routeId: string) {
-    return prisma.route.findUnique({
-      where: { id: routeId },
+  async findAnyById(routeId: string, companyId: string) {
+    return prisma.route.findFirst({
+      where: { id: routeId, companyId },
       select: routeSelect,
     });
   }
@@ -87,6 +92,22 @@ export class RoutesRepository {
         deletedAt: null,
       },
       select: { id: true },
+    });
+  }
+
+  async findActiveLocationWithCoordsById(locationId: string) {
+    return prisma.location.findFirst({
+      where: {
+        id: locationId,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        countryCode: true,
+        city: true,
+        lat: true,
+        lng: true,
+      },
     });
   }
 

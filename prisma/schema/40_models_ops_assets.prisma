@@ -63,6 +63,8 @@ model License {
   id          String    @id @default(cuid())
   userId      String
   licenseType String
+  imageUrl    String?
+  documentUrl String?
   issuedAt    DateTime? @db.Date
   expiresAt   DateTime? @db.Date
   isValid     Boolean   @default(true)
@@ -89,6 +91,8 @@ model Vehicle {
   capacityKg            Int?
   volumeM3              Decimal?  @db.Decimal(10, 3)
   bodyType              VehicleBodyType?
+  imageUrl              String?
+  documentsJson         Json?
   refrigerated          Boolean?  @default(false)
   hazmatCertified       Boolean?  @default(false)
   isActive              Boolean   @default(true)
@@ -140,8 +144,39 @@ model Location {
   @@index([countryCode, city])
 }
 
+model SupportedCountry {
+  code       String   @id
+  name       String
+  nativeName String?
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  cities SupportedCity[]
+
+  @@index([isActive, name])
+}
+
+model SupportedCity {
+  id          String   @id @default(cuid())
+  countryCode String
+  name        String
+  region      String?
+  lat         Decimal? @db.Decimal(10, 7)
+  lng         Decimal? @db.Decimal(10, 7)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  country SupportedCountry @relation(fields: [countryCode], references: [code], onDelete: Cascade)
+
+  @@unique([countryCode, name, region])
+  @@index([countryCode, isActive, name])
+}
+
 model Route {
   id                       String   @id @default(cuid())
+  companyId                String?
   originLocationId         String
   destinationLocationId    String
   distanceKm               Int?
@@ -151,12 +186,14 @@ model Route {
   createdAt                DateTime @default(now())
   updatedAt                DateTime @updatedAt
 
+  company             Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
   originLocation      Location @relation("OriginLocationRoutes", fields: [originLocationId], references: [id])
   destinationLocation Location @relation("DestinationLocationRoutes", fields: [destinationLocationId], references: [id])
   posts               Post[]
   contracts           Contract[]
 
-  @@unique([originLocationId, destinationLocationId])
+  @@unique([companyId, originLocationId, destinationLocationId])
+  @@index([companyId])
   @@index([originLocationId])
   @@index([destinationLocationId])
 }

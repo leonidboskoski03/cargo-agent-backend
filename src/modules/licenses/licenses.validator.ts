@@ -25,6 +25,12 @@ export const listLicensesSchema = z.object({
   body: z.object({}),
 });
 
+export const listLicenseTypesSchema = z.object({
+  params: z.object({}),
+  query: z.object({}),
+  body: z.object({}),
+});
+
 export const getLicenseByIdSchema = z.object({
   params: z.object({
     licenseId: cuidParam,
@@ -40,6 +46,8 @@ export const createLicenseSchema = z.object({
     .object({
       userId: z.string().cuid().optional(),
       licenseType: z.string().trim().min(1).max(120),
+      imageUrl: z.string().trim().url().optional(),
+      documentUrl: z.string().trim().url().optional(),
       issuedAt: dateField.optional(),
       expiresAt: dateField.optional(),
       isValid: z.boolean().optional(),
@@ -55,6 +63,8 @@ export const updateLicenseSchema = z.object({
   body: z
     .object({
       licenseType: z.string().trim().min(1).max(120).optional(),
+      imageUrl: z.string().trim().url().nullable().optional(),
+      documentUrl: z.string().trim().url().nullable().optional(),
       issuedAt: dateField.nullable().optional(),
       expiresAt: dateField.nullable().optional(),
       isValid: z.boolean().optional(),

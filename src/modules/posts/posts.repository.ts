@@ -120,13 +120,14 @@ export class PostsRepository {
 	});
   }
 
-  async findActiveRouteById(routeId: string) {
+  async findActiveRouteById(routeId: string, companyId: string) {
 	return prisma.route.findFirst({
 	  where: {
 		id: routeId,
+		companyId,
 		deletedAt: null,
 	  },
-	  select: { id: true },
+	  select: { id: true, companyId: true },
 	});
   }
 

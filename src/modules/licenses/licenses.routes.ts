@@ -6,6 +6,7 @@ import {
   createLicense,
   deleteLicense,
   getLicenseById,
+  listLicenseTypes,
   listLicenses,
   restoreLicense,
   updateLicense,
@@ -14,6 +15,7 @@ import {
   createLicenseSchema,
   deleteLicenseSchema,
   getLicenseByIdSchema,
+  listLicenseTypesSchema,
   listLicensesSchema,
   restoreLicenseSchema,
   updateLicenseSchema,
@@ -21,6 +23,7 @@ import {
 
 export const licensesRouter = Router();
 
+licensesRouter.get("/types", requireAuth, validate(listLicenseTypesSchema), asyncRoute(listLicenseTypes));
 licensesRouter.get("/", requireAuth, validate(listLicensesSchema), asyncRoute(listLicenses));
 licensesRouter.get("/:licenseId", requireAuth, validate(getLicenseByIdSchema), asyncRoute(getLicenseById));
 licensesRouter.post("/", requireAuth, validate(createLicenseSchema), asyncRoute(createLicense));
