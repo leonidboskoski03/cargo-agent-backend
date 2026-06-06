@@ -4,7 +4,7 @@ doc_type: uat-smoke-checklist
 status: active
 owner: qa-owner
 created: 2026-04-20
-updated: 2026-04-20
+updated: 2026-06-06
 summary: Manual MVP smoke validation checklist grouped by user and release-critical flows.
 related_docs:
   - docs/release/mvp-readiness.md
@@ -46,6 +46,21 @@ Use `docs/release/evidence-map.md` for gate proof mapping and `docs/release/go-n
 - [ ] `UAT-BILL-001` Billing/subscription mutation endpoints reject unauthorized roles.
 - [ ] `UAT-BILL-002` Checkout/subscription happy path works.
 - [ ] `UAT-BILL-003` Usage/entitlements enforcement matches expected plan behavior.
+
+## Fleet operations
+
+- [ ] `UAT-FLEET-001` Admin creates, edits, deletes, and restores a vehicle.
+- [ ] `UAT-FLEET-002` Admin creates, edits, deletes, and restores a driver license.
+- [ ] `UAT-FLEET-003` Admin assigns a vehicle to a company driver and overlapping assignment attempts are rejected.
+- [ ] `UAT-FLEET-004` Company driver can view fleet context but cannot mutate vehicles, licenses, or assignments.
+
+## Support platform and reviews
+
+- [ ] `UAT-SUP-001` User lists notifications and marks one/all as read.
+- [ ] `UAT-SUP-002` Admin creates, deletes, and restores document metadata; driver cannot mutate documents.
+- [ ] `UAT-SUP-003` Admin lists audit logs and filters by actor/action; driver access is rejected.
+- [ ] `UAT-SUP-004` Admin creates, updates, publishes/withdraws, deletes, and restores a review for a completed contract.
+- [ ] `UAT-SUP-005` Draft review visibility and cross-tenant review access are scoped correctly.
 
 ## Webhook and replay safety
 

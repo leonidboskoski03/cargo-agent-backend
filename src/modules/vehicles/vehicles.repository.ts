@@ -13,6 +13,8 @@ type VehicleCreateData = {
   capacityKg?: number;
   volumeM3?: Prisma.Decimal | string | number;
   bodyType?: VehicleBodyType;
+  imageUrl?: string;
+  documentsJson?: Prisma.InputJsonValue;
   refrigerated?: boolean;
   hazmatCertified?: boolean;
   isActive?: boolean;
@@ -28,6 +30,8 @@ type VehicleUpdateData = {
   capacityKg?: number | null;
   volumeM3?: Prisma.Decimal | string | number | null;
   bodyType?: VehicleBodyType | null;
+  imageUrl?: string | null;
+  documentsJson?: Prisma.InputJsonValue | Prisma.NullableJsonNullValueInput;
   refrigerated?: boolean;
   hazmatCertified?: boolean;
   isActive?: boolean;
@@ -46,6 +50,8 @@ const vehicleSelect = {
   capacityKg: true,
   volumeM3: true,
   bodyType: true,
+  imageUrl: true,
+  documentsJson: true,
   refrigerated: true,
   hazmatCertified: true,
   isActive: true,

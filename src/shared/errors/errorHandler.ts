@@ -10,6 +10,17 @@ export function notFoundHandler(req: Request, res: Response) {
 }
 
 export function errorHandler(error: unknown, req: Request, res: Response, _next: NextFunction) {
+  if (isPayloadTooLargeError(error)) {
+    return res.status(413).json({
+      success: false,
+      error: {
+        code: "PAYLOAD_TOO_LARGE",
+        message: "Uploaded data is too large. Use an image under 5 MB.",
+      },
+      meta: { traceId: req.requestId },
+    });
+  }
+
   if (error instanceof AppError) {
     return res.status(error.statusCode).json({
       success: false,
@@ -27,5 +38,9 @@ export function errorHandler(error: unknown, req: Request, res: Response, _next:
     error: { code: "INTERNAL_SERVER_ERROR", message: "Unexpected server error" },
     meta: { traceId: req.requestId },
   });
+}
+
+function isPayloadTooLargeError(error: unknown) {
+  return typeof error === "object" && error !== null && "type" in error && error.type === "entity.too.large";
 }
 

@@ -28,12 +28,12 @@ export class UsersService {
       { key: "lastName", done: Boolean(user.lastName?.trim()), weight: 10 },
       { key: "emailVerified", done: Boolean(user.emailVerifiedAt), weight: 15 },
       { key: "phone", done: Boolean(user.phone?.trim()), weight: 10 },
-      { key: "countryCode", done: Boolean(user.countryCode?.trim()), weight: 10 },
-      { key: "city", done: Boolean(user.city?.trim()), weight: 10 },
     ];
 
     if (auth.role === Roles.JOB_SEEKER) {
       checks.push(
+        { key: "countryCode", done: Boolean(user.countryCode?.trim()), weight: 10 },
+        { key: "city", done: Boolean(user.city?.trim()), weight: 10 },
         { key: "headline", done: Boolean(user.headline?.trim()), weight: 10 },
         { key: "yearsExperience", done: typeof user.yearsExperience === "number", weight: 10 },
         { key: "availability", done: Boolean(user.availability?.trim()), weight: 10 },

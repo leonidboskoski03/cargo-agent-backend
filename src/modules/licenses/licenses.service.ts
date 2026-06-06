@@ -61,6 +61,10 @@ export class LicensesService {
     requireAuth(auth);
     assertAllowedRole(auth.role);
 
+    if (auth.role === Roles.COMPANY_DRIVER) {
+      throw new AppError(403, "FORBIDDEN", "Company drivers cannot create licenses");
+    }
+
     const targetUserId = auth.role === Roles.COMPANY_ADMIN && body.userId ? body.userId : auth.userId;
 
     if (!targetUserId) {
@@ -82,6 +86,8 @@ export class LicensesService {
       return await repo.create({
         userId: targetUser.id,
         licenseType: body.licenseType,
+        imageUrl: body.imageUrl,
+        documentUrl: body.documentUrl,
         issuedAt: body.issuedAt,
         expiresAt: body.expiresAt,
         isValid: body.isValid,
@@ -99,6 +105,10 @@ export class LicensesService {
     requireAuth(auth);
     assertAllowedRole(auth.role);
 
+    if (auth.role === Roles.COMPANY_DRIVER) {
+      throw new AppError(403, "FORBIDDEN", "Company drivers cannot update licenses");
+    }
+
     const license = await repo.findActiveById(licenseId);
 
     if (!license) {
@@ -113,6 +123,8 @@ export class LicensesService {
     try {
       return await repo.update(licenseId, {
         licenseType: body.licenseType,
+        imageUrl: body.imageUrl,
+        documentUrl: body.documentUrl,
         issuedAt: body.issuedAt,
         expiresAt: body.expiresAt,
         isValid: body.isValid,
@@ -129,6 +141,10 @@ export class LicensesService {
   async remove(auth: AuthContext, licenseId: string) {
     requireAuth(auth);
     assertAllowedRole(auth.role);
+
+    if (auth.role === Roles.COMPANY_DRIVER) {
+      throw new AppError(403, "FORBIDDEN", "Company drivers cannot delete licenses");
+    }
 
     const license = await repo.findActiveById(licenseId);
 

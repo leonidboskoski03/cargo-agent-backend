@@ -36,6 +36,21 @@ export const createRouteSchema = z.object({
     }),
 });
 
+export const createRouteEstimateSchema = z.object({
+  params: z.object({}),
+  query: z.object({}),
+  body: z
+    .object({
+      originLocationId: cuidParam,
+      destinationLocationId: cuidParam,
+      vehicleProfile: z.enum(["TRUCK"]).default("TRUCK").optional(),
+    })
+    .refine((body) => body.originLocationId !== body.destinationLocationId, {
+      message: "originLocationId and destinationLocationId must be different",
+      path: ["destinationLocationId"],
+    }),
+});
+
 export const updateRouteSchema = z.object({
   params: z.object({
     routeId: cuidParam,
