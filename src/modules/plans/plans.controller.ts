@@ -5,7 +5,8 @@ import { PlansService } from "./plans.service.js";
 const service = new PlansService();
 
 export async function listPlans(req: Request, res: Response) {
-  const activeOnly = req.query.activeOnly === "true" || req.query.activeOnly === undefined;
+  const query = req.query as unknown as { activeOnly: boolean };
+  const activeOnly = query.activeOnly;
   const data = await service.listPublicPlans(activeOnly);
   return ok(res, data);
 }

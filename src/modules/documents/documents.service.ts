@@ -1,9 +1,10 @@
 import { type Prisma } from "@prisma/client";
 import { AppError } from "../../shared/errors/AppError.js";
 import { Roles } from "../../shared/auth/permissions.js";
+import { uploadAsset } from "../../shared/storage/storageService.js";
 import { assertAccess, requireAuth } from "./documents.helpers.js";
 import { DocumentsRepository } from "./documents.repository.js";
-import type { AuthContext, CreateBody, CreateInput, ListQuery } from "./documents.service.types.js";
+import type { AuthContext, CreateBody, CreateInput, ListQuery, UploadBody } from "./documents.service.types.js";
 
 export class DocumentsService {
   private readonly repository = new DocumentsRepository();
@@ -75,6 +76,39 @@ export class DocumentsService {
     void body.ownerCompanyId;
 
     return this.repository.create(createInput);
+  }
+
+  async upload(auth: AuthContext, body: UploadBody) {
+    requireAuth(auth);
+
+    if (auth.role !== Roles.COMPANY_ADMIN && auth.role !== Roles.JOB_SEEKER) {
+      throw new AppError(403, "FORBIDDEN", "You do not have permission to upload documents");
+    }
+
+    const asset = await uploadAsset({
+      contentBase64: body.contentBase64,
+      fileName: body.fileName,
+      mimeType: body.mimeType,
+      folder: auth.companyId ? `companies/${auth.companyId}` : `users/${auth.userId}`,
+    });
+
+    return this.create(auth, {
+      kind: body.kind,
+      name: body.name,
+      mimeType: body.mimeType,
+      url: asset.url,
+      ownerUserId: body.ownerUserId,
+      ownerCompanyId: body.ownerCompanyId,
+      metadataJson: {
+        ...(typeof body.metadataJson === "object" && body.metadataJson !== null && !Array.isArray(body.metadataJson) ? body.metadataJson : {}),
+        storage: {
+          provider: asset.provider,
+          key: asset.key,
+          sizeBytes: asset.sizeBytes,
+          fileName: asset.fileName,
+        },
+      },
+    });
   }
 
   async remove(auth: AuthContext, documentId: string) {

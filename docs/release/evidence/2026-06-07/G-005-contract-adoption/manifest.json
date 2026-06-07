@@ -1,0 +1,239 @@
+{
+  "command": "node scripts/audit-contract-coverage.mjs",
+  "contractFileCount": 14,
+  "externalEvidenceStatus": "AUTOMATED_CONTRACT_ADOPTION_AUDIT_PASSED",
+  "finishedAt": "2026-06-07T02:58:32.717Z",
+  "gate": "G-005",
+  "issues": [],
+  "modules": [
+    {
+      "contracts": [
+        "auth.md"
+      ],
+      "frontendConsumer": "login, registration, invite accept",
+      "module": "auth",
+      "mountedRoute": "`/auth`",
+      "status": "COVERED"
+    },
+    {
+      "contracts": [
+        "companies.md"
+      ],
+      "frontendConsumer": "company settings",
+      "module": "companies",
+      "mountedRoute": "`/companies`",
+      "status": "COVERED"
+    },
+    {
+      "contracts": [
+        "company-invites.md"
+      ],
+      "frontendConsumer": "team invites, invite accept",
+      "module": "companyInvites",
+      "mountedRoute": "`/company-invites`",
+      "status": "COVERED"
+    },
+    {
+      "contracts": [
+        "users.md"
+      ],
+      "frontendConsumer": "team, profile completion",
+      "module": "users",
+      "mountedRoute": "`/users`",
+      "status": "COVERED"
+    },
+    {
+      "contracts": [
+        "fleet.md"
+      ],
+      "frontendConsumer": "fleet licenses",
+      "module": "licenses",
+      "mountedRoute": "`/licenses`",
+      "status": "COVERED"
+    },
+    {
+      "contracts": [
+        "fleet.md"
+      ],
+      "frontendConsumer": "fleet vehicles",
+      "module": "vehicles",
+      "mountedRoute": "`/vehicles`",
+      "status": "COVERED"
+    },
+    {
+      "contracts": [
+        "fleet.md"
+      ],
+      "frontendConsumer": "fleet assignments",
+      "module": "vehicleAssignments",
+      "mountedRoute": "`/vehicle-assignments`",
+      "status": "COVERED"
+    },
+    {
+      "contracts": [
+        "marketplace-operations.md"
+      ],
+      "frontendConsumer": "locations, quick posts",
+      "module": "locations",
+      "mountedRoute": "`/locations`",
+      "status": "COVERED"
+    },
+    {
+      "contracts": [
+        "marketplace-operations.md"
+      ],
+      "frontendConsumer": "routes, posts",
+      "module": "routes",
+      "mountedRoute": "`/routes`",
+      "status": "COVERED"
+    },
+    {
+      "contracts": [
+        "marketplace-operations.md"
+      ],
+      "frontendConsumer": "posts",
+      "module": "posts",
+      "mountedRoute": "`/posts`",
+      "status": "COVERED"
+    },
+    {
+      "contracts": [
+        "marketplace-operations.md"
+      ],
+      "frontendConsumer": "post detail",
+      "module": "bids",
+      "mountedRoute": "`/bids`",
+      "status": "COVERED"
+    },
+    {
+      "contracts": [
+        "marketplace-operations.md"
+      ],
+      "frontendConsumer": "contracts, reviews",
+      "module": "contracts",
+      "mountedRoute": "`/contracts`",
+      "status": "COVERED"
+    },
+    {
+      "contracts": [
+        "reviews.md"
+      ],
+      "frontendConsumer": "reviews",
+      "module": "reviews",
+      "mountedRoute": "`/reviews`",
+      "status": "COVERED"
+    },
+    {
+      "contracts": [
+        "support-platform.md",
+        "delivery-and-media.md"
+      ],
+      "frontendConsumer": "documents, media upload consumers",
+      "module": "documents",
+      "mountedRoute": "`/documents`",
+      "status": "COVERED"
+    },
+    {
+      "contracts": [
+        "support-platform.md"
+      ],
+      "frontendConsumer": "notifications, shell preview",
+      "module": "notifications",
+      "mountedRoute": "`/notifications`",
+      "status": "COVERED"
+    },
+    {
+      "contracts": [
+        "support-platform.md"
+      ],
+      "frontendConsumer": "audit logs",
+      "module": "auditLogs",
+      "mountedRoute": "`/audit-logs`",
+      "status": "COVERED"
+    },
+    {
+      "contracts": [
+        "plans.md"
+      ],
+      "frontendConsumer": "billing",
+      "module": "plans",
+      "mountedRoute": "`/plans`",
+      "status": "COVERED"
+    },
+    {
+      "contracts": [
+        "company-billing-subscriptions.md"
+      ],
+      "frontendConsumer": "billing",
+      "module": "subscriptions",
+      "mountedRoute": "`/subscriptions`",
+      "status": "COVERED"
+    },
+    {
+      "contracts": [
+        "company-billing-subscriptions.md"
+      ],
+      "frontendConsumer": "billing events",
+      "module": "billing",
+      "mountedRoute": "`/billing`",
+      "status": "COVERED"
+    },
+    {
+      "contracts": [
+        "job-applications.md"
+      ],
+      "frontendConsumer": "deferred job lane",
+      "module": "jobApplications",
+      "mountedRoute": "`/job-applications`",
+      "status": "COVERED, FRONTEND DEFERRED"
+    },
+    {
+      "contracts": [
+        "job-seeker-billing.md"
+      ],
+      "frontendConsumer": "deferred job lane",
+      "module": "jobSeekerBilling",
+      "mountedRoute": "`/job-seeker-billing`",
+      "status": "COVERED, FRONTEND DEFERRED"
+    },
+    {
+      "contracts": [
+        "geo-localization.md"
+      ],
+      "frontendConsumer": "country/city inputs",
+      "module": "geo",
+      "mountedRoute": "`/geo`",
+      "status": "COVERED"
+    },
+    {
+      "contracts": [
+        "geo-localization.md"
+      ],
+      "frontendConsumer": "language selector",
+      "module": "localization",
+      "mountedRoute": "`/localization`",
+      "status": "COVERED"
+    },
+    {
+      "contracts": [
+        "delivery-and-media.md"
+      ],
+      "frontendConsumer": "release/admin diagnostics",
+      "module": "delivery",
+      "mountedRoute": "`/delivery`",
+      "status": "COVERED"
+    },
+    {
+      "contracts": [
+        "delivery-and-media.md"
+      ],
+      "frontendConsumer": "external Stripe",
+      "module": "webhooks",
+      "mountedRoute": "`/webhooks/stripe`",
+      "status": "COVERED, EXTERNAL EVIDENCE PENDING"
+    }
+  ],
+  "orphanedContractFiles": [],
+  "result": "PASS",
+  "startedAt": "2026-06-07T02:58:32.707Z"
+}

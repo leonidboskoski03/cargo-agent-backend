@@ -1,6 +1,7 @@
 import type { UserRole } from "@prisma/client";
 import { env } from "../../config/env.js";
 import { logger } from "../../config/logger.js";
+import { sendEmail } from "../../shared/delivery/emailDelivery.js";
 
 type CompanyInviteEmailInput = {
   toEmail: string;
@@ -18,8 +19,18 @@ function buildAcceptUrl(token: string) {
 export async function sendCompanyInviteEmail(input: CompanyInviteEmailInput) {
   const acceptUrl = buildAcceptUrl(input.token);
 
-  // Dev fallback: no provider integration yet, return preview URL and log details.
-  if (env.NODE_ENV !== "production") {
+  const result = await sendEmail({
+    to: input.toEmail,
+    subject: `${input.companyName} invited you to Cargo Agent`,
+    text: `${input.companyName} invited you as ${input.targetRole}. Accept the invite: ${acceptUrl}`,
+    html: `<p>${input.companyName} invited you as <strong>${input.targetRole}</strong>.</p><p><a href="${acceptUrl}">Accept invite</a></p>`,
+    tags: {
+      domain: "company-invites",
+      targetRole: input.targetRole,
+    },
+  });
+
+  if (result.provider === "simulated") {
     logger.info(
       {
         toEmail: input.toEmail,
@@ -31,24 +42,18 @@ export async function sendCompanyInviteEmail(input: CompanyInviteEmailInput) {
     );
 
     return {
-      dispatched: false,
+      dispatched: result.dispatched,
+      provider: result.provider,
+      providerMessageId: result.providerMessageId,
       previewAcceptUrl: acceptUrl,
     };
   }
 
-  // Production placeholder until a real email provider adapter is wired.
-  logger.warn(
-    {
-      toEmail: input.toEmail,
-      companyName: input.companyName,
-      targetRole: input.targetRole,
-    },
-    "Company invite email provider is not configured; invite email was not sent",
-  );
-
   return {
-    dispatched: false,
-    previewAcceptUrl: null,
+    dispatched: result.dispatched,
+    provider: result.provider,
+    providerMessageId: result.providerMessageId,
+    previewAcceptUrl: env.NODE_ENV === "production" ? null : acceptUrl,
   };
 }
 

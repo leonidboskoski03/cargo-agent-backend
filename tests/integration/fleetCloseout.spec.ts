@@ -78,12 +78,22 @@ describe("fleet closeout endpoints", () => {
         capacityKg: 12000,
         volumeM3: "42.5",
         bodyType: "BOX",
+        imageUrl: "https://cdn.example.test/trucks/primary.png",
+        documentsJson: {
+          insurance: "https://cdn.example.test/trucks/insurance.pdf",
+          yearlyInspection: "https://cdn.example.test/trucks/inspection.pdf",
+        },
         refrigerated: false,
         hazmatCertified: true,
       });
       expect(createVehicle.statusCode).toBe(201);
       vehicleId = createVehicle.body.data.id as string;
       expect(createVehicle.body.data.countryOfRegistration).toBe("RS");
+      expect(createVehicle.body.data.imageUrl).toBe("https://cdn.example.test/trucks/primary.png");
+      expect(createVehicle.body.data.documentsJson).toMatchObject({
+        insurance: "https://cdn.example.test/trucks/insurance.pdf",
+        yearlyInspection: "https://cdn.example.test/trucks/inspection.pdf",
+      });
 
       const driverVehicleList = await request(app).get("/api/v1/vehicles").set("Authorization", driverAuth);
       expect(driverVehicleList.statusCode).toBe(200);
@@ -100,9 +110,10 @@ describe("fleet closeout endpoints", () => {
       const updateVehicle = await request(app)
         .patch(`/api/v1/vehicles/${vehicleId}`)
         .set("Authorization", adminAuth)
-        .send({ model: "TGX XL" });
+        .send({ imageUrl: "https://cdn.example.test/trucks/updated.png", model: "TGX XL" });
       expect(updateVehicle.statusCode).toBe(200);
       expect(updateVehicle.body.data.model).toBe("TGX XL");
+      expect(updateVehicle.body.data.imageUrl).toBe("https://cdn.example.test/trucks/updated.png");
 
       const driverVehicleUpdate = await request(app)
         .patch(`/api/v1/vehicles/${vehicleId}`)
@@ -117,12 +128,28 @@ describe("fleet closeout endpoints", () => {
 
       const createLicense = await request(app).post("/api/v1/licenses").set("Authorization", adminAuth).send({
         userId: driver.id,
-        licenseType: `C-${suffix}`,
+        licenseType: "ce",
+        imageUrl: "https://cdn.example.test/licenses/front.jpg",
+        documentUrl: "https://cdn.example.test/licenses/license.pdf",
         issuedAt: "2026-01-01",
         expiresAt: "2028-01-01",
       });
       expect(createLicense.statusCode).toBe(201);
       licenseId = createLicense.body.data.id as string;
+      expect(createLicense.body.data.licenseType).toBe("CE");
+      expect(createLicense.body.data.imageUrl).toBe("https://cdn.example.test/licenses/front.jpg");
+      expect(createLicense.body.data.documentUrl).toBe("https://cdn.example.test/licenses/license.pdf");
+
+      const licenseTypes = await request(app).get("/api/v1/licenses/types").set("Authorization", adminAuth);
+      expect(licenseTypes.statusCode).toBe(200);
+      expect((licenseTypes.body.data as Array<{ code: string }>).map((item) => item.code)).toContain("CE");
+
+      const unsupportedLicense = await request(app).post("/api/v1/licenses").set("Authorization", adminAuth).send({
+        userId: driver.id,
+        licenseType: `CUSTOM-${suffix}`,
+      });
+      expect(unsupportedLicense.statusCode).toBe(400);
+      expect(unsupportedLicense.body.error.code).toBe("VALIDATION_ERROR");
 
       const driverLicenseList = await request(app).get("/api/v1/licenses").set("Authorization", driverAuth);
       expect(driverLicenseList.statusCode).toBe(200);

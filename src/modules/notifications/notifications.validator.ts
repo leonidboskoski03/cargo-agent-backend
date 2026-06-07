@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { queryBoolean } from "../../shared/validation/queryBoolean.js";
 
 const cuidParam = z.string().cuid();
 
@@ -8,7 +9,7 @@ export const listNotificationsSchema = z.object({
   query: z.object({
     page: z.coerce.number().int().min(1).default(1),
     pageSize: z.coerce.number().int().min(1).max(100).default(20),
-    unreadOnly: z.coerce.boolean().optional(),
+    unreadOnly: queryBoolean().optional(),
   }),
 });
 

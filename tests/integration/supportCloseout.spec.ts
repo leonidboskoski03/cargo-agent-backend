@@ -113,6 +113,7 @@ describe("support closeout endpoints", () => {
     });
 
     let documentId = "";
+    let uploadedDocumentId = "";
     let reviewId = "";
     let contractId = "";
     let routeId = "";
@@ -177,6 +178,20 @@ describe("support closeout endpoints", () => {
         .set("Authorization", driverAuth);
       expect(driverDocuments.statusCode).toBe(200);
       expect((driverDocuments.body.data as Array<{ id: string }>).map((item) => item.id)).toContain(documentId);
+
+      const uploadDocument = await request(app).post("/api/v1/documents/upload").set("Authorization", shipperAuth).send({
+        kind: DocumentKind.VEHICLE_REGISTRATION,
+        name: `Registration photo ${suffix}`,
+        mimeType: "image/png",
+        fileName: "truck-registration.png",
+        contentBase64: Buffer.from("fake png bytes").toString("base64"),
+        ownerCompanyId: outsider.id,
+      });
+      expect(uploadDocument.statusCode).toBe(201);
+      uploadedDocumentId = uploadDocument.body.data.id as string;
+      expect(uploadDocument.body.data.ownerCompanyId).toBe(shipper.id);
+      expect(uploadDocument.body.data.url).toContain("/uploads/companies/");
+      expect(uploadDocument.body.data.metadataJson.storage.provider).toBe("local");
 
       const driverCreateDocument = await request(app).post("/api/v1/documents").set("Authorization", driverAuth).send({
         kind: DocumentKind.OTHER,
@@ -309,6 +324,7 @@ describe("support closeout endpoints", () => {
       if (routeId) await prisma.route.deleteMany({ where: { id: routeId } });
       await prisma.location.deleteMany({ where: { id: { in: [originId, destinationId].filter(Boolean) } } });
       if (documentId) await prisma.document.deleteMany({ where: { id: documentId } });
+      if (uploadedDocumentId) await prisma.document.deleteMany({ where: { id: uploadedDocumentId } });
       await prisma.auditLog.deleteMany({ where: { companyId: { in: [shipper.id, carrier.id, outsider.id] } } });
       await prisma.notification.deleteMany({ where: { recipientCompanyId: { in: [shipper.id, carrier.id, outsider.id] } } });
       await prisma.user.deleteMany({ where: { id: { in: [shipperAdmin.id, shipperDriver.id, carrierAdmin.id, outsiderAdmin.id] } } });

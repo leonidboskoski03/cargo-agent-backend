@@ -34,20 +34,20 @@ source_of_truth: true
 |---|---|---|---|---|
 | Companies | PARTIAL | `docs/context/architecture.md`, `docs/contracts/api/companies.md` | Core company and membership surface exists; release validation remains open. | Medium |
 | Users | PARTIAL | `docs/context/architecture.md`, `docs/contracts/api/users.md` | User lifecycle exists; final release evidence not complete. | Medium |
-| Fleet / vehicles / licenses | PARTIAL | `docs/context/architecture.md`, `docs/contracts/api/fleet.md` | Domain implementation exists with closeout integration coverage; full production-like UAT evidence pending. | Medium |
+| Fleet / vehicles / licenses | PARTIAL | `docs/context/architecture.md`, `docs/contracts/api/fleet.md` | Domain implementation exists with closeout integration coverage, catalog-backed license types, and vehicle/license media metadata support; full production-like UAT evidence pending. | Medium |
 | Locations / routes | PARTIAL | `docs/context/architecture.md`, `docs/context/product-context.md` | Route/location model exists; route integrity validation in release/UAT still open. | Medium |
 | Transport posts | PARTIAL | `docs/context/architecture.md` | Implemented in marketplace lane; release closeout evidence pending. | Medium |
 | Bids | PARTIAL | `docs/context/architecture.md` | Implemented with acceptance flow; release/UAT closure pending. | Medium |
 | Contracts | PARTIAL | `docs/context/architecture.md` | Implemented with lifecycle baseline; full UAT evidence pending. | Medium |
 | Job posts / job applications | PARTIAL | `docs/context/architecture.md`, `docs/contracts/api/job-applications.md` | Implemented in job-marketplace lane; release validation still open. | Medium |
-| Documents | PARTIAL | `docs/context/architecture.md`, `docs/contracts/api/support-platform.md` | Implemented baseline with closeout integration coverage; optional-path UAT evidence remains open. | Medium |
+| Documents | PARTIAL | `docs/context/architecture.md`, `docs/contracts/api/support-platform.md` | Implemented baseline with closeout integration coverage, local upload fallback, and S3-compatible upload transport; optional-path UAT/provider evidence remains open. | Medium |
 | Notifications | PARTIAL | `docs/context/architecture.md`, `docs/contracts/api/support-platform.md` | Implemented baseline/event paths with closeout integration coverage; full production-like evidence pending. | Medium |
 | Audit logs | PARTIAL | `docs/context/architecture.md`, `docs/contracts/api/support-platform.md` | Implemented baseline with closeout integration coverage; manual evidence closure pending. | Medium |
 | Plans | PARTIAL | `docs/contracts/api/company-billing-subscriptions.md` | Plan model exists; final release evidence dependencies remain open. | High |
 | Subscriptions / billing | PARTIAL | `docs/contracts/api/company-billing-subscriptions.md`, `docs/release/mvp-readiness.md` | Implemented foundation; RB-003 and RB-004 block release closure. | High |
 | Job seeker billing | PARTIAL | `docs/contracts/api/job-seeker-billing.md`, `docs/release/mvp-readiness.md` | Implemented wallet/credits/checkout flow; release evidence closure pending. | High |
 | Webhook handling | PARTIAL | `docs/release/evidence-map.md`, `docs/release/mvp-readiness.md` | Idempotency design is implemented; complete replay evidence remains open (RB-003). | High |
-| Auth / OTP / invites | PARTIAL | `docs/contracts/api/auth.md`, `docs/contracts/api/company-invites.md`, `docs/release/mvp-readiness.md` | Functionally complete; simulated OTP delivery and placeholder invite delivery require explicit MVP acceptance or production provider cutover. | High |
+| Auth / OTP / invites | PARTIAL | `docs/contracts/api/auth.md`, `docs/contracts/api/company-invites.md`, `docs/release/mvp-readiness.md` | Functionally complete with simulated fallback and provider-backed email adapter; production provider validation evidence is still required. | High |
 | Entitlements / authz | PARTIAL | `docs/contracts/api/company-billing-subscriptions.md`, `docs/release/mvp-readiness.md` | Enforcement baseline exists; release-grade proof/edge validation remains open. | High |
 | Release / CI / observability | PARTIAL | `docs/release/runbook.md`, `docs/release/evidence-map.md`, `docs/release/mvp-readiness.md` | System exists; gate evidence and approver signoff still incomplete. | High |
 
@@ -78,8 +78,8 @@ Missing:
 - UAT checklist still has open manual items in `docs/release/uat-smoke-checklist.md`.
 - Billing/webhook replay evidence is incomplete for release closure (`RB-003`).
 - CI required-check enforcement proof is incomplete (`RB-004`).
-- OTP delivery remains simulated and invite outbound delivery remains placeholder; if unacceptable for MVP, release must remain `NO-GO`.
-- Truth-alignment follow-ups remain open for known contract/code mismatches documented in canonical contracts (auth logout semantics, subscription cancel reason payload handling, job seeker packs query parsing).
+- OTP/invite provider path exists with simulated fallback; release remains `NO-GO` until provider validation evidence or an explicit waiver is attached.
+- Truth-alignment follow-ups improved on 2026-06-06: auth mismatch states are explicitly triaged, subscription cancel reason payload handling is fixed via audit payload, and job seeker packs query parsing is fixed.
 - Backend automation evidence has improved for fleet/support/reviews, but manual UAT and external artifacts are still required for GO.
 
 ## Release blockers (MVP)
@@ -133,6 +133,9 @@ Open decisions:
 - 2026-04-20: Capability matrix expanded to full platform reality map (domain + release readiness).
 - 2026-04-20: Canonical contract truth-alignment pass completed for auth, company invites, company billing/subscriptions, job seeker billing, and job applications.
 - 2026-06-06: Added closeout integration coverage for fleet, support platform, and reviews; added canonical contracts for fleet, support platform, and reviews.
+- 2026-06-06: Added repeatable webhook replay evidence command, fixed subscription cancel reason audit handling, fixed validated boolean query parsing for job seeker packs, and recorded contract mismatch triage states.
+- 2026-06-06: Hardened fleet media/catalog behavior by preserving vehicle image/document metadata and enforcing supported license type codes.
+- 2026-06-06: Added S3-compatible upload transport, delivery/storage provider unit coverage, artifact-producing webhook evidence command, release smoke helper, and admin release-readiness UI support.
 
 ## Interpretation rule
 

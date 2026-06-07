@@ -1,0 +1,16 @@
+
+[1m[46m RUN [49m[22m [36mv3.2.4 [39m[90mC:/Users/Leonyx/Desktop/Cargo-Agent/cargo-agent-backend[39m
+
+{"level":30,"time":"2026-06-06T22:04:54.621Z","service":"cargo-agent-backend","env":"test","eventId":"evt_sub_created_1780783494299","eventType":"customer.subscription.created","msg":"Skipping already processed Stripe event replay"}
+{"level":30,"time":"2026-06-06T22:04:54.744Z","service":"cargo-agent-backend","env":"test","eventId":"evt_sub_deleted_1780783494299","eventType":"customer.subscription.deleted","msg":"Skipping already processed Stripe event replay"}
+ [32m✓[39m tests/integration/subscriptionWebhookLifecycle.spec.ts [2m([22m[2m1 test[22m[2m)[22m[33m 6271[2mms[22m[39m
+   [33m[2m✓[22m[39m subscription webhook lifecycle[2m > [22mapplies subscription created/deleted events and ignores replays [33m 578[2mms[22m[39m
+ [32m✓[39m tests/integration/billingWebhookLifecycle.spec.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 2164[2mms[22m[39m
+ [32m✓[39m tests/integration/jobSeekerWebhookIdempotency.spec.ts [2m([22m[2m1 test[22m[2m)[22m[33m 2569[2mms[22m[39m
+   [33m[2m✓[22m[39m job seeker webhook idempotency[2m > [22mcredits wallet once when the same checkout event is processed repeatedly [33m 330[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m3 passed[39m[22m[90m (3)[39m
+[2m      Tests [22m [1m[32m6 passed[39m[22m[90m (6)[39m
+[2m   Start at [22m 00:04:45
+[2m   Duration [22m 16.42s[2m (transform 3.08s, setup 0ms, collect 2.34s, tests 11.00s, environment 2ms, prepare 990ms)[22m
+

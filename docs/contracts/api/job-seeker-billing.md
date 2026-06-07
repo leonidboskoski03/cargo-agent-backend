@@ -292,8 +292,8 @@ Relevant environment flags/values:
 ## 10. Breaking changes
 
 - None from legacy contract source.
-- Contract/code mismatches surfaced:
-  - `GET /packs` `activeOnly` parsing in controller uses string check (`"true"`/undefined) rather than validator-coerced boolean object directly; non-standard boolean encodings may not behave as expected.
+- Contract/code mismatch triage:
+  - `FIXED 2026-06-06`: `GET /packs` now uses validated query parsing for `activeOnly`; supported boolean encodings are `true/false/1/0/yes/no`.
 
 ## 11. Test and UAT notes
 
@@ -312,3 +312,4 @@ Relevant environment flags/values:
 
 - 2026-04-19: Normalized from `docs/archive/2026/contracts/api-contracts-job-seeker-billing.md` into canonical contract structure.
 - 2026-04-20: Reworked from migration-grade to implementation-grade using validators/controllers/services/repository and integration tests.
+- 2026-06-06: Marked `activeOnly` query parsing mismatch fixed and covered by integration regression.

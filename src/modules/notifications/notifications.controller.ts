@@ -7,11 +7,12 @@ const service = new NotificationsService();
 
 
 export async function listNotifications(req: Request, res: Response) {
-  const unreadOnly = req.query.unreadOnly === "true";
+  const query = req.query as unknown as { page: number; pageSize: number; unreadOnly?: boolean };
+  const unreadOnly = query.unreadOnly;
 
   const data = await service.list(authFromRequest(req), {
-    page: Number(req.query.page ?? 1),
-    pageSize: Number(req.query.pageSize ?? 20),
+    page: query.page,
+    pageSize: query.pageSize,
     unreadOnly,
   });
 

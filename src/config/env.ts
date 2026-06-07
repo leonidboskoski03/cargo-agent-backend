@@ -39,7 +39,19 @@ const envSchema = z.object({
     .default("false")
     .transform((value) => value.toLowerCase() === "true"),
   INVITE_ACCEPT_URL_BASE: z.string().url().default("http://localhost:3000/invites/accept"),
-  AUTH_OTP_PROVIDER: z.enum(["simulated", "twilio_simulated"]).default("simulated"),
+  AUTH_OTP_PROVIDER: z.enum(["simulated", "twilio_simulated", "resend_email"]).default("simulated"),
+  EMAIL_PROVIDER: z.enum(["simulated", "resend"]).default("simulated"),
+  EMAIL_FROM: z.string().min(3).default("Cargo Agent <no-reply@cargo-agent.local>"),
+  RESEND_API_KEY: z.string().optional(),
+  STORAGE_PROVIDER: z.enum(["local", "s3"]).default("local"),
+  LOCAL_STORAGE_PATH: z.string().default("uploads"),
+  PUBLIC_UPLOADS_BASE_URL: z.string().url().default("http://localhost:4000/uploads"),
+  S3_ENDPOINT: z.string().url().optional(),
+  S3_BUCKET: z.string().optional(),
+  S3_REGION: z.string().default("auto"),
+  S3_ACCESS_KEY_ID: z.string().optional(),
+  S3_SECRET_ACCESS_KEY: z.string().optional(),
+  S3_PUBLIC_BASE_URL: z.string().url().optional(),
   AUTH_LOGIN_MFA_REQUIRED_ROLES: z
     .string()
     .default("COMPANY_ADMIN")

@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { ok } from "../../shared/http/apiResponse.js";
+import { authFromRequest } from "../../shared/http/controllerAuth.helpers.js";
 import { SubscriptionsService } from "./subscriptions.service.js";
 
 const service = new SubscriptionsService();
@@ -20,7 +21,12 @@ export async function createSubscriptionCheckoutSession(req: Request, res: Respo
 }
 
 export async function cancelSubscriptionAtPeriodEnd(req: Request, res: Response) {
-  const data = await service.cancelAtPeriodEnd(req.auth?.companyId);
+  const auth = authFromRequest(req);
+  const data = await service.cancelAtPeriodEnd({
+    actorUserId: auth.userId,
+    companyId: auth.companyId,
+    reason: req.body.reason,
+  });
   return ok(res, data);
 }
 

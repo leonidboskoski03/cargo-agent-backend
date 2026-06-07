@@ -290,7 +290,7 @@ describe("billing and plans endpoints", () => {
       const cancelResponse = await request(app)
         .post("/api/v1/subscriptions/cancel-at-period-end")
         .set("Authorization", token)
-        .send({});
+        .send({ reason: "Switching to annual review before renewal" });
       expect(cancelResponse.statusCode).toBe(200);
       expect(cancelResponse.body.data.cancelAtPeriodEnd).toBe(true);
 
@@ -306,7 +306,20 @@ describe("billing and plans endpoints", () => {
         select: { cancelAtPeriodEnd: true },
       });
       expect(updated?.cancelAtPeriodEnd).toBe(false);
+
+      const auditRows = await prisma.auditLog.findMany({
+        where: {
+          companyId: company.id,
+          action: "SUBSCRIPTION_CANCEL_AT_PERIOD_END_REQUESTED",
+          entityId: subscription.id,
+        },
+      });
+      expect(auditRows).toHaveLength(1);
+      expect(auditRows[0]?.payloadJson).toMatchObject({
+        reason: "Switching to annual review before renewal",
+      });
     } finally {
+      await prisma.auditLog.deleteMany({ where: { companyId: company.id } });
       await prisma.subscription.deleteMany({ where: { id: subscription.id } });
       await prisma.user.deleteMany({ where: { id: admin.id } });
       await prisma.company.deleteMany({ where: { id: company.id } });

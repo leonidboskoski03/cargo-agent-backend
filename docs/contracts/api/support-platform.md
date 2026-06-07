@@ -45,8 +45,9 @@ Defines implemented support service endpoints under `/api/v1/notifications`, `/a
 - Notifications return raw notification records, ordered newest first, with optional unread filtering.
 - `PATCH /notifications/read-all` returns Prisma `updateMany` output with `count`.
 - Document create accepts `kind`, `name`, `mimeType`, `url`, optional `metadataJson`, and optional owner fields.
+- Document upload accepts base64 file content through `POST /api/v1/documents/upload`, stores the asset through the configured storage abstraction, and creates the document metadata record with auth-derived ownership.
 - Explicit document owner overrides are intentionally ignored; ownership is derived from authenticated user/company context.
-- Documents are URL metadata records only; file upload transport is not implemented.
+- Documents remain URL metadata records at rest; upload transport is now available as a convenience path that produces a URL-backed document record.
 - Audit logs return raw selected records ordered newest first; filters are exact `actorId` and `action` matches.
 - List endpoints use page/pageSize skip/take but return arrays only, without pagination metadata.
 

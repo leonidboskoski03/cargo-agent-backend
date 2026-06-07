@@ -86,7 +86,7 @@ Covered:
     - `provider`, `planCode`, `checkoutSessionId`, `checkoutUrl`, `status: "READY"`
   - reused idempotent session:
     - `provider`, `planCode`, `checkoutSessionId`, `checkoutUrl`, `status: "REUSED"`
-- `POST /api/v1/subscriptions/cancel-at-period-end` returns HTTP `200`:
+- `POST /api/v1/subscriptions/cancel-at-period-end` returns HTTP `200` and writes an audit event with the optional cancellation reason:
   - `companyId`, `cancelAtPeriodEnd`, `status`
 - `POST /api/v1/subscriptions/cancel-revert` returns HTTP `200`:
   - `companyId`, `cancelAtPeriodEnd`, `status`
@@ -118,9 +118,9 @@ Covered:
 ## 10. Breaking changes
 
 - No intentional breaking changes introduced in this pass.
-- Contract/code mismatches surfaced:
-  - `POST /api/v1/subscriptions/cancel-at-period-end` validator accepts `reason`, but controller/service currently ignore it.
-  - `GET /api/v1/billing/events` returns a raw array only; no pagination metadata envelope fields are returned.
+- Contract/code mismatch triage:
+  - `FIXED 2026-06-06`: `POST /api/v1/subscriptions/cancel-at-period-end` now persists accepted `reason` in audit payload under action `SUBSCRIPTION_CANCEL_AT_PERIOD_END_REQUESTED`.
+  - `ACCEPTED`: `GET /api/v1/billing/events` returns a raw array only; no pagination metadata envelope fields are returned.
 
 ## 11. Test and UAT notes
 
@@ -137,3 +137,4 @@ Covered:
 
 - 2026-04-19: Normalized from `docs/archive/2026/contracts/api-contracts-company-billing-subscriptions.md` into canonical contract structure.
 - 2026-04-20: Reworked from migration-grade to implementation-grade using billing/subscriptions validators, controllers, services, repositories, and integration tests.
+- 2026-06-06: Marked cancellation reason mismatch fixed through audit-event persistence.

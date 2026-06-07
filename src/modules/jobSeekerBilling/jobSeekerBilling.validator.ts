@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { queryBoolean } from "../../shared/validation/queryBoolean.js";
 
 const cuidParam = z.string().cuid();
 
@@ -17,7 +18,7 @@ export const getUsageSchema = z.object({
 export const listCreditPacksSchema = z.object({
   params: z.object({}),
   query: z.object({
-    activeOnly: z.coerce.boolean().default(true),
+    activeOnly: queryBoolean().default(true),
   }),
   body: z.object({}),
 });
