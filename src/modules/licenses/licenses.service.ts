@@ -1,6 +1,7 @@
 import { AppError } from "../../shared/errors/AppError.js";
 import { Roles } from "../../shared/auth/permissions.js";
 import { assertAllowedRole, assertCanManageLicenseUser, requireAuth } from "./licenses.helpers.js";
+import { isSupportedLicenseType } from "./licenseTypes.service.js";
 import { LicensesRepository } from "./licenses.repository.js";
 import type {
   AuthContext,
@@ -11,6 +12,11 @@ import type {
 
 const repo = new LicensesRepository();
 
+function assertSupportedLicenseType(licenseType?: string) {
+  if (licenseType && !isSupportedLicenseType(licenseType)) {
+    throw new AppError(400, "UNSUPPORTED_LICENSE_TYPE", "License type is not supported");
+  }
+}
 
 export class LicensesService {
   async list(auth: AuthContext, query: ListLicensesQuery) {
@@ -60,6 +66,7 @@ export class LicensesService {
   async create(auth: AuthContext, body: CreateLicenseBody) {
     requireAuth(auth);
     assertAllowedRole(auth.role);
+    assertSupportedLicenseType(body.licenseType);
 
     if (auth.role === Roles.COMPANY_DRIVER) {
       throw new AppError(403, "FORBIDDEN", "Company drivers cannot create licenses");
@@ -104,6 +111,7 @@ export class LicensesService {
   async update(auth: AuthContext, licenseId: string, body: UpdateLicenseBody) {
     requireAuth(auth);
     assertAllowedRole(auth.role);
+    assertSupportedLicenseType(body.licenseType);
 
     if (auth.role === Roles.COMPANY_DRIVER) {
       throw new AppError(403, "FORBIDDEN", "Company drivers cannot update licenses");

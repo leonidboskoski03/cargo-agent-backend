@@ -7,4 +7,10 @@ export const licenseTypes = [
   { code: "ADR", label: "ADR - Dangerous goods" },
   { code: "FORKLIFT", label: "Forklift operator" },
   { code: "TACHOGRAPH", label: "Digital tachograph card" },
-];
+] as const;
+
+export const licenseTypeCodes = licenseTypes.map((licenseType) => licenseType.code);
+
+export function isSupportedLicenseType(value: string) {
+  return licenseTypeCodes.includes(value as (typeof licenseTypeCodes)[number]);
+}

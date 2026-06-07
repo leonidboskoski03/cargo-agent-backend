@@ -4,7 +4,7 @@ doc_type: mvp-readiness
 status: active
 owner: release-owner
 created: 2026-04-19
-updated: 2026-04-20
+updated: 2026-06-07
 summary: Canonical GO/NO-GO decision file for MVP release readiness.
 related_docs:
   - docs/context/implementation-status.md
@@ -31,14 +31,14 @@ source_of_truth: true
 | RB-002 | Final Product/QA/Ops signoff is missing | Critical | TBD | NOT READY | Named approvers and explicit signoff entries in release review records |
 | RB-003 | Billing/webhook replay evidence is incomplete | Critical | TBD | NOT READY | Replay proof bundle with Stripe event IDs and no-duplicate mutation evidence |
 | RB-004 | CI required-check proof and enforcement validation is incomplete | High | TBD | NOT READY | Branch protection proof (required checks active) and failing-check blocks-merge validation artifact |
-| RB-005 | Contract source-of-truth adoption verification is incomplete | High | TBD | NOT READY | Canonical contracts for auth, company invites, company billing/subscriptions, job seeker billing, and job applications are linked from active context/release docs; known contract/code mismatches are explicitly triaged as ACCEPTED or FIXED |
+| RB-005 | Contract source-of-truth adoption verification is complete | High | Backend | READY | `npm run test:evidence:contracts` passed and wrote `docs/release/evidence/2026-06-07/G-005-contract-adoption/manifest.json` |
 | RB-006 | Auth/invite outbound delivery mode is unresolved for production policy | Critical | Product/Ops/Security (TBD) | NOT READY | Explicit decision record that either (A) simulated OTP + placeholder invite email are accepted for MVP with risk waiver, or (B) production providers are enabled and validated with evidence |
 
 ## 3) Exit criteria for GO
 
 All criteria must be true:
 
-- `RB-001` through `RB-006` are closed with linked evidence.
+- `RB-001` through `RB-006` are closed with linked evidence. `RB-005` is currently ready; all other blockers remain open.
 - UAT checklist is complete and marked PASS.
 - Product, QA, Ops, and Backend signoff are recorded.
 - Billing/webhook replay scenarios are proven with artifact links.
@@ -51,7 +51,7 @@ All criteria must be true:
 - Money-path duplication risk if replay evidence remains incomplete.
 - Authz/tenant-scope regression risk if partial controls are released without final validation.
 - Governance risk if shipping occurs without cross-functional signoff.
-- Contract drift risk if contract source-of-truth adoption verification remains incomplete.
+- Contract drift risk is reduced by `npm run test:evidence:contracts`; rerun it whenever backend contracts or mounted routes change.
 - Release-governance risk if surfaced contract/code mismatches remain undocumented in accept/fix decisions.
 - Account-recovery/onboarding reliability risk if simulated OTP and placeholder invite delivery are shipped without explicit business acceptance.
 
@@ -60,10 +60,10 @@ All criteria must be true:
 - Automated backend evidence: `AVAILABLE`.
 - Manual UAT evidence: `INCOMPLETE`.
 - Cross-functional signoff evidence: `MISSING`.
-- Billing/webhook replay artifact completeness: `INCOMPLETE`.
+- Billing/webhook replay artifact completeness: `PARTIAL` automated command writes dated evidence manifests; real Stripe/staging event IDs remain incomplete.
 - CI enforcement proof artifacts: `INCOMPLETE`.
-- Contract source-of-truth adoption evidence: `INCOMPLETE`.
-- OTP/invite outbound delivery evidence or waiver: `MISSING`.
+- Contract source-of-truth adoption evidence: `PROVEN` by `npm run test:evidence:contracts`.
+- OTP/invite outbound delivery evidence or waiver: `PARTIAL` provider-backed adapter and admin readiness UI exist; configured provider validation evidence is still missing.
 
 ## 6) Dependencies and open decisions
 
@@ -86,3 +86,4 @@ Open decisions:
 - 2026-04-20: RB-005 wording aligned to contract source-of-truth adoption verification after contract normalization.
 - 2026-04-20: RB-005 evidence expectation tightened to require module-level canonical contract linkage and mismatch triage state.
 - 2026-04-20: Added `RB-006` to explicitly gate MVP on OTP/invite delivery-mode acceptance or provider cutover evidence.
+- 2026-06-07: Closed `RB-005` as `READY` after adding `npm run test:evidence:contracts` and storing the G-005 contract adoption artifact.

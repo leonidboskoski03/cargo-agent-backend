@@ -17,15 +17,17 @@ export async function getMyUsage(req: Request, res: Response) {
 }
 
 export async function listCreditPacks(req: Request, res: Response) {
-  const activeOnly = req.query.activeOnly === "true" || req.query.activeOnly === undefined;
+  const query = req.query as unknown as { activeOnly: boolean };
+  const activeOnly = query.activeOnly;
   const data = await service.listCreditPacks(activeOnly);
   return ok(res, data);
 }
 
 export async function listMyTransactions(req: Request, res: Response) {
+  const query = req.query as unknown as { page: number; pageSize: number };
   const data = await service.listTransactions(authFromRequest(req), {
-    page: Number(req.query.page ?? 1),
-    pageSize: Number(req.query.pageSize ?? 20),
+    page: query.page,
+    pageSize: query.pageSize,
   });
 
   return ok(res, data);

@@ -1,8 +1,18 @@
 import { z } from "zod";
+import { isSupportedLicenseType } from "./licenseTypes.service.js";
 
 const cuidParam = z.string().cuid();
 
 const dateField = z.coerce.date();
+const licenseTypeField = z
+  .string()
+  .trim()
+  .min(1)
+  .max(120)
+  .transform((value) => value.toUpperCase())
+  .refine(isSupportedLicenseType, {
+    message: "licenseType must be one of the supported license type codes",
+  });
 
 function validateIssuedAndExpiry<T extends { issuedAt?: Date; expiresAt?: Date }>(
   value: T,
@@ -45,7 +55,7 @@ export const createLicenseSchema = z.object({
   body: z
     .object({
       userId: z.string().cuid().optional(),
-      licenseType: z.string().trim().min(1).max(120),
+      licenseType: licenseTypeField,
       imageUrl: z.string().trim().url().optional(),
       documentUrl: z.string().trim().url().optional(),
       issuedAt: dateField.optional(),
@@ -62,7 +72,7 @@ export const updateLicenseSchema = z.object({
   query: z.object({}),
   body: z
     .object({
-      licenseType: z.string().trim().min(1).max(120).optional(),
+      licenseType: licenseTypeField.optional(),
       imageUrl: z.string().trim().url().nullable().optional(),
       documentUrl: z.string().trim().url().nullable().optional(),
       issuedAt: dateField.nullable().optional(),

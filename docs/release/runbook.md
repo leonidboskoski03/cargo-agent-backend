@@ -4,7 +4,7 @@ doc_type: release-runbook
 status: active
 owner: release-owner
 created: 2026-04-20
-updated: 2026-04-20
+updated: 2026-06-07
 summary: Executable release procedure and execution order for MVP release operations.
 related_docs:
   - docs/release/mvp-readiness.md
@@ -57,3 +57,10 @@ Use `docs/release/evidence-map.md` for evidence requirements, `docs/release/uat-
 - Gate evidence: `docs/release/evidence-map.md` artifacts linked and complete.
 - Manual validation: `docs/release/uat-smoke-checklist.md` signed and finalized.
 - Decision history: `docs/release/go-no-go.md` updated with timestamped verdict.
+
+## Automation Helpers
+
+- `npm run test:evidence:webhooks` writes replay/idempotency output to `docs/release/evidence/<date>/G-003-webhook-replay/`.
+- `npm run test:evidence:contracts` writes contract adoption output to `docs/release/evidence/<date>/G-005-contract-adoption/`.
+- `powershell -ExecutionPolicy Bypass -File scripts/release-smoke.ps1` checks backend health and frontend direct routes, then writes `docs/release/evidence/<date>/G-001-uat-smoke/release-smoke.json`.
+- These helpers support evidence collection only. They do not replace manual UAT screenshots, Product/QA/Ops signoff, real Stripe event IDs, or CI branch-protection proof.

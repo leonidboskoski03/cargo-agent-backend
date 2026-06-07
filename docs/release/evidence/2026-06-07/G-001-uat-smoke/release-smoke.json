@@ -1,0 +1,138 @@
+{
+    "generatedAt":  "2026-06-07T03:00:32.7060340Z",
+    "backendBaseUrl":  "http://localhost:4000",
+    "frontendBaseUrl":  "http://127.0.0.1:5173",
+    "note":  "This smoke artifact supports UAT routing/health evidence only. It does not replace human signoff, authenticated workflow screenshots, Stripe replay IDs, or CI branch-protection proof.",
+    "manualFlows":  [
+                        {
+                            "Id":  "UAT-AUTH-001",
+                            "Flow":  "Log in with an admin account, refresh a protected route, then log out and confirm protected pages redirect."
+                        },
+                        {
+                            "Id":  "UAT-MKT-001",
+                            "Flow":  "Create origin and destination locations, create a route, then create a planned transport post from that route."
+                        },
+                        {
+                            "Id":  "UAT-MKT-002",
+                            "Flow":  "Use a second company to submit a bid, return as the post owner, accept or reject the bid, then capture the resulting state."
+                        },
+                        {
+                            "Id":  "UAT-MKT-003",
+                            "Flow":  "Create a contract from an accepted priced bid and confirm the post detail shows the contract handoff link."
+                        },
+                        {
+                            "Id":  "UAT-MKT-004",
+                            "Flow":  "Move the contract through allowed statuses, complete it, and confirm review eligibility appears only after completion."
+                        },
+                        {
+                            "Id":  "UAT-SUP-004",
+                            "Flow":  "Create or update a completed-contract review and capture any trace-ID error if backend eligibility rejects it."
+                        },
+                        {
+                            "Id":  "UAT-WEB-003",
+                            "Flow":  "Run webhook replay evidence with Stripe test event IDs and duplicate replay proof; attach logs separately."
+                        },
+                        {
+                            "Id":  "UAT-OPS-001",
+                            "Flow":  "Attach CI required-check proof, merge-block proof, and Product/QA/Ops signoff links."
+                        }
+                    ],
+    "checks":  [
+                   {
+                       "name":  "backend-live",
+                       "url":  "http://localhost:4000/health/live",
+                       "statusCode":  200,
+                       "ok":  true
+                   },
+                   {
+                       "name":  "backend-ready",
+                       "url":  "http://localhost:4000/health/ready",
+                       "statusCode":  200,
+                       "ok":  true
+                   },
+                   {
+                       "name":  "frontend-dashboard",
+                       "url":  "http://127.0.0.1:5173/dashboard",
+                       "statusCode":  200,
+                       "ok":  true
+                   },
+                   {
+                       "name":  "frontend-locations",
+                       "url":  "http://127.0.0.1:5173/locations",
+                       "statusCode":  200,
+                       "ok":  true
+                   },
+                   {
+                       "name":  "frontend-routes",
+                       "url":  "http://127.0.0.1:5173/routes",
+                       "statusCode":  200,
+                       "ok":  true
+                   },
+                   {
+                       "name":  "frontend-posts",
+                       "url":  "http://127.0.0.1:5173/posts",
+                       "statusCode":  200,
+                       "ok":  true
+                   },
+                   {
+                       "name":  "frontend-posts-quick",
+                       "url":  "http://127.0.0.1:5173/posts/quick",
+                       "statusCode":  200,
+                       "ok":  true
+                   },
+                   {
+                       "name":  "frontend-contracts",
+                       "url":  "http://127.0.0.1:5173/contracts",
+                       "statusCode":  200,
+                       "ok":  true
+                   },
+                   {
+                       "name":  "frontend-jobs",
+                       "url":  "http://127.0.0.1:5173/jobs",
+                       "statusCode":  200,
+                       "ok":  true
+                   },
+                   {
+                       "name":  "frontend-jobs-mine",
+                       "url":  "http://127.0.0.1:5173/jobs/mine",
+                       "statusCode":  200,
+                       "ok":  true
+                   },
+                   {
+                       "name":  "frontend-job-wallet",
+                       "url":  "http://127.0.0.1:5173/job-wallet",
+                       "statusCode":  200,
+                       "ok":  true
+                   },
+                   {
+                       "name":  "frontend-fleet",
+                       "url":  "http://127.0.0.1:5173/fleet",
+                       "statusCode":  200,
+                       "ok":  true
+                   },
+                   {
+                       "name":  "frontend-billing",
+                       "url":  "http://127.0.0.1:5173/billing",
+                       "statusCode":  200,
+                       "ok":  true
+                   },
+                   {
+                       "name":  "frontend-reviews",
+                       "url":  "http://127.0.0.1:5173/reviews",
+                       "statusCode":  200,
+                       "ok":  true
+                   },
+                   {
+                       "name":  "frontend-company",
+                       "url":  "http://127.0.0.1:5173/company",
+                       "statusCode":  200,
+                       "ok":  true
+                   },
+                   {
+                       "name":  "frontend-release-readiness",
+                       "url":  "http://127.0.0.1:5173/release-readiness",
+                       "statusCode":  200,
+                       "ok":  true
+                   }
+               ]
+}
