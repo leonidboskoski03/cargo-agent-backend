@@ -11,8 +11,6 @@ vi.mock("../../../src/shared/audit/auditLogger.js", () => ({
 
 import { BidsService } from "../../../src/modules/bids/bids.service.js";
 import { BidsRepository } from "../../../src/modules/bids/bids.repository.js";
-import { ContractsService } from "../../../src/modules/contracts/contracts.service.js";
-import { ContractsRepository } from "../../../src/modules/contracts/contracts.repository.js";
 import { ReviewsService } from "../../../src/modules/reviews/reviews.service.js";
 import { ReviewsRepository } from "../../../src/modules/reviews/reviews.repository.js";
 import { enqueueNotificationEvent } from "../../../src/shared/queue/notificationEvents.queue.js";
@@ -20,7 +18,6 @@ import { writeAuditEvent } from "../../../src/shared/audit/auditLogger.js";
 
 describe("Marketplace lifecycle workflow", () => {
   const bidsService = new BidsService();
-  const contractsService = new ContractsService();
   const reviewsService = new ReviewsService();
 
   beforeEach(() => {
@@ -34,38 +31,22 @@ describe("Marketplace lifecycle workflow", () => {
       postId: "post_1",
       status: BidStatus.PENDING,
       carrierCompanyId: "carrier_1",
+      currency: "EUR",
+      offeredPriceAmount: "1200.00",
       post: {
         id: "post_1",
         companyId: "shipper_1",
+        routeId: "route_1",
         status: PostStatus.OPEN,
       },
     } as never);
 
-    vi.spyOn(BidsRepository.prototype, "acceptBidAndClosePost").mockResolvedValue({
+    vi.spyOn(BidsRepository.prototype, "acceptBidAndCreateContract").mockResolvedValue({
       id: "bid_1",
       status: BidStatus.ACCEPTED,
+      contract: { id: "contract_1", status: ContractStatus.CONFIRMED },
     } as never);
-
-    vi.spyOn(ContractsRepository.prototype, "findActivePostById").mockResolvedValue({
-      id: "post_1",
-      companyId: "shipper_1",
-      routeId: "route_1",
-      status: PostStatus.ASSIGNED,
-    } as never);
-
-    vi.spyOn(ContractsRepository.prototype, "findActiveBidById").mockResolvedValue({
-      id: "bid_1",
-      postId: "post_1",
-      carrierCompanyId: "carrier_1",
-      offeredPriceAmount: "1200.00",
-      currency: "EUR",
-      status: BidStatus.ACCEPTED,
-    } as never);
-
-    vi.spyOn(ContractsRepository.prototype, "create").mockResolvedValue({
-      id: "contract_1",
-      status: ContractStatus.CONFIRMED,
-    } as never);
+    const bidActivitySpy = vi.spyOn(BidsRepository.prototype, "createActivity").mockResolvedValue({ id: "activity_1" } as never);
 
     vi.spyOn(ReviewsRepository.prototype, "findActiveById").mockResolvedValue({
       id: "review_1",
@@ -90,11 +71,6 @@ describe("Marketplace lifecycle workflow", () => {
       { status: BidStatus.ACCEPTED },
     );
 
-    await contractsService.create(
-      { userId: "admin_shipper", role: UserRole.COMPANY_ADMIN, companyId: "shipper_1" },
-      { postId: "post_1", acceptedBidId: "bid_1", pickupPlannedAt: undefined, deliveryPlannedAt: undefined },
-    );
-
     await reviewsService.changeStatus(
       { userId: "admin_shipper", role: UserRole.COMPANY_ADMIN, companyId: "shipper_1" },
       "review_1",
@@ -109,6 +85,7 @@ describe("Marketplace lifecycle workflow", () => {
     expect(enqueueNotificationEvent).toHaveBeenCalledWith({ type: "BID_ACCEPTED", bidId: "bid_1" });
     expect(enqueueNotificationEvent).toHaveBeenCalledWith({ type: "CONTRACT_CREATED", contractId: "contract_1" });
     expect(enqueueNotificationEvent).toHaveBeenCalledWith({ type: "REVIEW_PUBLISHED", reviewId: "review_1" });
+    expect(bidActivitySpy).toHaveBeenCalledWith(expect.objectContaining({ bidId: "bid_1", type: "ACCEPTED" }));
   });
 });
 

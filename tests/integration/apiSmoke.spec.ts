@@ -9,6 +9,7 @@ const moduleBasePaths = [
   "/api/v1/licenses",
   "/api/v1/vehicles",
   "/api/v1/vehicle-assignments",
+  "/api/v1/vehicle-marketplace",
   "/api/v1/locations",
   "/api/v1/routes",
   "/api/v1/posts",

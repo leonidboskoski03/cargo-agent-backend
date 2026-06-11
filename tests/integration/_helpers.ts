@@ -34,6 +34,12 @@ export function setTestEnv() {
   process.env.AUTH_RESET_PASSWORD_BIND_IP = "false";
   process.env.AUTH_RESET_PASSWORD_BIND_USER_AGENT = "false";
   process.env.AUTH_LOGIN_MFA_REQUIRED_ROLES = "COMPANY_ADMIN";
+  process.env.EMAIL_PROVIDER = "simulated";
+  process.env.STORAGE_PROVIDER = "local";
+  process.env.LOCAL_UPLOAD_DIR = ".tmp/test-uploads";
+  process.env.UPLOAD_PUBLIC_BASE_URL = "http://localhost:4001/uploads";
+  process.env.UPLOAD_MAX_BYTES = "5242880";
+  process.env.UPLOAD_ALLOWED_MIME_TYPES = "image/png,image/jpeg,image/webp,application/pdf";
   process.env.JOB_SEEKER_FREE_APPLICATIONS_PER_MONTH = "10";
   process.env.JOB_SEEKER_FREE_ACTIVE_LISTINGS = "1";
   process.env.JOB_SEEKER_APPLICATION_CREDIT_COST = "1";

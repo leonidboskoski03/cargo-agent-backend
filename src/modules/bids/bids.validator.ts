@@ -3,6 +3,7 @@ import { z } from "zod";
 
 const cuidParam = z.string().cuid();
 const decimalLike = z.union([z.string().trim(), z.number()]);
+const bidScopeSchema = z.enum(["received", "sent", "all"]);
 
 function validateTiming(value: { estimatedPickupAt?: Date | null; estimatedDeliveryAt?: Date | null }, ctx: z.RefinementCtx) {
   if (value.estimatedPickupAt && value.estimatedDeliveryAt && value.estimatedDeliveryAt < value.estimatedPickupAt) {
@@ -17,6 +18,7 @@ function validateTiming(value: { estimatedPickupAt?: Date | null; estimatedDeliv
 export const listBidsSchema = z.object({
   params: z.object({}),
   query: z.object({
+    scope: bidScopeSchema.default("all"),
     status: z.nativeEnum(BidStatus).optional(),
     postId: z.string().cuid().optional(),
   }),
@@ -80,6 +82,16 @@ export const changeBidStatusSchema = z.object({
   query: z.object({}),
   body: z.object({
     status: z.nativeEnum(BidStatus),
+  }),
+});
+
+export const boostBidSchema = z.object({
+  params: z.object({
+    bidId: cuidParam,
+  }),
+  query: z.object({}),
+  body: z.object({
+    creditAmount: z.coerce.number().int().min(1),
   }),
 });
 

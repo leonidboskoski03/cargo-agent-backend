@@ -1,4 +1,4 @@
-import type { UserRole } from "@prisma/client";
+import { Prisma, type UserRole } from "@prisma/client";
 import { Roles } from "../../shared/auth/permissions.js";
 import { AppError } from "../../shared/errors/AppError.js";
 import { UsersRepository } from "./users.repository.js";
@@ -133,6 +133,20 @@ export class UsersService {
       throw new AppError(403, "FORBIDDEN_ROLE_COMPANY_MUTATION", "Role and company linkage can only be changed by company admins");
     }
 
+    const jobSeekerFields = [
+      "availability",
+      "city",
+      "countryCode",
+      "headline",
+      "imageUrl",
+      "preferredRoutes",
+      "yearsExperience",
+    ] as const;
+    const hasJobSeekerProfileUpdate = jobSeekerFields.some((field) => body[field] !== undefined);
+    if (hasJobSeekerProfileUpdate && auth.role !== Roles.JOB_SEEKER) {
+      throw new AppError(403, "FORBIDDEN_JOB_SEEKER_PROFILE_MUTATION", "Only job seekers can update independent profile fields");
+    }
+
     const user = await repo.findActiveById(auth.userId);
 
     if (!user) {
@@ -140,10 +154,17 @@ export class UsersService {
     }
 
     return repo.updateProfile(auth.userId, {
+      availability: body.availability,
+      city: body.city,
+      countryCode: body.countryCode,
       firstName: body.firstName,
+      headline: body.headline,
+      imageUrl: body.imageUrl,
       lastName: body.lastName,
       phone: body.phone,
+      preferredRoutes: body.preferredRoutes === undefined ? undefined : body.preferredRoutes === null ? Prisma.JsonNull : body.preferredRoutes,
       isActive: body.isActive,
+      yearsExperience: body.yearsExperience,
     });
   }
 

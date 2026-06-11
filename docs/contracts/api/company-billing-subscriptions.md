@@ -5,7 +5,7 @@ status: active
 owner: backend-platform
 version: 1.0.0
 review_status: code-derived
-reviewed_at: 2026-04-20
+reviewed_at: 2026-06-08
 source_legacy: docs/archive/2026/contracts/api-contracts-company-billing-subscriptions.md
 summary: Canonical API contract for company billing events and subscription lifecycle endpoints.
 ---
@@ -19,6 +19,7 @@ This contract defines implemented company-lane billing and subscription endpoint
 Covered:
 
 - Billing events listing.
+- Billing readiness booleans for staging diagnostics.
 - Current subscription read.
 - Subscription mutation endpoints (checkout/cancel/revert/portal).
 
@@ -39,6 +40,7 @@ Covered:
 ## 3. Endpoint list
 
 - `GET /api/v1/billing/events`
+- `GET /api/v1/billing/readiness`
 - `GET /api/v1/subscriptions/me`
 - `POST /api/v1/subscriptions/checkout-session`
 - `POST /api/v1/subscriptions/cancel-at-period-end`
@@ -48,6 +50,7 @@ Covered:
 ## 4. Per-endpoint purpose
 
 - `GET /api/v1/billing/events`: list billing events for caller company scope.
+- `GET /api/v1/billing/readiness`: return non-secret Stripe/queue/price readiness booleans for authenticated users.
 - `GET /api/v1/subscriptions/me`: return current company subscription state.
 - `POST /api/v1/subscriptions/checkout-session`: create or reuse Stripe checkout session for plan change.
 - `POST /api/v1/subscriptions/cancel-at-period-end`: schedule cancellation for period end.
@@ -57,6 +60,7 @@ Covered:
 ## 5. Roles allowed
 
 - `GET /api/v1/billing/events`: authenticated company user in company scope.
+- `GET /api/v1/billing/readiness`: authenticated user; returns booleans only and never exposes secret values.
 - `GET /api/v1/subscriptions/me`: authenticated company user in company scope.
 - Subscription mutations (`POST` endpoints under `/api/v1/subscriptions/*` above): `COMPANY_ADMIN` only.
 
@@ -65,6 +69,7 @@ Covered:
 - `GET /api/v1/billing/events` query:
   - `page` (int, min 1, default 1)
   - `pageSize` (int, min 1, max 100, default 20)
+- `GET /api/v1/billing/readiness`: empty body/query/params.
 - `GET /api/v1/subscriptions/me`: empty body/query/params.
 - `POST /api/v1/subscriptions/checkout-session` body:
   - `planCode` (`FREE` | `PRO`, default `PRO`)
@@ -77,6 +82,13 @@ Covered:
 ## 7. Success response
 
 - `GET /api/v1/billing/events` returns HTTP `200` and an array of billing-event rows for caller company, ordered by `createdAt DESC`, paginated via `skip/take`.
+- `GET /api/v1/billing/readiness` returns HTTP `200`:
+  - `stripeSecretConfigured`
+  - `stripeWebhookSecretConfigured`
+  - `proPriceConfigured`
+  - `companyCreditPricesConfigured`
+  - `jobSeekerCreditPricesConfigured`
+  - `bullmqEnabled`
 - `GET /api/v1/subscriptions/me` returns HTTP `200` with either:
   - `null` when no current subscription exists
   - object:
@@ -86,7 +98,7 @@ Covered:
     - `provider`, `planCode`, `checkoutSessionId`, `checkoutUrl`, `status: "READY"`
   - reused idempotent session:
     - `provider`, `planCode`, `checkoutSessionId`, `checkoutUrl`, `status: "REUSED"`
-- `POST /api/v1/subscriptions/cancel-at-period-end` returns HTTP `200` and writes an audit event with the optional cancellation reason:
+- `POST /api/v1/subscriptions/cancel-at-period-end` returns HTTP `200`:
   - `companyId`, `cancelAtPeriodEnd`, `status`
 - `POST /api/v1/subscriptions/cancel-revert` returns HTTP `200`:
   - `companyId`, `cancelAtPeriodEnd`, `status`
@@ -111,6 +123,7 @@ Covered:
 - Company drivers/non-admin users cannot perform subscription mutations.
 - Webhook reconciliation is source of truth for eventual subscription state transitions.
 - Billing history is company-scoped and paginated.
+- Billing readiness returns configuration booleans only; raw `sk_`, `whsec_`, and `price_` values are never returned.
 - No cross-tenant billing data exposure.
 - Subscription lookup uses current subscription (`isCurrent=true`) with most recently updated row precedence.
 - Idempotency key reuse returns existing checkout session instead of creating a new one.
@@ -118,9 +131,9 @@ Covered:
 ## 10. Breaking changes
 
 - No intentional breaking changes introduced in this pass.
-- Contract/code mismatch triage:
-  - `FIXED 2026-06-06`: `POST /api/v1/subscriptions/cancel-at-period-end` now persists accepted `reason` in audit payload under action `SUBSCRIPTION_CANCEL_AT_PERIOD_END_REQUESTED`.
-  - `ACCEPTED`: `GET /api/v1/billing/events` returns a raw array only; no pagination metadata envelope fields are returned.
+- Contract/code mismatches surfaced:
+  - `POST /api/v1/subscriptions/cancel-at-period-end` validator accepts `reason`, but controller/service currently ignore it.
+  - `GET /api/v1/billing/events` returns a raw array only; no pagination metadata envelope fields are returned.
 
 ## 11. Test and UAT notes
 
@@ -132,9 +145,10 @@ Covered:
   - non-admin `403` on all subscription mutation endpoints
   - cancel and cancel-revert success for non-Stripe current subscriptions
   - provider-not-configured failure for portal session when Stripe keys missing
+  - `/billing/readiness` returns booleans without leaking provider secrets
 
 ## 12. Changelog
 
 - 2026-04-19: Normalized from `docs/archive/2026/contracts/api-contracts-company-billing-subscriptions.md` into canonical contract structure.
 - 2026-04-20: Reworked from migration-grade to implementation-grade using billing/subscriptions validators, controllers, services, repositories, and integration tests.
-- 2026-06-06: Marked cancellation reason mismatch fixed through audit-event persistence.
+- 2026-06-08: Added `/billing/readiness` staging diagnostics contract for non-secret Stripe/queue/price readiness.

@@ -9,6 +9,7 @@ import type {
   ChangeContractStatusBody,
   CreateContractBody,
   ListContractsQuery,
+  UpdateContractTimelineBody,
 } from "./contracts.types.js";
 
 const repo = new ContractsRepository();
@@ -121,6 +122,13 @@ export class ContractsService {
         type: "CONTRACT_CREATED",
         contractId: created.id,
       });
+      await repo.createBidActivity({
+        actorCompanyId: companyId,
+        actorUserId: auth.userId,
+        bidId: acceptedBid.id,
+        contractId: created.id,
+        postId: post.id,
+      });
 
       return created;
     } catch (error) {
@@ -158,7 +166,58 @@ export class ContractsService {
       );
     }
 
-    return repo.updateStatus(contractId, body.status);
+    const updated = await repo.updateStatus(contractId, body.status);
+    await enqueueNotificationEvent({
+      type: "CONTRACT_STATUS_CHANGED",
+      actorCompanyId: auth.companyId as string,
+      contractId,
+      status: body.status,
+    });
+
+    return updated;
+  }
+
+  async updateTimeline(auth: AuthContext, contractId: string, body: UpdateContractTimelineBody) {
+    requireAuth(auth);
+    assertCompanyAdmin(auth);
+
+    const contract = await repo.findActiveById(contractId);
+    if (!contract) {
+      throw new AppError(404, "CONTRACT_NOT_FOUND", "Contract not found");
+    }
+
+    if (contract.shipperCompanyId !== auth.companyId && contract.carrierCompanyId !== auth.companyId) {
+      throw new AppError(403, "FORBIDDEN", "You can only update contracts in your company context");
+    }
+
+    if ((body.pickupActualAt || body.deliveryActualAt) && contract.status !== ContractStatus.IN_PROGRESS && contract.status !== ContractStatus.COMPLETED) {
+      throw new AppError(409, "CONTRACT_NOT_STARTED", "Actual pickup and delivery dates can only be set after the contract has started");
+    }
+
+    const nextPickupPlannedAt = body.pickupPlannedAt ?? contract.pickupPlannedAt;
+    const nextDeliveryPlannedAt = body.deliveryPlannedAt ?? contract.deliveryPlannedAt;
+    const nextPickupActualAt = body.pickupActualAt ?? contract.pickupActualAt;
+    const nextDeliveryActualAt = body.deliveryActualAt ?? contract.deliveryActualAt;
+
+    if (nextPickupPlannedAt && nextDeliveryPlannedAt && nextDeliveryPlannedAt < nextPickupPlannedAt) {
+      throw new AppError(400, "INVALID_TIMELINE_WINDOW", "deliveryPlannedAt must be after pickupPlannedAt");
+    }
+
+    if (nextPickupActualAt && nextDeliveryActualAt && nextDeliveryActualAt < nextPickupActualAt) {
+      throw new AppError(400, "INVALID_TIMELINE_WINDOW", "deliveryActualAt must be after pickupActualAt");
+    }
+
+    const updated = await repo.updateTimeline(contractId, body);
+    await writeAuditEvent({
+      companyId: auth.companyId as string,
+      actorUserId: auth.userId,
+      action: "CONTRACT_TIMELINE_UPDATED",
+      entityType: "Contract",
+      entityId: contractId,
+      payloadJson: body,
+    });
+
+    return updated;
   }
 
   async remove(auth: AuthContext, contractId: string) {

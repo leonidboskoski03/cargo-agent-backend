@@ -1,4 +1,5 @@
 import {
+  CompanyCreditTxType,
   JobSeekerCreditTxType,
   Prisma,
   type BillingEventStatus,
@@ -47,6 +48,13 @@ export class WebhooksRepository {
 
   async getJobSeekerCheckoutSessionByStripeId(stripeCheckoutSessionId: string) {
     return prisma.jobSeekerCheckoutSession.findUnique({
+      where: { stripeCheckoutSessionId },
+      include: { creditPack: true },
+    });
+  }
+
+  async getCompanyCreditCheckoutSessionByStripeId(stripeCheckoutSessionId: string) {
+    return prisma.companyCreditCheckoutSession.findUnique({
       where: { stripeCheckoutSessionId },
       include: { creditPack: true },
     });
@@ -106,6 +114,61 @@ export class WebhooksRepository {
       });
 
       await tx.jobSeekerCheckoutSession.updateMany({
+        where: { stripeCheckoutSessionId: input.stripeCheckoutSessionId },
+        data: { status: "COMPLETED", completedAt: new Date() },
+      });
+
+      return { inserted: true, transactionId: creditTx.id };
+    });
+  }
+
+  async grantCompanyCreditsFromCheckout(input: {
+    amountCredits: number;
+    checkoutSessionId: string;
+    companyId: string;
+    stripeCheckoutSessionId: string;
+  }) {
+    return prisma.$transaction(async (tx) => {
+      const existingCredit = await tx.companyCreditTransaction.findFirst({
+        where: {
+          type: CompanyCreditTxType.PURCHASE,
+          reasonCode: "CHECKOUT_TOPUP",
+          referenceType: "COMPANY_CREDIT_CHECKOUT",
+          referenceId: input.checkoutSessionId,
+        },
+      });
+
+      if (existingCredit) {
+        return { inserted: false, transactionId: existingCredit.id };
+      }
+
+      const wallet =
+        (await tx.companyCreditWallet.findUnique({ where: { companyId: input.companyId } })) ??
+        (await tx.companyCreditWallet.create({ data: { companyId: input.companyId } }));
+
+      const updatedWallet = await tx.companyCreditWallet.update({
+        where: { id: wallet.id },
+        data: {
+          balanceCredits: { increment: input.amountCredits },
+          version: { increment: 1 },
+        },
+      });
+
+      const creditTx = await tx.companyCreditTransaction.create({
+        data: {
+          amountCredits: input.amountCredits,
+          balanceAfter: updatedWallet.balanceCredits,
+          companyId: input.companyId,
+          reasonCode: "CHECKOUT_TOPUP",
+          referenceId: input.checkoutSessionId,
+          referenceType: "COMPANY_CREDIT_CHECKOUT",
+          stripePaymentRef: input.stripeCheckoutSessionId,
+          type: CompanyCreditTxType.PURCHASE,
+          walletId: wallet.id,
+        },
+      });
+
+      await tx.companyCreditCheckoutSession.updateMany({
         where: { stripeCheckoutSessionId: input.stripeCheckoutSessionId },
         data: { status: "COMPLETED", completedAt: new Date() },
       });

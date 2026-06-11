@@ -1,9 +1,9 @@
 import { Router } from "express";
 import { asyncRoute } from "../../shared/http/asyncRoute.js";
-import { enforceUsageLimit } from "../../shared/middleware/enforceUsageLimit.middleware.js";
 import { requireAuth } from "../../shared/middleware/auth.middleware.js";
 import { validate } from "../../shared/middleware/validate.middleware.js";
 import {
+  boostPost,
   changePostStatus,
   createPost,
   deletePost,
@@ -13,6 +13,7 @@ import {
   updatePost,
 } from "./posts.controller.js";
 import {
+  boostPostSchema,
   changePostStatusSchema,
   createPostSchema,
   deletePostSchema,
@@ -26,8 +27,9 @@ export const postsRouter = Router();
 
 postsRouter.get("/", requireAuth, validate(listPostsSchema), asyncRoute(listPosts));
 postsRouter.get("/:postId", requireAuth, validate(getPostByIdSchema), asyncRoute(getPostById));
-postsRouter.post("/", requireAuth, enforceUsageLimit("ACTIVE_POSTS"), validate(createPostSchema), asyncRoute(createPost));
+postsRouter.post("/", requireAuth, validate(createPostSchema), asyncRoute(createPost));
 postsRouter.patch("/:postId", requireAuth, validate(updatePostSchema), asyncRoute(updatePost));
 postsRouter.patch("/:postId/status", requireAuth, validate(changePostStatusSchema), asyncRoute(changePostStatus));
+postsRouter.post("/:postId/boost", requireAuth, validate(boostPostSchema), asyncRoute(boostPost));
 postsRouter.delete("/:postId", requireAuth, validate(deletePostSchema), asyncRoute(deletePost));
 postsRouter.post("/:postId/restore", requireAuth, validate(restorePostSchema), asyncRoute(restorePost));

@@ -24,6 +24,26 @@ export async function listMyJobApplications(req: Request, res: Response) {
   return ok(res, data);
 }
 
+export async function updateJobApplication(req: Request, res: Response) {
+  const data = await service.update({
+    auth: authFromRequest(req),
+    body: req.body,
+    jobApplicationId: getStringParam(req.params.jobApplicationId),
+  });
+
+  return ok(res, data);
+}
+
+export async function deleteJobApplication(req: Request, res: Response) {
+  const data = await service.remove(authFromRequest(req), getStringParam(req.params.jobApplicationId));
+  return ok(res, data);
+}
+
+export async function restoreJobApplication(req: Request, res: Response) {
+  const data = await service.restore(authFromRequest(req), getStringParam(req.params.jobApplicationId));
+  return ok(res, data);
+}
+
 export async function applyToJobApplication(req: Request, res: Response) {
   const data = await service.apply({
     auth: authFromRequest(req),

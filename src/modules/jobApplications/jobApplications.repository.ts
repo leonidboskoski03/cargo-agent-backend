@@ -1,4 +1,4 @@
-import { JobSeekerCreditTxType, JobSeekerUsageMetric, Prisma } from "@prisma/client";
+import { JobApplicationStatus, JobSeekerCreditTxType, JobSeekerUsageMetric, Prisma } from "@prisma/client";
 import { prisma } from "../../shared/prisma/prismaClient.js";
 
 type CreateJobApplicationInput = {
@@ -17,6 +17,16 @@ type CreateSubmissionInput = {
   submittedByUserId: string;
   submittedByCompanyId?: string;
   message?: string;
+};
+
+type UpdateJobApplicationInput = {
+  currency?: string | null;
+  description?: string | null;
+  expectedPayAmount?: number | null;
+  preferredCity?: string | null;
+  preferredCountryCode?: string | null;
+  status?: JobApplicationStatus;
+  title?: string;
 };
 
 type CreateJobSeekerSubmissionInput = {
@@ -71,7 +81,7 @@ export class JobApplicationsRepository {
 
   async listOpenForJobSeeker() {
     return prisma.jobApplication.findMany({
-      where: { status: "OPEN", createdByCompanyId: { not: null } },
+      where: { deletedAt: null, status: "OPEN", createdByCompanyId: { not: null } },
       orderBy: [{ isPromoted: "desc" }, { createdAt: "desc" }],
       include: { createdByCompany: true, createdByUser: true },
     });
@@ -79,7 +89,7 @@ export class JobApplicationsRepository {
 
   async listOpenForCompany() {
     return prisma.jobApplication.findMany({
-      where: { status: "OPEN", createdByCompanyId: null },
+      where: { deletedAt: null, status: "OPEN", createdByCompanyId: null },
       orderBy: [{ isPromoted: "desc" }, { createdAt: "desc" }],
       include: { createdByCompany: true, createdByUser: true },
     });
@@ -89,6 +99,36 @@ export class JobApplicationsRepository {
     return prisma.jobApplication.findMany({
       where: { createdByUserId: userId },
       orderBy: [{ isPromoted: "desc" }, { createdAt: "desc" }],
+    });
+  }
+
+  async update(id: string, data: UpdateJobApplicationInput) {
+    return prisma.jobApplication.update({
+      where: { id },
+      data: {
+        ...data,
+        currency: data.currency === undefined ? undefined : data.currency?.toUpperCase() ?? null,
+      },
+    });
+  }
+
+  async softDelete(id: string) {
+    return prisma.jobApplication.update({
+      where: { id },
+      data: {
+        deletedAt: new Date(),
+        status: JobApplicationStatus.CLOSED,
+      },
+    });
+  }
+
+  async restore(id: string) {
+    return prisma.jobApplication.update({
+      where: { id },
+      data: {
+        deletedAt: null,
+        status: JobApplicationStatus.PAUSED,
+      },
     });
   }
 

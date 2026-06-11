@@ -1,10 +1,37 @@
 import { type Prisma } from "@prisma/client";
+import { randomUUID } from "node:crypto";
+import { mkdir, writeFile } from "node:fs/promises";
+import path from "node:path";
+import { env } from "../../config/env.js";
 import { AppError } from "../../shared/errors/AppError.js";
 import { Roles } from "../../shared/auth/permissions.js";
-import { uploadAsset } from "../../shared/storage/storageService.js";
 import { assertAccess, requireAuth } from "./documents.helpers.js";
 import { DocumentsRepository } from "./documents.repository.js";
 import type { AuthContext, CreateBody, CreateInput, ListQuery, UploadBody } from "./documents.service.types.js";
+
+function extensionFromMimeType(mimeType: string) {
+  const map: Record<string, string> = {
+    "application/pdf": ".pdf",
+    "image/jpeg": ".jpg",
+    "image/png": ".png",
+    "image/webp": ".webp",
+  };
+
+  return map[mimeType] ?? "";
+}
+
+function decodeBase64Upload(input: { contentBase64: string; mimeType: string }) {
+  const dataUrlMatch = input.contentBase64.match(/^data:([^;]+);base64,(.+)$/);
+  const declaredMimeType = dataUrlMatch?.[1];
+  const base64Payload = dataUrlMatch?.[2] ?? input.contentBase64;
+  const mimeType = declaredMimeType ?? input.mimeType;
+
+  if (mimeType !== input.mimeType) {
+    throw new AppError(400, "UPLOAD_MIME_MISMATCH", "Uploaded file MIME type does not match the request");
+  }
+
+  return Buffer.from(base64Payload, "base64");
+}
 
 export class DocumentsService {
   private readonly repository = new DocumentsRepository();
@@ -81,33 +108,44 @@ export class DocumentsService {
   async upload(auth: AuthContext, body: UploadBody) {
     requireAuth(auth);
 
-    if (auth.role !== Roles.COMPANY_ADMIN && auth.role !== Roles.JOB_SEEKER) {
-      throw new AppError(403, "FORBIDDEN", "You do not have permission to upload documents");
+    if (env.STORAGE_PROVIDER === "s3") {
+      const missing = [
+        !env.S3_ENDPOINT ? "S3_ENDPOINT" : null,
+        !env.S3_BUCKET ? "S3_BUCKET" : null,
+        !env.S3_ACCESS_KEY_ID ? "S3_ACCESS_KEY_ID" : null,
+        !env.S3_SECRET_ACCESS_KEY ? "S3_SECRET_ACCESS_KEY" : null,
+      ].filter((item): item is string => Boolean(item));
+
+      if (missing.length > 0) {
+        throw new AppError(503, "STORAGE_PROVIDER_NOT_CONFIGURED", `S3 storage is missing: ${missing.join(", ")}`);
+      }
+
+      throw new AppError(501, "STORAGE_UPLOAD_NOT_IMPLEMENTED", "S3 upload transport is not implemented in this build");
     }
 
-    const asset = await uploadAsset({
-      contentBase64: body.contentBase64,
-      fileName: body.fileName,
-      mimeType: body.mimeType,
-      folder: auth.companyId ? `companies/${auth.companyId}` : `users/${auth.userId}`,
-    });
+    if (!env.UPLOAD_ALLOWED_MIME_TYPES.includes(body.mimeType)) {
+      throw new AppError(400, "UPLOAD_MIME_NOT_ALLOWED", "Uploaded file type is not allowed");
+    }
+
+    const buffer = decodeBase64Upload({ contentBase64: body.contentBase64, mimeType: body.mimeType });
+    if (buffer.byteLength > env.UPLOAD_MAX_BYTES) {
+      throw new AppError(413, "UPLOAD_TOO_LARGE", "Uploaded file exceeds the configured size limit");
+    }
+
+    const extension = extensionFromMimeType(body.mimeType);
+    const fileName = `${randomUUID()}${extension}`;
+    const uploadDir = path.resolve(env.LOCAL_UPLOAD_DIR);
+    await mkdir(uploadDir, { recursive: true });
+    await writeFile(path.join(uploadDir, fileName), buffer);
 
     return this.create(auth, {
       kind: body.kind,
-      name: body.name,
+      metadataJson: body.metadataJson,
       mimeType: body.mimeType,
-      url: asset.url,
-      ownerUserId: body.ownerUserId,
+      name: body.name,
       ownerCompanyId: body.ownerCompanyId,
-      metadataJson: {
-        ...(typeof body.metadataJson === "object" && body.metadataJson !== null && !Array.isArray(body.metadataJson) ? body.metadataJson : {}),
-        storage: {
-          provider: asset.provider,
-          key: asset.key,
-          sizeBytes: asset.sizeBytes,
-          fileName: asset.fileName,
-        },
-      },
+      ownerUserId: body.ownerUserId,
+      url: `${env.UPLOAD_PUBLIC_BASE_URL.replace(/\/$/, "")}/${fileName}`,
     });
   }
 

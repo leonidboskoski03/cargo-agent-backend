@@ -8,6 +8,7 @@ const service = new PostsService();
 
 export async function listPosts(req: Request, res: Response) {
   const data = await service.list(authFromRequest(req), {
+	scope: req.query.scope as never,
 	status: req.query.status as never,
   });
 
@@ -82,6 +83,11 @@ export async function changePostStatus(req: Request, res: Response) {
 	status: req.body.status,
   });
 
+  return ok(res, data);
+}
+
+export async function boostPost(req: Request, res: Response) {
+  const data = await service.boost(authFromRequest(req), getStringParam(req.params.postId));
   return ok(res, data);
 }
 

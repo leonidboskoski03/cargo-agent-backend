@@ -103,6 +103,7 @@ model Vehicle {
   company            Company?            @relation(fields: [companyId], references: [id], onDelete: Cascade)
   user               User?               @relation("VehicleDriverUser", fields: [userId], references: [id], onDelete: Cascade)
   vehicleAssignments VehicleAssignment[]
+  marketplaceListings VehicleMarketplaceListing[]
 
   @@unique([plateNumber, countryOfRegistration])
   @@index([companyId])

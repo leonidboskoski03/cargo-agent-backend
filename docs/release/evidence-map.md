@@ -4,13 +4,15 @@ doc_type: release-evidence-map
 status: active
 owner: release-owner
 created: 2026-04-20
-updated: 2026-06-07
+updated: 2026-06-09
 summary: Table-driven mapping of release gates to proof artifacts and pass criteria.
 related_docs:
   - docs/release/mvp-readiness.md
   - docs/release/runbook.md
   - docs/release/uat-smoke-checklist.md
   - docs/release/go-no-go.md
+  - docs/release/stripe-sandbox-runbook.md
+  - docs/release/ci-branch-protection-proof.md
 source_of_truth: true
 ---
 
@@ -25,10 +27,10 @@ Allowed status values: `NOT STARTED`, `PARTIAL`, `PROVEN`, `FAILED`.
 |---|---|---|---|---|---|---|---|
 | G-001 | Manual UAT completion | QA (TBD) | PARTIAL | Execute all checks in `docs/release/uat-smoke-checklist.md` | All required checklist items marked PASS | Completed checklist with run date, executor, and links; backend automation assist: `tests/integration/fleetCloseout.spec.ts`, `tests/integration/supportCloseout.spec.ts`, `tests/integration/billingPlans.spec.ts` | RB-001 |
 | G-002 | Cross-functional signoff | Product/QA/Ops/Backend (TBD) | NOT STARTED | Collect signoffs after gate review | Product, QA, Ops, Backend signoffs present | Signed approval record in UAT/go-no-go docs | RB-002 |
-| G-003 | Billing/webhook replay proof | Backend (TBD) | PARTIAL | Run `npm run test:evidence:webhooks` and capture Stripe staging replay artifacts | No duplicate money-path mutation under replay | Automated replay command now writes dated artifacts under `docs/release/evidence/<date>/G-003-webhook-replay/`; specs: `tests/integration/billingWebhookLifecycle.spec.ts`, `tests/integration/subscriptionWebhookLifecycle.spec.ts`, `tests/integration/jobSeekerWebhookIdempotency.spec.ts`; still requires Stripe/staging event IDs and retained outputs for `PROVEN` | RB-003 |
-| G-004 | CI required-check enforcement | Ops/Backend (TBD) | PARTIAL | Validate branch protection required checks block failing merges | Failing required checks block merge | Screenshots/links showing required checks + blocked merge case | RB-004 |
-| G-005 | Contract source-of-truth adoption verification | Backend (TBD) | PROVEN | Run `npm run test:evidence:contracts` | All active MVP backend modules in `docs/release/backend-coverage-matrix.md` reference existing canonical contract files and are marked covered or explicitly frontend-deferred | Automated artifact: `docs/release/evidence/2026-06-07/G-005-contract-adoption/manifest.json`; summary: `docs/release/evidence/2026-06-07/G-005-contract-adoption/summary.md`; canonical matrix: `docs/release/backend-coverage-matrix.md` | RB-005 |
-| G-006 | OTP/invite outbound delivery readiness decision | Product/Ops/Security (TBD) | PARTIAL | Execute delivery-mode review and select provider-cutover path | Production provider flows validated end-to-end | Provider-backed email adapter, `/api/v1/delivery/status`, frontend `/release-readiness`, and provider unit coverage are implemented; still requires configured provider UAT evidence links (`UAT-AUTH-005`, `UAT-INV-004`) and decision record update | RB-006 |
+| G-003 | Billing/webhook replay proof | Backend (TBD) | PARTIAL | Run replay/idempotency validation scenarios from `docs/release/stripe-sandbox-runbook.md` | No duplicate money-path mutation under replay | Automated replay tests plus Stripe/staging event IDs and outputs; current automated evidence includes `tests/integration/billingWebhookLifecycle.spec.ts`, `tests/integration/subscriptionWebhookLifecycle.spec.ts`, `tests/integration/jobSeekerWebhookIdempotency.spec.ts`, local readiness command `npm run stripe:sandbox:check`, `docs/release/evidence/2026-06-08/stripe/README.md`, and `docs/release/evidence/2026-06-09/stripe/README.md`; real event IDs still need to be recorded in `docs/release/evidence/2026-06-09/stripe/manual-stripe-smoke.md` | RB-003 |
+| G-004 | CI required-check enforcement | Ops/Backend (TBD) | PARTIAL | Validate branch protection required checks block failing merges using `docs/release/ci-branch-protection-proof.md` | Failing required checks block merge | Screenshots/links showing required checks + blocked merge case; code now uses active split Prisma schema path in CI migration deploy | RB-004 |
+| G-005 | Contract source-of-truth adoption verification | Backend (TBD) | PARTIAL | Validate active docs reference `docs/contracts/api/*` as canonical, legacy contracts are treated as archived history under `docs/archive/2026/contracts/`, and frontend-used modules are aligned | All active docs reference canonical contract source with no primary-source conflicts and documented mismatch triage state | Canonical contracts now include auth, company invites, billing/subscriptions, job seeker billing, job applications, plans, users, companies, fleet, support platform, and reviews | RB-005 |
+| G-006 | OTP/invite outbound delivery readiness decision | Product/Ops/Security (TBD) | NOT STARTED | Execute delivery-mode review and select waiver or provider-cutover path | Either: (A) signed MVP waiver explicitly accepting simulated OTP + placeholder invite email, or (B) production provider flows validated end-to-end | Decision record in `docs/release/go-no-go.md` + UAT evidence links (`UAT-AUTH-005`, `UAT-INV-004`) | RB-006 |
 
 ## Evidence recording format
 
@@ -47,27 +49,22 @@ Allowed status values: `NOT STARTED`, `PARTIAL`, `PROVEN`, `FAILED`.
 - Added `tests/integration/supportCloseout.spec.ts` for notification read state, document ownership/restore behavior, audit-log admin filtering, and review lifecycle/tenant visibility.
 - Existing billing evidence retained in `tests/integration/billingPlans.spec.ts`, including company-driver mutation denial and provider-not-configured behavior.
 - Added canonical contracts for `docs/contracts/api/fleet.md`, `docs/contracts/api/support-platform.md`, and `docs/contracts/api/reviews.md`.
-- These improve backend automation, contract evidence, media upload transport, and delivery-provider readiness, but they do not close manual UAT, cross-functional signoff, external CI enforcement proof, Stripe event artifact capture, or configured OTP/invite provider validation.
+- These improve backend automation and contract evidence, but they do not close manual UAT, cross-functional signoff, external CI enforcement proof, Stripe event artifact capture, or OTP/invite delivery-mode decision gates.
 
-## Backend evidence added on 2026-06-06 release-hardening pass
+## Operational readiness support added on 2026-06-08
 
-- Added `npm run test:evidence:webhooks` as the repeatable automated replay proof command for company subscription, company checkout, invoice, and job seeker credit webhook idempotency.
-- Fixed and documented `POST /api/v1/subscriptions/cancel-at-period-end` reason handling through audit payload `SUBSCRIPTION_CANCEL_AT_PERIOD_END_REQUESTED`.
-- Fixed and documented `GET /api/v1/job-seeker-billing/packs` boolean query parsing with validated `true/false/1/0/yes/no` support.
-- Added explicit mismatch triage states in `docs/contracts/api/auth.md`, `docs/contracts/api/company-billing-subscriptions.md`, and `docs/contracts/api/job-seeker-billing.md`.
-- Gate status remains `PARTIAL` until required external artifacts and approvals are attached.
+- Added `docs/release/stripe-sandbox-runbook.md` for test-mode Stripe setup, webhook forwarding, event capture, and replay evidence collection.
+- Added `npm run stripe:sandbox:check` to print local Stripe key, webhook signature, plan price, and credit-pack price readiness.
+- Added `GET /api/v1/billing/readiness` for non-secret Stripe/queue/price readiness booleans.
+- Added `docs/release/ci-branch-protection-proof.md` for the required-check and blocked-merge evidence checklist.
+- Updated CI migration deploy to use the active split Prisma schema path (`prisma/schema`).
+- Documented that BullMQ/Redis is real for `billing_webhooks` and `notification_events`, while cron cleanup jobs remain scheduler-driven.
+- Documented that local uploads are implemented and S3-compatible upload transport remains deferred.
+- These are supporting artifacts only. They do not close `RB-003`, `RB-004`, or `RB-006` without real Stripe event IDs, GitHub branch protection proof, and delivery-provider evidence or signed waiver.
 
-## Release closure support added on 2026-06-06 product-polish pass
+## Stripe evidence support added on 2026-06-09
 
-- Implemented S3-compatible SigV4 upload transport behind `POST /api/v1/documents/upload`, while keeping local storage as dev/test fallback.
-- Added unit evidence for delivery provider status/sending and local/S3 upload behavior.
-- Changed `npm run test:evidence:webhooks` to write dated replay manifests and terminal output under `docs/release/evidence/`.
-- Added `scripts/release-smoke.ps1` for health/direct-route smoke artifacts and frontend `/release-readiness` for admin-visible provider state.
-- Gate status remains `PARTIAL`; real Stripe event IDs, CI enforcement proof, manual UAT, delivery-provider UAT, and signoff are still external evidence requirements.
-
-## Contract adoption evidence added on 2026-06-07
-
-- Added `npm run test:evidence:contracts` as a repeatable audit for `G-005`.
-- The audit reads `docs/release/backend-coverage-matrix.md`, verifies every referenced canonical contract exists under `docs/contracts/api/`, and fails if a module lacks a contract reference or covered status.
-- Latest artifact: `docs/release/evidence/2026-06-07/G-005-contract-adoption/manifest.json`.
-- `G-005` is now `PROVEN`; release remains `NO-GO` until manual UAT, signoff, Stripe event IDs, CI enforcement proof, and delivery-provider validation are attached.
+- Captured `docs/release/evidence/2026-06-09/stripe/stripe-sandbox-check.txt`.
+- Captured `docs/release/evidence/2026-06-09/stripe/webhook-replay-tests.txt`.
+- Added `docs/release/evidence/2026-06-09/stripe/manual-stripe-smoke.md` for real Stripe checkout session IDs, webhook event IDs, and wallet/subscription verification notes.
+- `G-003` remains `PARTIAL` until real Stripe Dashboard/CLI event IDs and manual smoke results are recorded.

@@ -23,6 +23,8 @@ import { subscriptionsRouter } from "../modules/subscriptions/subscriptions.rout
 import { billingRouter } from "../modules/billing/billing.routes.js";
 import { jobApplicationsRouter } from "../modules/jobApplications/jobApplications.routes.js";
 import { jobSeekerBillingRouter } from "../modules/jobSeekerBilling/jobSeekerBilling.routes.js";
+import { companyCreditsRouter } from "../modules/companyCredits/companyCredits.routes.js";
+import { vehicleMarketplaceRouter } from "../modules/vehicleMarketplace/vehicleMarketplace.routes.js";
 
 export const v1Router = Router();
 
@@ -50,4 +52,6 @@ v1Router.use("/subscriptions", subscriptionsRouter);
 v1Router.use("/billing", billingRouter);
 v1Router.use("/job-applications", jobApplicationsRouter);
 v1Router.use("/job-seeker-billing", jobSeekerBillingRouter);
+v1Router.use("/company-credits", companyCreditsRouter);
+v1Router.use("/vehicle-marketplace", vehicleMarketplaceRouter);
 

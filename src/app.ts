@@ -1,6 +1,7 @@
 import cookieParser from "cookie-parser";
 import express from "express";
 import path from "node:path";
+import { env } from "./config/env.js";
 import { corsMiddleware, helmetMiddleware, rateLimitMiddleware } from "./config/security.js";
 import { errorHandler, notFoundHandler } from "./shared/errors/errorHandler.js";
 import { requestContext } from "./shared/middleware/requestContext.middleware.js";
@@ -17,10 +18,10 @@ export function buildApp() {
   app.use(helmetMiddleware);
   app.use(corsMiddleware);
   app.use(rateLimitMiddleware);
+  app.use("/uploads", express.static(path.resolve(env.LOCAL_UPLOAD_DIR)));
   app.use("/webhooks", webhooksRouter);
   app.use(cookieParser());
-  app.use(express.json({ limit: "5mb" }));
-  app.use("/uploads", express.static(path.resolve(process.cwd(), process.env.LOCAL_STORAGE_PATH ?? "uploads")));
+  app.use(express.json({ limit: "10mb" }));
 
   app.use("/health", healthRouter);
   app.use("/api/v1", v1Router);

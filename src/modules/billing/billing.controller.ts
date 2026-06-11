@@ -13,3 +13,8 @@ export async function listMyBillingEvents(req: Request, res: Response) {
   return ok(res, data);
 }
 
+export async function getBillingReadiness(_req: Request, res: Response) {
+  const data = await service.getReadiness();
+  return ok(res, data);
+}
+

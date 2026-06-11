@@ -38,6 +38,17 @@ export async function changeContractStatus(req: Request, res: Response) {
   return ok(res, data);
 }
 
+export async function updateContractTimeline(req: Request, res: Response) {
+  const data = await service.updateTimeline(authFromRequest(req), getStringParam(req.params.contractId), {
+    deliveryActualAt: req.body.deliveryActualAt,
+    deliveryPlannedAt: req.body.deliveryPlannedAt,
+    pickupActualAt: req.body.pickupActualAt,
+    pickupPlannedAt: req.body.pickupPlannedAt,
+  });
+
+  return ok(res, data);
+}
+
 export async function deleteContract(req: Request, res: Response) {
   const data = await service.remove(authFromRequest(req), getStringParam(req.params.contractId));
   return ok(res, data);

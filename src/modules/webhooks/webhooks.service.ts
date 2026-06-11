@@ -74,6 +74,28 @@ export class WebhooksService {
       return;
     }
 
+    if (lane === "COMPANY_CREDITS") {
+      if (!session.id) {
+        logger.warn({ eventId: event.id }, "Skipping company credits checkout event without session id");
+        return;
+      }
+
+      const checkout = await repo.getCompanyCreditCheckoutSessionByStripeId(session.id);
+      if (!checkout) {
+        logger.warn({ eventId: event.id, stripeSessionId: session.id }, "Company credit checkout session not found");
+        return;
+      }
+
+      await repo.grantCompanyCreditsFromCheckout({
+        amountCredits: checkout.amountCredits,
+        checkoutSessionId: checkout.id,
+        companyId: checkout.companyId,
+        stripeCheckoutSessionId: session.id,
+      });
+
+      return;
+    }
+
     const companyId = session.client_reference_id ?? session.metadata?.companyId;
     if (!companyId || !session.id) {
       logger.warn({ eventId: event.id }, "Skipping checkout event without company/session identifiers");

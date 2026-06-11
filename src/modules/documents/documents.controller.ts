@@ -7,11 +7,10 @@ const service = new DocumentsService();
 
 
 export async function listDocuments(req: Request, res: Response) {
-  const query = req.query as unknown as { kind?: never; page: number; pageSize: number };
   const data = await service.list(authFromRequest(req), {
-    page: query.page,
-    pageSize: query.pageSize,
-    kind: query.kind,
+    page: Number(req.query.page ?? 1),
+    pageSize: Number(req.query.pageSize ?? 20),
+    kind: req.query.kind as never,
   });
 
   return ok(res, data);
@@ -38,11 +37,11 @@ export async function createDocument(req: Request, res: Response) {
 
 export async function uploadDocument(req: Request, res: Response) {
   const data = await service.upload(authFromRequest(req), {
+    contentBase64: req.body.contentBase64,
+    fileName: req.body.fileName,
     kind: req.body.kind,
     name: req.body.name,
     mimeType: req.body.mimeType,
-    fileName: req.body.fileName,
-    contentBase64: req.body.contentBase64,
     metadataJson: req.body.metadataJson,
     ownerUserId: req.body.ownerUserId,
     ownerCompanyId: req.body.ownerCompanyId,

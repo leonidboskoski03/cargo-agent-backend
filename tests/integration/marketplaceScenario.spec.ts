@@ -92,6 +92,7 @@ describe("marketplace scenario", () => {
 
     const route = await prisma.route.create({
       data: {
+        companyId: shipper.id,
         originLocationId: origin.id,
         destinationLocationId: destination.id,
       },
@@ -111,6 +112,35 @@ describe("marketplace scenario", () => {
       expect(postResponse.statusCode).toBe(201);
       const postId = postResponse.body.data.id as string;
 
+      const carrierMarketplaceList = await request(app)
+        .get("/api/v1/posts")
+        .set("Authorization", carrierAuth)
+        .query({ scope: "marketplace" });
+      expect(carrierMarketplaceList.statusCode).toBe(200);
+      expect((carrierMarketplaceList.body.data as Array<{ id: string }>).map((post) => post.id)).toContain(postId);
+
+      const carrierDetail = await request(app)
+        .get(`/api/v1/posts/${postId}`)
+        .set("Authorization", carrierAuth);
+      expect(carrierDetail.statusCode).toBe(200);
+      expect(carrierDetail.body.data.id).toBe(postId);
+      expect(carrierDetail.body.data.route.originLocation.city).toBe("Berlin");
+      expect(carrierDetail.body.data.route.destinationLocation.city).toBe("Warsaw");
+      expect(carrierDetail.body.data.company.name).toBe(shipper.name);
+
+      const carrierCannotEdit = await request(app)
+        .patch(`/api/v1/posts/${postId}`)
+        .set("Authorization", carrierAuth)
+        .send({ title: "Nope" });
+      expect(carrierCannotEdit.statusCode).toBe(403);
+
+      const shipperMineList = await request(app)
+        .get("/api/v1/posts")
+        .set("Authorization", shipperAuth)
+        .query({ scope: "mine" });
+      expect(shipperMineList.statusCode).toBe(200);
+      expect((shipperMineList.body.data as Array<{ id: string }>).map((post) => post.id)).toContain(postId);
+
       const bidResponse = await request(app)
         .post("/api/v1/bids")
         .set("Authorization", carrierAuth)
@@ -123,24 +153,78 @@ describe("marketplace scenario", () => {
       expect(bidResponse.statusCode).toBe(201);
       const bidId = bidResponse.body.data.id as string;
 
+      const createdActivitiesResponse = await request(app)
+        .get(`/api/v1/bids/${bidId}/activities`)
+        .set("Authorization", carrierAuth);
+      expect(createdActivitiesResponse.statusCode).toBe(200);
+      expect((createdActivitiesResponse.body.data as Array<{ type: string }>).map((activity) => activity.type)).toContain("CREATED");
+
       const acceptBidResponse = await request(app)
         .patch(`/api/v1/bids/${bidId}/status`)
         .set("Authorization", shipperAuth)
         .send({ status: "ACCEPTED" });
       expect(acceptBidResponse.statusCode).toBe(200);
+      expect(acceptBidResponse.body.data.contract.id).toBeTruthy();
+      expect(acceptBidResponse.body.data.contract.status).toBe("CONFIRMED");
+      const contractId = acceptBidResponse.body.data.contract.id as string;
+
+      const carrierMarketplaceAfterAssign = await request(app)
+        .get("/api/v1/posts")
+        .set("Authorization", carrierAuth)
+        .query({ scope: "marketplace", status: "ASSIGNED" });
+      expect(carrierMarketplaceAfterAssign.statusCode).toBe(200);
+      expect((carrierMarketplaceAfterAssign.body.data as Array<{ id: string }>).map((post) => post.id)).not.toContain(postId);
 
       const contractResponse = await request(app)
         .post("/api/v1/contracts")
         .set("Authorization", shipperAuth)
         .send({ postId, acceptedBidId: bidId });
       expect(contractResponse.statusCode).toBe(201);
-      const contractId = contractResponse.body.data.id as string;
+      expect(contractResponse.body.data.id).toBe(contractId);
+
+      const contractCount = await prisma.contract.count({ where: { acceptedBidId: bidId } });
+      expect(contractCount).toBe(1);
+
+      const contractActivitiesResponse = await request(app)
+        .get(`/api/v1/bids/${bidId}/activities`)
+        .set("Authorization", shipperAuth);
+      expect(contractActivitiesResponse.statusCode).toBe(200);
+      expect((contractActivitiesResponse.body.data as Array<{ type: string }>).map((activity) => activity.type)).toEqual(
+        expect.arrayContaining(["ACCEPTED", "CONTRACT_CREATED", "CREATED"]),
+      );
+
+      const invalidActualTimelineResponse = await request(app)
+        .patch(`/api/v1/contracts/${contractId}/timeline`)
+        .set("Authorization", shipperAuth)
+        .send({ pickupActualAt: "2026-06-09T10:00:00.000Z" });
+      expect(invalidActualTimelineResponse.statusCode).toBe(409);
+      expect(invalidActualTimelineResponse.body.error.code).toBe("CONTRACT_NOT_STARTED");
+
+      const plannedTimelineResponse = await request(app)
+        .patch(`/api/v1/contracts/${contractId}/timeline`)
+        .set("Authorization", shipperAuth)
+        .send({
+          pickupPlannedAt: "2026-06-09T08:00:00.000Z",
+          deliveryPlannedAt: "2026-06-09T14:00:00.000Z",
+        });
+      expect(plannedTimelineResponse.statusCode).toBe(200);
+      expect(plannedTimelineResponse.body.data.pickupPlannedAt).toBeTruthy();
 
       const inProgressResponse = await request(app)
         .patch(`/api/v1/contracts/${contractId}/status`)
         .set("Authorization", shipperAuth)
         .send({ status: "IN_PROGRESS" });
       expect(inProgressResponse.statusCode).toBe(200);
+
+      const actualTimelineResponse = await request(app)
+        .patch(`/api/v1/contracts/${contractId}/timeline`)
+        .set("Authorization", shipperAuth)
+        .send({
+          pickupActualAt: "2026-06-09T09:00:00.000Z",
+          deliveryActualAt: "2026-06-09T15:00:00.000Z",
+        });
+      expect(actualTimelineResponse.statusCode).toBe(200);
+      expect(actualTimelineResponse.body.data.deliveryActualAt).toBeTruthy();
 
       const completedResponse = await request(app)
         .patch(`/api/v1/contracts/${contractId}/status`)

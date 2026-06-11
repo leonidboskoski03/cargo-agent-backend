@@ -9,5 +9,30 @@ export class BillingRepository {
       take: pageSize,
     });
   }
+
+  async findProPlanPriceReadiness() {
+    return prisma.plan.findUnique({
+      where: { code: "PRO" },
+      select: { stripePriceId: true },
+    });
+  }
+
+  async countCompanyCreditPacksMissingStripePrice() {
+    return prisma.companyCreditPack.count({
+      where: {
+        isActive: true,
+        OR: [{ stripePriceId: null }, { stripePriceId: "" }],
+      },
+    });
+  }
+
+  async countJobSeekerCreditPacksMissingStripePrice() {
+    return prisma.jobSeekerCreditPack.count({
+      where: {
+        isActive: true,
+        OR: [{ stripePriceId: null }, { stripePriceId: "" }],
+      },
+    });
+  }
 }
 

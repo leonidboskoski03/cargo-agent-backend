@@ -1,8 +1,9 @@
-import { BidStatus, PlanCode, Prisma, UsageMetric } from "@prisma/client";
+import { BidActivityType, BidStatus, ContractStatus, PlanCode, Prisma, UsageMetric } from "@prisma/client";
 import { prisma } from "../../shared/prisma/prismaClient.js";
 
 type ListFilters = {
   companyId: string;
+  scope?: "received" | "sent" | "all";
   status?: BidStatus;
   postId?: string;
 };
@@ -26,6 +27,27 @@ type UpdateBidData = {
   estimatedDeliveryAt?: Date | null;
 };
 
+type CreateContractFromBidData = {
+  acceptedBidId: string;
+  actorCompanyId: string;
+  actorUserId?: string;
+  agreedPriceAmount: Prisma.Decimal | string | number;
+  carrierCompanyId: string;
+  currency: string;
+  postId: string;
+  routeId: string;
+  shipperCompanyId: string;
+};
+
+type CreateBidActivityData = {
+  actorCompanyId?: string;
+  actorUserId?: string;
+  bidId: string;
+  message?: string;
+  metadataJson?: Prisma.InputJsonValue;
+  type: BidActivityType;
+};
+
 const bidSelect = {
   id: true,
   postId: true,
@@ -36,6 +58,8 @@ const bidSelect = {
   currency: true,
   estimatedPickupAt: true,
   estimatedDeliveryAt: true,
+  boostCredits: true,
+  boostedUntil: true,
   status: true,
   deletedAt: true,
   createdAt: true,
@@ -44,30 +68,102 @@ const bidSelect = {
     select: {
       id: true,
       companyId: true,
+      title: true,
+      cargoDescription: true,
+      priceAmount: true,
       status: true,
       deletedAt: true,
       routeId: true,
       currency: true,
       priceType: true,
+      company: {
+        select: {
+          id: true,
+          name: true,
+          city: true,
+          countryCode: true,
+          isVerified: true,
+        },
+      },
+      route: {
+        select: {
+          id: true,
+          distanceKm: true,
+          estimatedDurationMinutes: true,
+          originLocation: {
+            select: {
+              id: true,
+              city: true,
+              countryCode: true,
+            },
+          },
+          destinationLocation: {
+            select: {
+              id: true,
+              city: true,
+              countryCode: true,
+            },
+          },
+        },
+      },
+    },
+  },
+  carrierCompany: {
+    select: {
+      id: true,
+      name: true,
+      city: true,
+      countryCode: true,
+      isVerified: true,
+    },
+  },
+  contract: {
+    select: {
+      id: true,
+      status: true,
     },
   },
 } as const;
 
 export class BidsRepository {
   async listByCompanyInvolvement(filters: ListFilters) {
+    const now = new Date();
     return prisma.bid.findMany({
       where: {
         deletedAt: null,
         ...(filters.status ? { status: filters.status } : {}),
         ...(filters.postId ? { postId: filters.postId } : {}),
-        OR: [
-          { carrierCompanyId: filters.companyId },
-          { post: { companyId: filters.companyId } },
-        ],
+        ...(filters.scope === "sent"
+          ? { carrierCompanyId: filters.companyId }
+          : filters.scope === "received"
+            ? { post: { companyId: filters.companyId } }
+            : {
+                OR: [
+                  { carrierCompanyId: filters.companyId },
+                  { post: { companyId: filters.companyId } },
+                ],
+              }),
       },
-      orderBy: { createdAt: "desc" },
+      orderBy:
+        filters.scope === "received"
+          ? [
+              { boostedUntil: { sort: "desc", nulls: "last" } },
+              { boostCredits: "desc" },
+              { createdAt: "desc" },
+            ]
+          : { createdAt: "desc" },
       select: bidSelect,
-    });
+    }).then((bids) =>
+      filters.scope === "received"
+        ? [...bids].sort((left, right) => {
+            const leftActive = left.boostedUntil && left.boostedUntil > now ? 1 : 0;
+            const rightActive = right.boostedUntil && right.boostedUntil > now ? 1 : 0;
+            if (leftActive !== rightActive) return rightActive - leftActive;
+            if (leftActive && rightActive && left.boostCredits !== right.boostCredits) return right.boostCredits - left.boostCredits;
+            return right.createdAt.getTime() - left.createdAt.getTime();
+          })
+        : bids,
+    );
   }
 
   async findActiveById(bidId: string) {
@@ -84,6 +180,26 @@ export class BidsRepository {
     return prisma.bid.findUnique({
       where: { id: bidId },
       select: bidSelect,
+    });
+  }
+
+  async listActivities(bidId: string) {
+    return prisma.bidActivity.findMany({
+      where: { bidId },
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
+  async createActivity(data: CreateBidActivityData) {
+    return prisma.bidActivity.create({
+      data: {
+        actorCompanyId: data.actorCompanyId,
+        actorUserId: data.actorUserId,
+        bidId: data.bidId,
+        message: data.message,
+        metadataJson: data.metadataJson,
+        type: data.type,
+      },
     });
   }
 
@@ -149,6 +265,76 @@ export class BidsRepository {
       });
 
       return updatedBid;
+    });
+  }
+
+  async acceptBidAndCreateContract(input: CreateContractFromBidData) {
+    return prisma.$transaction(async (tx) => {
+      await tx.bid.update({
+        where: { id: input.acceptedBidId },
+        data: { status: BidStatus.ACCEPTED },
+      });
+
+      await tx.bid.updateMany({
+        where: {
+          postId: input.postId,
+          id: { not: input.acceptedBidId },
+          deletedAt: null,
+          status: BidStatus.PENDING,
+        },
+        data: { status: BidStatus.REJECTED },
+      });
+
+      await tx.post.update({
+        where: { id: input.postId },
+        data: { status: "ASSIGNED" },
+      });
+
+      const contract = await tx.contract.upsert({
+        where: { acceptedBidId: input.acceptedBidId },
+        create: {
+          acceptedBidId: input.acceptedBidId,
+          agreedPriceAmount: input.agreedPriceAmount,
+          carrierCompanyId: input.carrierCompanyId,
+          currency: input.currency,
+          postId: input.postId,
+          routeId: input.routeId,
+          shipperCompanyId: input.shipperCompanyId,
+          status: ContractStatus.CONFIRMED,
+        },
+        update: {},
+        select: {
+          id: true,
+          status: true,
+        },
+      });
+
+      await tx.bidActivity.create({
+        data: {
+          actorCompanyId: input.actorCompanyId,
+          actorUserId: input.actorUserId,
+          bidId: input.acceptedBidId,
+          message: "Contract created",
+          metadataJson: { contractId: contract.id, postId: input.postId },
+          type: BidActivityType.CONTRACT_CREATED,
+        },
+      });
+
+      return tx.bid.findUniqueOrThrow({
+        where: { id: input.acceptedBidId },
+        select: bidSelect,
+      });
+    });
+  }
+
+  async boostBid(bidId: string, input: { boostCredits: number; boostedUntil: Date }) {
+    return prisma.bid.update({
+      where: { id: bidId },
+      data: {
+        boostCredits: { increment: input.boostCredits },
+        boostedUntil: input.boostedUntil,
+      },
+      select: bidSelect,
     });
   }
 

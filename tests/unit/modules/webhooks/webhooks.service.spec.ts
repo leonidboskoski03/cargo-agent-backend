@@ -128,5 +128,41 @@ describe("WebhooksService", () => {
     expect(response).toEqual({ received: true, ignored: false });
     expect(grantSpy).not.toHaveBeenCalled();
   });
+
+  it("processes company credits checkout lane by granting credits", async () => {
+    vi.spyOn(WebhooksRepository.prototype, "getCompanyCreditCheckoutSessionByStripeId").mockResolvedValue({
+      amountCredits: 70,
+      companyId: "company_1",
+      id: "company_checkout_1",
+    } as never);
+    const grantSpy = vi.spyOn(WebhooksRepository.prototype, "grantCompanyCreditsFromCheckout").mockResolvedValue({
+      inserted: true,
+      transactionId: "co_tx_1",
+    } as never);
+
+    const response = await service.handleStripeEvent({
+      event: {
+        id: "evt_company_credits",
+        type: "checkout.session.completed",
+        data: {
+          object: {
+            id: "cs_company_credits",
+            metadata: {
+              lane: "COMPANY_CREDITS",
+            },
+          },
+        },
+      } as unknown as Stripe.Event,
+      payload: JSON.stringify({ id: "evt_company_credits" }),
+    });
+
+    expect(response).toEqual({ received: true, ignored: false });
+    expect(grantSpy).toHaveBeenCalledWith({
+      amountCredits: 70,
+      checkoutSessionId: "company_checkout_1",
+      companyId: "company_1",
+      stripeCheckoutSessionId: "cs_company_credits",
+    });
+  });
 });
 

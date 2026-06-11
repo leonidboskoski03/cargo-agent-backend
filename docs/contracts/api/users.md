@@ -85,7 +85,7 @@ Covered:
 
 - All endpoints return HTTP `200`.
 - User payload shape from repository select:
-  - `id`, `companyId`, `role`, `firstName`, `lastName`, `email`, `phone`, `countryCode`, `city`, `headline`, `yearsExperience`, `availability`, `preferredRoutes`, `emailVerifiedAt`, `isActive`, `deletedAt`, `createdAt`, `updatedAt`.
+  - `id`, `companyId`, `role`, `firstName`, `lastName`, `email`, `phone`, `imageUrl`, `countryCode`, `city`, `headline`, `yearsExperience`, `availability`, `preferredRoutes`, `emailVerifiedAt`, `isActive`, `deletedAt`, `createdAt`, `updatedAt`.
 - `GET /`:
   - `COMPANY_ADMIN`: returns company user list (`includeInactive` controls `isActive` filter).
   - Other authenticated users: returns array containing only caller.
@@ -111,6 +111,7 @@ Covered:
 ## 9. Invariants / business rules
 
 - Role/company linkage can only be changed by company admin membership endpoint.
+- `PATCH /me` allows `JOB_SEEKER` users to update independent profile fields (`imageUrl`, `countryCode`, `city`, `headline`, `yearsExperience`, `availability`, `preferredRoutes`); company users receive `403 FORBIDDEN_JOB_SEEKER_PROFILE_MUTATION` for those fields.
 - Users without company linkage must have role `JOB_SEEKER`.
 - Company admins can manage only users in their own company scope.
 - `GET /:userId` enforces strict privacy: self or same-company admin only.
@@ -128,6 +129,7 @@ Covered:
 
 - Integration evidence:
   - `tests/integration/marketplaceEndToEnd.spec.ts` validates `/users/me/profile-completion` in seeker flow.
+  - `tests/integration/jobSeekerProfile.spec.ts` validates job seeker profile updates and company-user denial.
   - `tests/integration/apiSmoke.spec.ts` validates non-500 surface.
 - TODO/Needs verification:
   - Add dedicated integration suite for membership authz matrix and delete/restore scope edge cases.
@@ -135,4 +137,5 @@ Covered:
 ## 12. Changelog
 
 - 2026-04-20: Created canonical users contract from routes/validator/controller/service/repository and available integration evidence.
+- 2026-06-08: Added job seeker self-profile fields and image URL metadata to `PATCH /me`.
 

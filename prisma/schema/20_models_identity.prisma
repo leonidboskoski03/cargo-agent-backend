@@ -37,11 +37,16 @@ model Company {
   checkoutSessions         CheckoutSession[]
   billingEvents            BillingEvent[]
   usageCounters            UsageCounter[]
-  auditLogs                AuditLog[]
+  creditWallet             CompanyCreditWallet?
+  creditTransactions       CompanyCreditTransaction[]
+  creditCheckoutSessions   CompanyCreditCheckoutSession[]
+  auditLogs                AuditLog[] 
   ownedNotifications       Notification[]             @relation("CompanyOwnedNotifications")
   ownerDocuments           Document[]                 @relation("CompanyOwnedDocuments")
   createdJobApplications   JobApplication[]           @relation("CompanyCreatedJobApplications")
   submittedJobApplications JobApplicationSubmission[] @relation("CompanyJobApplicationSubmissions")
+  vehicleMarketplaceListings VehicleMarketplaceListing[] @relation("CompanyVehicleMarketplaceListings")
+  vehicleMarketplaceInquiries VehicleMarketplaceInquiry[] @relation("CompanyVehicleMarketplaceInquiries")
   invites                  CompanyInvite[]            @relation("CompanyInvites")
 }
 
@@ -53,6 +58,7 @@ model User {
   lastName                String
   email                   String   @unique
   phone                   String?
+  imageUrl                String?
   countryCode             String?
   city                    String?
   headline                String?
@@ -80,6 +86,8 @@ model User {
   notifications            Notification[]             @relation("UserNotifications")
   ownerDocuments           Document[]                 @relation("UserOwnedDocuments")
   uploadedDocuments        Document[]                 @relation("DocumentUploadedByUser")
+  vehicleMarketplaceListings VehicleMarketplaceListing[] @relation("UserVehicleMarketplaceListings")
+  vehicleMarketplaceInquiries VehicleMarketplaceInquiry[] @relation("UserVehicleMarketplaceInquiries")
   wallet                   JobSeekerWallet?
   creditTransactions       JobSeekerCreditTransaction[]
   usageCounters            JobSeekerUsageCounter[]

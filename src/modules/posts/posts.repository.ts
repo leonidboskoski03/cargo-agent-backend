@@ -88,6 +88,36 @@ const postSelect = {
   deletedAt: true,
   createdAt: true,
   updatedAt: true,
+  company: {
+    select: {
+      id: true,
+      name: true,
+      city: true,
+      countryCode: true,
+      isVerified: true,
+    },
+  },
+  route: {
+    select: {
+      id: true,
+      distanceKm: true,
+      estimatedDurationMinutes: true,
+      originLocation: {
+        select: {
+          city: true,
+          countryCode: true,
+          region: true,
+        },
+      },
+      destinationLocation: {
+        select: {
+          city: true,
+          countryCode: true,
+          region: true,
+        },
+      },
+    },
+  },
 } as const;
 
 export class PostsRepository {
@@ -131,6 +161,27 @@ export class PostsRepository {
 	});
   }
 
+  async listMarketplace(filters: { companyId: string }) {
+	const now = new Date();
+	return prisma.post.findMany({
+	  where: {
+		deletedAt: null,
+		status: PostStatus.OPEN,
+		companyId: { not: filters.companyId },
+	  },
+	  orderBy: [{ promotedUntil: { sort: "desc", nulls: "last" } }, { createdAt: "desc" }],
+	  select: postSelect,
+	}).then((posts) =>
+	  [...posts].sort((left, right) => {
+		const leftActive = left.promotedUntil && left.promotedUntil > now ? 1 : 0;
+		const rightActive = right.promotedUntil && right.promotedUntil > now ? 1 : 0;
+		if (leftActive !== rightActive) return rightActive - leftActive;
+		if (leftActive && rightActive) return (right.promotedUntil?.getTime() ?? 0) - (left.promotedUntil?.getTime() ?? 0);
+		return right.createdAt.getTime() - left.createdAt.getTime();
+	  }),
+	);
+  }
+
   async create(data: CreatePostData) {
 	return prisma.post.create({
 	  data,
@@ -150,6 +201,14 @@ export class PostsRepository {
 	return prisma.post.update({
 	  where: { id: postId },
 	  data: { status },
+	  select: postSelect,
+	});
+  }
+
+  async boost(postId: string, promotedUntil: Date) {
+	return prisma.post.update({
+	  where: { id: postId },
+	  data: { isPromoted: true, promotedUntil },
 	  select: postSelect,
 	});
   }

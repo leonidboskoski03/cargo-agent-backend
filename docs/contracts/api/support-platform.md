@@ -5,7 +5,7 @@ status: active
 owner: backend-platform
 version: 1.0.0
 review_status: code-derived
-reviewed_at: 2026-06-05
+reviewed_at: 2026-06-08
 source_legacy: none
 summary: Canonical API contract for notifications, documents, and audit logs.
 ---
@@ -35,6 +35,7 @@ Defines implemented support service endpoints under `/api/v1/notifications`, `/a
   - `GET /api/v1/documents?page=1&pageSize=20&kind=INSURANCE`
   - `GET /api/v1/documents/:documentId`
   - `POST /api/v1/documents`
+  - `POST /api/v1/documents/upload`
   - `DELETE /api/v1/documents/:documentId`
   - `POST /api/v1/documents/:documentId/restore`
 - Audit logs:
@@ -45,9 +46,11 @@ Defines implemented support service endpoints under `/api/v1/notifications`, `/a
 - Notifications return raw notification records, ordered newest first, with optional unread filtering.
 - `PATCH /notifications/read-all` returns Prisma `updateMany` output with `count`.
 - Document create accepts `kind`, `name`, `mimeType`, `url`, optional `metadataJson`, and optional owner fields.
-- Document upload accepts base64 file content through `POST /api/v1/documents/upload`, stores the asset through the configured storage abstraction, and creates the document metadata record with auth-derived ownership.
+- Document upload accepts a base64 payload plus `kind`, `name`, and `mimeType`, then creates the document metadata record from the stored asset URL.
 - Explicit document owner overrides are intentionally ignored; ownership is derived from authenticated user/company context.
-- Documents remain URL metadata records at rest; upload transport is now available as a convenience path that produces a URL-backed document record.
+- `STORAGE_PROVIDER=local` writes files under `LOCAL_UPLOAD_DIR` and serves them from `UPLOAD_PUBLIC_BASE_URL`.
+- `STORAGE_PROVIDER=s3` is reserved for production-compatible object storage, but the S3 transport is not implemented in this build and returns `501 STORAGE_UPLOAD_NOT_IMPLEMENTED`.
+- Uploads enforce `UPLOAD_MAX_BYTES` and `UPLOAD_ALLOWED_MIME_TYPES`.
 - Audit logs return raw selected records ordered newest first; filters are exact `actorId` and `action` matches.
 - List endpoints use page/pageSize skip/take but return arrays only, without pagination metadata.
 
@@ -57,6 +60,9 @@ Defines implemented support service endpoints under `/api/v1/notifications`, `/a
 - `403 FORBIDDEN`: role or tenant scope violation.
 - `404 DOCUMENT_NOT_FOUND` / `NOTIFICATION_NOT_FOUND`: target missing or inaccessible.
 - `400 DOCUMENT_NOT_DELETED`: restore requested for an active document.
+- `400 FILE_TOO_LARGE`: base64 upload exceeds configured upload limit.
+- `400 UNSUPPORTED_MIME_TYPE`: uploaded MIME type is not in `UPLOAD_ALLOWED_MIME_TYPES`.
+- `501 STORAGE_UPLOAD_NOT_IMPLEMENTED`: `STORAGE_PROVIDER=s3` is selected before an S3-compatible adapter exists.
 - `400 VALIDATION_ERROR`: request schema failure.
 
 ## Test evidence
@@ -70,3 +76,4 @@ Defines implemented support service endpoints under `/api/v1/notifications`, `/a
 ## Changelog
 
 - 2026-06-05: Created support platform API contract and aligned company-document mutations with admin-only frontend release plan.
+- 2026-06-08: Added `/documents/upload` contract notes for local upload support and documented deferred S3 transport behavior.

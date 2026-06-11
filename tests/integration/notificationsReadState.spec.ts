@@ -76,7 +76,7 @@ describe("notifications read state", () => {
         .set("Authorization", token)
         .send({});
       expect(markOne.statusCode).toBe(200);
-      expect(markOne.body.data.readAt).toBeTruthy();
+      expect(markOne.body.data.isRead).toBe(true);
 
       const markAll = await request(app).patch("/api/v1/notifications/read-all").set("Authorization", token).send({});
       expect(markAll.statusCode).toBe(200);

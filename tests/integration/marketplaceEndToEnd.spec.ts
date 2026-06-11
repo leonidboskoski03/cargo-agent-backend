@@ -9,7 +9,7 @@ describe("marketplace end-to-end flows", () => {
   beforeAll(async () => {
     const runtime = await initRuntime();
     dbReady = await isDatabaseAvailable(runtime.prisma);
-  });
+  }, 60_000);
 
   it("runs company FREE flow: register -> posts -> bid -> contract -> invite -> company job listing", async () => {
     const { prisma, buildApp, signAccessToken } = await initRuntime();

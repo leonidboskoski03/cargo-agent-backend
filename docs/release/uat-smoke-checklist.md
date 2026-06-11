@@ -4,7 +4,7 @@ doc_type: uat-smoke-checklist
 status: active
 owner: qa-owner
 created: 2026-04-20
-updated: 2026-06-06
+updated: 2026-06-08
 summary: Manual MVP smoke validation checklist grouped by user and release-critical flows.
 related_docs:
   - docs/release/mvp-readiness.md
@@ -46,6 +46,8 @@ Use `docs/release/evidence-map.md` for gate proof mapping and `docs/release/go-n
 - [ ] `UAT-BILL-001` Billing/subscription mutation endpoints reject unauthorized roles.
 - [ ] `UAT-BILL-002` Checkout/subscription happy path works.
 - [ ] `UAT-BILL-003` Usage/entitlements enforcement matches expected plan behavior.
+- [ ] `UAT-BILL-004` Stripe sandbox evidence is captured with test-mode event IDs and linked from `docs/release/evidence-map.md`.
+- [ ] `UAT-BILL-005` Company credit and job seeker credit checkout sessions credit wallets exactly once after webhook replay.
 
 ## Fleet operations
 
@@ -61,6 +63,7 @@ Use `docs/release/evidence-map.md` for gate proof mapping and `docs/release/go-n
 - [ ] `UAT-SUP-003` Admin lists audit logs and filters by actor/action; driver access is rejected.
 - [ ] `UAT-SUP-004` Admin creates, updates, publishes/withdraws, deletes, and restores a review for a completed contract.
 - [ ] `UAT-SUP-005` Draft review visibility and cross-tenant review access are scoped correctly.
+- [ ] `UAT-SUP-006` Document upload works with local storage in staging/dev and returns traceable errors when unsupported storage is selected.
 
 ## Webhook and replay safety
 
@@ -73,6 +76,7 @@ Use `docs/release/evidence-map.md` for gate proof mapping and `docs/release/go-n
 - [ ] `UAT-JS-001` Wallet/usage endpoints are role-scoped correctly.
 - [ ] `UAT-JS-002` Credit checkout flow works and credits are applied exactly once.
 - [ ] `UAT-JS-003` Insufficient-credit behavior returns expected error semantics.
+- [ ] `UAT-JS-004` Job seeker profile, vehicle/license attachment paths, and vehicle marketplace shortcuts are usable for a job seeker account.
 
 ## Operational release checks
 
@@ -82,7 +86,9 @@ Use `docs/release/evidence-map.md` for gate proof mapping and `docs/release/go-n
 - [ ] `UAT-OPS-004` `GET /health/live` returns `200` and is treated as process-liveness only (not dependency readiness).
 - [ ] `UAT-OPS-005` `GET /health/ready` returns dependency-aware status (`database`, and `redis` when `BULLMQ_ENABLED=true`) with evidence artifact.
 - [ ] `UAT-OPS-006` Worker visibility evidence is captured (worker startup logs and queue-enabled mode documented for the release environment).
-- [ ] `UAT-OPS-007` Placeholder cron jobs are explicitly acknowledged as MVP placeholders (or replaced by implemented jobs) in release notes/evidence.
+- [ ] `UAT-OPS-007` Maintenance cron evidence is captured for implemented OTP/session/checkout/subscription/marketplace cleanup jobs.
+- [ ] `UAT-OPS-008` BullMQ evidence is captured for `billing_webhooks` and `notification_events` queue startup and processing.
+- [ ] `UAT-OPS-009` S3-compatible upload transport is either explicitly deferred with local-storage staging acceptance or implemented and validated.
 
 ## Result
 

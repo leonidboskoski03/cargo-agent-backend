@@ -52,7 +52,7 @@ describe("enqueueNotificationEvent", () => {
     expect(addMock).toHaveBeenCalledWith(
       "BID_ACCEPTED",
       { type: "BID_ACCEPTED", bidId: "bid_1" },
-      { jobId: "bid:bid_1" },
+      { jobId: "bid_accepted__bid_1" },
     );
   });
 });
