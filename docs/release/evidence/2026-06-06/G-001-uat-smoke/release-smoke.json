@@ -1,0 +1,68 @@
+{
+    "generatedAt":  "2026-06-06T21:40:21.7624183Z",
+    "backendBaseUrl":  "http://localhost:4000",
+    "frontendBaseUrl":  "http://localhost:5173",
+    "note":  "This smoke artifact supports UAT routing/health evidence only. It does not replace human signoff, authenticated workflow screenshots, Stripe replay IDs, or CI branch-protection proof.",
+    "checks":  [
+                   {
+                       "name":  "backend-live",
+                       "url":  "http://localhost:4000/health/live",
+                       "statusCode":  200,
+                       "ok":  true
+                   },
+                   {
+                       "name":  "backend-ready",
+                       "url":  "http://localhost:4000/health/ready",
+                       "statusCode":  200,
+                       "ok":  true
+                   },
+                   {
+                       "name":  "frontend-dashboard",
+                       "url":  "http://localhost:5173/dashboard",
+                       "statusCode":  200,
+                       "ok":  true
+                   },
+                   {
+                       "name":  "frontend-locations",
+                       "url":  "http://localhost:5173/locations",
+                       "statusCode":  200,
+                       "ok":  true
+                   },
+                   {
+                       "name":  "frontend-routes",
+                       "url":  "http://localhost:5173/routes",
+                       "statusCode":  200,
+                       "ok":  true
+                   },
+                   {
+                       "name":  "frontend-posts",
+                       "url":  "http://localhost:5173/posts",
+                       "statusCode":  200,
+                       "ok":  true
+                   },
+                   {
+                       "name":  "frontend-fleet",
+                       "url":  "http://localhost:5173/fleet",
+                       "statusCode":  200,
+                       "ok":  true
+                   },
+                   {
+                       "name":  "frontend-billing",
+                       "url":  "http://localhost:5173/billing",
+                       "statusCode":  200,
+                       "ok":  true
+                   },
+                   {
+                       "name":  "frontend-company",
+                       "url":  "http://localhost:5173/company",
+                       "statusCode":  200,
+                       "ok":  true
+                   },
+                   {
+                       "name":  "frontend-release-readiness",
+                       "url":  "http://localhost:5173/release-readiness",
+                       "statusCode":  200,
+                       "ok":  true
+                   }
+               ]
+}

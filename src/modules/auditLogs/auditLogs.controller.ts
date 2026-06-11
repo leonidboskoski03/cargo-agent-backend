@@ -7,11 +7,12 @@ const service = new AuditLogsService();
 
 
 export async function listAuditLogs(req: Request, res: Response) {
+  const query = req.query as unknown as { action?: string; actorId?: string; page: number; pageSize: number };
   const data = await service.list(authFromRequest(req), {
-    page: Number(req.query.page ?? 1),
-    pageSize: Number(req.query.pageSize ?? 20),
-    actorId: typeof req.query.actorId === "string" ? req.query.actorId : undefined,
-    action: typeof req.query.action === "string" ? req.query.action : undefined,
+    page: query.page,
+    pageSize: query.pageSize,
+    actorId: query.actorId,
+    action: query.action,
   });
 
   return ok(res, data);

@@ -1,5 +1,6 @@
 import { UserRole } from "@prisma/client";
 import { z } from "zod";
+import { queryBoolean } from "../../shared/validation/queryBoolean.js";
 
 const cuidParam = z.string().cuid();
 
@@ -18,7 +19,7 @@ export const getMyProfileCompletionSchema = z.object({
 export const listUsersSchema = z.object({
   params: z.object({}),
   query: z.object({
-    includeInactive: z.coerce.boolean().optional().default(false),
+    includeInactive: queryBoolean().optional().default(false),
   }),
   body: z.object({}),
 });

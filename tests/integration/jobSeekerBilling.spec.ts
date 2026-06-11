@@ -40,6 +40,16 @@ describe("job seeker billing endpoints", () => {
         isActive: true,
       },
     });
+    const inactivePack = await prisma.jobSeekerCreditPack.create({
+      data: {
+        code: `PACK_INACTIVE_${suffix}`,
+        name: "Paused Pack",
+        credits: 100,
+        priceAmount: 29.99,
+        currency: "EUR",
+        isActive: false,
+      },
+    });
 
     const token = authHeader(signAccessToken, {
       userId: user.id,
@@ -64,6 +74,16 @@ describe("job seeker billing endpoints", () => {
       expect(packsResponse.statusCode).toBe(200);
       const packIds = (packsResponse.body.data as Array<{ id: string }>).map((item) => item.id);
       expect(packIds).toContain(pack.id);
+      expect(packIds).not.toContain(inactivePack.id);
+
+      const allPacksResponse = await request(app)
+        .get("/api/v1/job-seeker-billing/packs")
+        .set("Authorization", token)
+        .query({ activeOnly: "0" });
+      expect(allPacksResponse.statusCode).toBe(200);
+      const allPackIds = (allPacksResponse.body.data as Array<{ id: string }>).map((item) => item.id);
+      expect(allPackIds).toContain(pack.id);
+      expect(allPackIds).toContain(inactivePack.id);
 
       const txResponse = await request(app)
         .get("/api/v1/job-seeker-billing/transactions")
@@ -92,7 +112,7 @@ describe("job seeker billing endpoints", () => {
       await prisma.jobSeekerCreditTransaction.deleteMany({ where: { userId: user.id } });
       await prisma.jobSeekerWallet.deleteMany({ where: { userId: user.id } });
       await prisma.jobSeekerCheckoutSession.deleteMany({ where: { userId: user.id } });
-      await prisma.jobSeekerCreditPack.deleteMany({ where: { id: pack.id } });
+      await prisma.jobSeekerCreditPack.deleteMany({ where: { id: { in: [pack.id, inactivePack.id] } } });
       await prisma.user.deleteMany({ where: { id: user.id } });
     }
   }, 20_000);

@@ -2,6 +2,7 @@ import type { PlanCode } from "@prisma/client";
 import { billingConfig } from "../../config/billing.js";
 import { getStripeClient, isStripeConfigured } from "../../shared/stripe/stripeClient.js";
 import { AppError } from "../../shared/errors/AppError.js";
+import { writeAuditEvent } from "../../shared/audit/auditLogger.js";
 import { SubscriptionsRepository } from "./subscriptions.repository.js";
 
 const repo = new SubscriptionsRepository();
@@ -138,7 +139,8 @@ export class SubscriptionsService {
     };
   }
 
-  async cancelAtPeriodEnd(companyId?: string) {
+  async cancelAtPeriodEnd(input: { actorUserId?: string; companyId?: string; reason?: string }) {
+    const companyId = input.companyId;
     if (!companyId) {
       throw new AppError(401, "UNAUTHENTICATED", "Authentication required");
     }
@@ -193,6 +195,19 @@ export class SubscriptionsService {
         cancelAtPeriodEnd: updated.cancelAtPeriodEnd,
       };
     }
+
+    await writeAuditEvent({
+      companyId,
+      actorUserId: input.actorUserId,
+      action: "SUBSCRIPTION_CANCEL_AT_PERIOD_END_REQUESTED",
+      entityType: "Subscription",
+      entityId: subscription.id,
+      payloadJson: {
+        cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
+        reason: input.reason?.trim() || null,
+        status: subscription.status,
+      },
+    });
 
     return {
       companyId,

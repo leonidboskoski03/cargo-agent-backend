@@ -17,8 +17,9 @@ export async function getMyProfileCompletion(req: Request, res: Response) {
 }
 
 export async function listUsers(req: Request, res: Response) {
+  const query = req.query as unknown as { includeInactive: boolean };
   const data = await service.list(authFromRequest(req), {
-    includeInactive: req.query.includeInactive === "true",
+    includeInactive: query.includeInactive,
   });
   return ok(res, data);
 }

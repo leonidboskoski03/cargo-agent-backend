@@ -246,10 +246,10 @@ Covered flows:
 ## 10. Breaking changes
 
 - No intentional breaking changes introduced in this pass.
-- Contract/code mismatches surfaced:
-  - `POST /logout` is public in routing (no `requireAuth` middleware), despite common expectation of authenticated logout.
-  - `POST /login/verify-otp` naming implies OTP-code verification, but runtime requires `email + password + otpChallengeId` for an already verified challenge.
-  - `POST /forgot-password` exposes `challengeId/code` in response when user exists (preview/testing behavior), which can enable account-state inference.
+- Contract/code mismatch triage:
+  - `ACCEPTED`: `POST /logout` is public by design for best-effort cookie/session cleanup when refresh context is missing or stale.
+  - `ACCEPTED`: `POST /login/verify-otp` keeps the current `email + password + otpChallengeId` shape for compatibility with the two-step login flow.
+  - `ACCEPTED FOR NON-PROD ONLY`: `POST /forgot-password` may expose preview challenge metadata in non-production environments; production delivery-mode evidence remains gated by release blocker `RB-006`.
 
 ## 11. Test and UAT notes
 
@@ -270,3 +270,4 @@ Covered flows:
 
 - 2026-04-19: Normalized from `docs/archive/2026/contracts/api-contracts-auth.md` into canonical contract structure.
 - 2026-04-20: Reworked from migration-grade to implementation-grade using auth validators/controllers/services and integration tests.
+- 2026-06-06: Added explicit triage states for surfaced auth contract/code mismatches.

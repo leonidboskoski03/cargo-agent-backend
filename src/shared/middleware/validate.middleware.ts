@@ -10,6 +10,10 @@ export function validate(schema: AnyZodObject) {
       return next(new AppError(400, "VALIDATION_ERROR", "Request validation failed", parsed.error.flatten()));
     }
 
+    req.body = parsed.data.body;
+    req.params = parsed.data.params;
+    req.query = parsed.data.query;
+
     next();
   };
 }
