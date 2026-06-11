@@ -24,6 +24,32 @@ enum VehicleBodyType {
   TANKER
 }
 
+enum VehicleMarketplaceIntent {
+  SALE
+  RENTAL
+  LEASE
+}
+
+enum VehicleMarketplaceSourceType {
+  FLEET_VEHICLE
+  STANDALONE
+}
+
+enum VehicleMarketplaceListingStatus {
+  DRAFT
+  PUBLISHED
+  PAUSED
+  SOLD
+  RENTED
+  CLOSED
+}
+
+enum VehicleMarketplaceInquiryStatus {
+  OPEN
+  RESPONDED
+  CLOSED
+}
+
 enum PostPriceType {
   FIXED
   NEGOTIABLE
@@ -44,6 +70,18 @@ enum BidStatus {
   WITHDRAWN
 }
 
+enum BidActivityType {
+  CREATED
+  UPDATED
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+  DELETED
+  RESTORED
+  BOOSTED
+  CONTRACT_CREATED
+}
+
 enum ContractStatus {
   CONFIRMED
   IN_PROGRESS
@@ -59,9 +97,15 @@ enum ReviewStatus {
 }
 
 enum NotificationType {
+  BID_SUBMITTED
   BID_ACCEPTED
+  BID_REJECTED
   CONTRACT_CREATED
+  CONTRACT_STATUS_CHANGED
   REVIEW_PUBLISHED
+  VEHICLE_MARKETPLACE_INQUIRY_CREATED
+  VEHICLE_MARKETPLACE_INQUIRY_RESPONDED
+  JOB_APPLICATION_SUBMITTED
 }
 
 enum DocumentKind {
@@ -123,11 +167,14 @@ enum UsageMetric {
   BIDS_PER_MONTH
   TEAM_MEMBERS
   PROMOTED_POSTS_PER_MONTH
+  COMPANY_JOB_POSTS_PER_MONTH
+  COMPANY_VEHICLE_LISTINGS_PER_MONTH
 }
 
 enum JobSeekerUsageMetric {
   JOB_APPLICATIONS_PER_MONTH
   ACTIVE_LOOKING_LISTINGS
+  VEHICLE_LISTINGS_PER_MONTH
 }
 
 enum JobSeekerCreditTxType {
@@ -138,6 +185,20 @@ enum JobSeekerCreditTxType {
 }
 
 enum JobSeekerCheckoutSessionStatus {
+  CREATED
+  COMPLETED
+  EXPIRED
+  FAILED
+}
+
+enum CompanyCreditTxType {
+  PURCHASE
+  SPEND
+  REFUND
+  ADJUSTMENT
+}
+
+enum CompanyCreditCheckoutSessionStatus {
   CREATED
   COMPLETED
   EXPIRED

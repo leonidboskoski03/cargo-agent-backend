@@ -4,7 +4,9 @@ import rateLimit from "express-rate-limit";
 import type { Request, Response } from "express";
 import { env } from "./env.js";
 
-export const helmetMiddleware = helmet();
+export const helmetMiddleware = helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+});
 
 export const corsMiddleware = cors({
   origin: env.CORS_ORIGIN,

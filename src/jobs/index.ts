@@ -2,6 +2,8 @@ import cron from "node-cron";
 import { env } from "../config/env.js";
 import { logger } from "../config/logger.js";
 import { startBillingJobs } from "./billing/index.js";
+import { cleanupAuthStateJob } from "./maintenance/authCleanup.job.js";
+import { cleanupMarketplaceStateJob } from "./maintenance/marketplaceCleanup.job.js";
 
 let tasks: cron.ScheduledTask[] = [];
 
@@ -11,16 +13,12 @@ export function startJobs() {
     return;
   }
 
-  // These baseline jobs are intentionally placeholders for MVP and currently only emit logs.
   tasks = [
     cron.schedule("*/10 * * * *", () => {
-      logger.info("cleanupExpiredPosts job placeholder");
-    }),
-    cron.schedule("*/10 * * * *", () => {
-      logger.info("cleanupExpiredBids job placeholder");
+      void cleanupMarketplaceStateJob();
     }),
     cron.schedule("0 * * * *", () => {
-      logger.info("cleanupStaleSessions job placeholder");
+      void cleanupAuthStateJob();
     }),
     ...startBillingJobs(),
   ];

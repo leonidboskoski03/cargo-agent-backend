@@ -15,6 +15,7 @@ import { bidsRouter } from "../modules/bids/bids.routes.js";
 import { contractsRouter } from "../modules/contracts/contracts.routes.js";
 import { reviewsRouter } from "../modules/reviews/reviews.routes.js";
 import { documentsRouter } from "../modules/documents/documents.routes.js";
+import { deliveryRouter } from "../modules/delivery/delivery.routes.js";
 import { notificationsRouter } from "../modules/notifications/notifications.routes.js";
 import { auditLogsRouter } from "../modules/auditLogs/auditLogs.routes.js";
 import { plansRouter } from "../modules/plans/plans.routes.js";
@@ -22,6 +23,8 @@ import { subscriptionsRouter } from "../modules/subscriptions/subscriptions.rout
 import { billingRouter } from "../modules/billing/billing.routes.js";
 import { jobApplicationsRouter } from "../modules/jobApplications/jobApplications.routes.js";
 import { jobSeekerBillingRouter } from "../modules/jobSeekerBilling/jobSeekerBilling.routes.js";
+import { companyCreditsRouter } from "../modules/companyCredits/companyCredits.routes.js";
+import { vehicleMarketplaceRouter } from "../modules/vehicleMarketplace/vehicleMarketplace.routes.js";
 
 export const v1Router = Router();
 
@@ -41,6 +44,7 @@ v1Router.use("/bids", bidsRouter);
 v1Router.use("/contracts", contractsRouter);
 v1Router.use("/reviews", reviewsRouter);
 v1Router.use("/documents", documentsRouter);
+v1Router.use("/delivery", deliveryRouter);
 v1Router.use("/notifications", notificationsRouter);
 v1Router.use("/audit-logs", auditLogsRouter);
 v1Router.use("/plans", plansRouter);
@@ -48,4 +52,6 @@ v1Router.use("/subscriptions", subscriptionsRouter);
 v1Router.use("/billing", billingRouter);
 v1Router.use("/job-applications", jobApplicationsRouter);
 v1Router.use("/job-seeker-billing", jobSeekerBillingRouter);
+v1Router.use("/company-credits", companyCreditsRouter);
+v1Router.use("/vehicle-marketplace", vehicleMarketplaceRouter);
 

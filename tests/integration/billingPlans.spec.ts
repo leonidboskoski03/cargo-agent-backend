@@ -171,6 +171,60 @@ describe("billing and plans endpoints", () => {
     }
   }, 20_000);
 
+  it("exposes billing readiness booleans without leaking provider secrets", async () => {
+    const { prisma, buildApp, signAccessToken } = await initRuntime();
+    if (!dbReady) {
+      return;
+    }
+
+    const app = buildApp();
+    const suffix = `${Date.now()}-readiness`;
+
+    const company = await prisma.company.create({
+      data: {
+        city: "Skopje",
+        companyType: CompanyType.CARRIER,
+        countryCode: "MK",
+        name: `Readiness Co ${suffix}`,
+        registrationNumber: `READY-${suffix}`,
+      },
+    });
+
+    const jobSeeker = await prisma.user.create({
+      data: {
+        email: `readiness-job-${suffix}@test.local`,
+        firstName: "Ready",
+        lastName: "Job",
+        passwordHash: "hash",
+        role: UserRole.JOB_SEEKER,
+      },
+    });
+
+    const token = authHeader(signAccessToken, {
+      email: jobSeeker.email,
+      role: jobSeeker.role,
+      userId: jobSeeker.id,
+    });
+
+    try {
+      const response = await request(app).get("/api/v1/billing/readiness").set("Authorization", token);
+      expect(response.statusCode).toBe(200);
+      expect(response.body.data).toEqual({
+        bullmqEnabled: expect.any(Boolean),
+        companyCreditPricesConfigured: expect.any(Boolean),
+        jobSeekerCreditPricesConfigured: expect.any(Boolean),
+        proPriceConfigured: expect.any(Boolean),
+        stripeSecretConfigured: expect.any(Boolean),
+        stripeWebhookSecretConfigured: expect.any(Boolean),
+      });
+      expect(JSON.stringify(response.body.data)).not.toContain("sk_");
+      expect(JSON.stringify(response.body.data)).not.toContain("whsec_");
+    } finally {
+      await prisma.user.deleteMany({ where: { id: jobSeeker.id } });
+      await prisma.company.deleteMany({ where: { id: company.id } });
+    }
+  }, 20_000);
+
   it("returns billing portal precondition errors consistently across env setup", async () => {
     const { prisma, buildApp, signAccessToken } = await initRuntime();
     if (!dbReady) {

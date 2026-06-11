@@ -35,6 +35,21 @@ export async function createDocument(req: Request, res: Response) {
   return created(res, data);
 }
 
+export async function uploadDocument(req: Request, res: Response) {
+  const data = await service.upload(authFromRequest(req), {
+    contentBase64: req.body.contentBase64,
+    fileName: req.body.fileName,
+    kind: req.body.kind,
+    name: req.body.name,
+    mimeType: req.body.mimeType,
+    metadataJson: req.body.metadataJson,
+    ownerUserId: req.body.ownerUserId,
+    ownerCompanyId: req.body.ownerCompanyId,
+  });
+
+  return created(res, data);
+}
+
 export async function deleteDocument(req: Request, res: Response) {
   const data = await service.remove(authFromRequest(req), getStringParam(req.params.documentId));
   return ok(res, data);

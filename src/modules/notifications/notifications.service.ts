@@ -2,6 +2,7 @@ import { NotificationType, type Prisma, type UserRole } from "@prisma/client";
 import { Roles } from "../../shared/auth/permissions.js";
 import { AppError } from "../../shared/errors/AppError.js";
 import { requireAuth } from "./notifications.helpers.js";
+import { mapToNotificationListItem } from "./notifications.mapper.js";
 import { NotificationsRepository } from "./notifications.repository.js";
 import type { AuthContext, CreateNotificationInput, ListQuery } from "./notifications.types.js";
 
@@ -12,21 +13,23 @@ export class NotificationsService {
     requireAuth(auth);
 
     if (auth.role === Roles.JOB_SEEKER) {
-      return this.repository.list({
+      const notifications = await this.repository.list({
         recipientUserId: auth.userId,
         unreadOnly: query.unreadOnly,
         page: query.page,
         pageSize: query.pageSize,
       });
+      return notifications.map(mapToNotificationListItem);
     }
 
     if ((auth.role === Roles.COMPANY_ADMIN || auth.role === Roles.COMPANY_DRIVER) && auth.companyId) {
-      return this.repository.list({
+      const notifications = await this.repository.list({
         recipientCompanyId: auth.companyId,
         unreadOnly: query.unreadOnly,
         page: query.page,
         pageSize: query.pageSize,
       });
+      return notifications.map(mapToNotificationListItem);
     }
 
     throw new AppError(403, "FORBIDDEN", "You do not have permission to list notifications");
@@ -52,7 +55,8 @@ export class NotificationsService {
       throw new AppError(403, "FORBIDDEN", "You do not have permission to update notifications");
     }
 
-    return this.repository.markRead(notificationId);
+    const updated = await this.repository.markRead(notificationId);
+    return mapToNotificationListItem(updated);
   }
 
   async markAllRead(auth: AuthContext) {

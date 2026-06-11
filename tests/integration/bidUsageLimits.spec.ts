@@ -425,5 +425,233 @@ describe("bid usage limits", () => {
       }
     }
   }, 25_000);
+
+  it("boosts pending sent bids with company credits and records activity", async () => {
+    const { prisma, buildApp, signAccessToken } = await initRuntime();
+    if (!dbReady) {
+      return;
+    }
+
+    const app = buildApp();
+    const suffix = `${Date.now()}-boost`;
+
+    const shipper = await prisma.company.create({
+      data: {
+        companyType: CompanyType.SHIPPER,
+        name: `Boost Bid Shipper ${suffix}`,
+        registrationNumber: `BOOST-BID-SHIP-${suffix}`,
+        countryCode: "RS",
+        city: "Belgrade",
+      },
+    });
+
+    const carrier = await prisma.company.create({
+      data: {
+        companyType: CompanyType.CARRIER,
+        name: `Boost Bid Carrier ${suffix}`,
+        registrationNumber: `BOOST-BID-CARR-${suffix}`,
+        countryCode: "RS",
+        city: "Nis",
+      },
+    });
+
+    const otherCarrier = await prisma.company.create({
+      data: {
+        companyType: CompanyType.CARRIER,
+        name: `Boost Bid Other ${suffix}`,
+        registrationNumber: `BOOST-BID-OTHER-${suffix}`,
+        countryCode: "RS",
+        city: "Novi Sad",
+      },
+    });
+
+    const shipperAdmin = await prisma.user.create({
+      data: {
+        companyId: shipper.id,
+        role: UserRole.COMPANY_ADMIN,
+        firstName: "Ship",
+        lastName: "Boost",
+        email: `boost-bid-shipper-${suffix}@test.local`,
+        passwordHash: "hash",
+      },
+    });
+
+    const carrierAdmin = await prisma.user.create({
+      data: {
+        companyId: carrier.id,
+        role: UserRole.COMPANY_ADMIN,
+        firstName: "Carrier",
+        lastName: "Boost",
+        email: `boost-bid-carrier-${suffix}@test.local`,
+        passwordHash: "hash",
+      },
+    });
+
+    const carrierDriver = await prisma.user.create({
+      data: {
+        companyId: carrier.id,
+        role: UserRole.COMPANY_DRIVER,
+        firstName: "Carrier",
+        lastName: "Driver",
+        email: `boost-bid-driver-${suffix}@test.local`,
+        passwordHash: "hash",
+      },
+    });
+
+    const otherAdmin = await prisma.user.create({
+      data: {
+        companyId: otherCarrier.id,
+        role: UserRole.COMPANY_ADMIN,
+        firstName: "Other",
+        lastName: "Carrier",
+        email: `boost-bid-other-${suffix}@test.local`,
+        passwordHash: "hash",
+      },
+    });
+
+    const origin = await prisma.location.create({ data: { countryCode: "RS", city: "Belgrade" } });
+    const destination = await prisma.location.create({ data: { countryCode: "MK", city: "Skopje" } });
+    const route = await prisma.route.create({
+      data: {
+        originLocationId: origin.id,
+        destinationLocationId: destination.id,
+      },
+    });
+
+    const post = await prisma.post.create({
+      data: {
+        companyId: shipper.id,
+        createdByUserId: shipperAdmin.id,
+        routeId: route.id,
+        priceType: PostPriceType.FIXED,
+        priceAmount: 1500,
+        currency: "EUR",
+        title: `Boost bid target ${suffix}`,
+      },
+    });
+
+    const bid = await prisma.bid.create({
+      data: {
+        carrierCompanyId: carrier.id,
+        createdByUserId: carrierAdmin.id,
+        currency: "EUR",
+        message: "We can prioritize this lane",
+        offeredPriceAmount: 1300,
+        postId: post.id,
+      },
+    });
+
+    const otherBid = await prisma.bid.create({
+      data: {
+        carrierCompanyId: otherCarrier.id,
+        createdByUserId: otherAdmin.id,
+        currency: "EUR",
+        message: "Normal bid for comparison",
+        offeredPriceAmount: 1250,
+        postId: post.id,
+      },
+    });
+
+    await prisma.companyCreditWallet.create({
+      data: {
+        balanceCredits: 8,
+        companyId: carrier.id,
+      },
+    });
+
+    const carrierToken = authHeader(signAccessToken, {
+      userId: carrierAdmin.id,
+      role: carrierAdmin.role,
+      companyId: carrier.id,
+      email: carrierAdmin.email,
+    });
+    const driverToken = authHeader(signAccessToken, {
+      userId: carrierDriver.id,
+      role: carrierDriver.role,
+      companyId: carrier.id,
+      email: carrierDriver.email,
+    });
+    const otherToken = authHeader(signAccessToken, {
+      userId: otherAdmin.id,
+      role: otherAdmin.role,
+      companyId: otherCarrier.id,
+      email: otherAdmin.email,
+    });
+    const shipperToken = authHeader(signAccessToken, {
+      userId: shipperAdmin.id,
+      role: shipperAdmin.role,
+      companyId: shipper.id,
+      email: shipperAdmin.email,
+    });
+
+    try {
+      const driverResponse = await request(app)
+        .post(`/api/v1/bids/${bid.id}/boost`)
+        .set("Authorization", driverToken)
+        .send({ creditAmount: 3 });
+      expect(driverResponse.statusCode).toBe(403);
+
+      const otherResponse = await request(app)
+        .post(`/api/v1/bids/${bid.id}/boost`)
+        .set("Authorization", otherToken)
+        .send({ creditAmount: 3 });
+      expect(otherResponse.statusCode).toBe(403);
+
+      const invalidResponse = await request(app)
+        .post(`/api/v1/bids/${bid.id}/boost`)
+        .set("Authorization", carrierToken)
+        .send({ creditAmount: 0 });
+      expect(invalidResponse.statusCode).toBe(400);
+
+      const boostResponse = await request(app)
+        .post(`/api/v1/bids/${bid.id}/boost`)
+        .set("Authorization", carrierToken)
+        .send({ creditAmount: 3 });
+      expect(boostResponse.statusCode).toBe(200);
+      expect(boostResponse.body.data.boostCredits).toBe(3);
+      expect(boostResponse.body.data.boostedUntil).toBeTruthy();
+      expect(boostResponse.body.data.billing.mode).toBe("CREDITS");
+      expect(boostResponse.body.data.billing.creditCost).toBe(3);
+      expect(boostResponse.body.data.billing.walletBalanceCredits).toBe(5);
+
+      const transaction = await prisma.companyCreditTransaction.findFirst({
+        where: {
+          companyId: carrier.id,
+          reasonCode: "BID_BOOST",
+          referenceId: bid.id,
+          referenceType: "BID",
+        },
+      });
+      expect(transaction?.amountCredits).toBe(-3);
+
+      const activity = await prisma.bidActivity.findFirst({
+        where: {
+          bidId: bid.id,
+          type: "BOOSTED",
+        },
+      });
+      expect(activity?.message).toBe("Bid boosted");
+
+      const receivedBidsResponse = await request(app)
+        .get("/api/v1/bids")
+        .set("Authorization", shipperToken)
+        .query({ postId: post.id, scope: "received" });
+      expect(receivedBidsResponse.statusCode).toBe(200);
+      const receivedIds = (receivedBidsResponse.body.data as Array<{ id: string }>).map((item) => item.id);
+      expect(receivedIds.indexOf(bid.id)).toBeGreaterThanOrEqual(0);
+      expect(receivedIds.indexOf(otherBid.id)).toBeGreaterThanOrEqual(0);
+      expect(receivedIds.indexOf(bid.id)).toBeLessThan(receivedIds.indexOf(otherBid.id));
+    } finally {
+      await prisma.bidActivity.deleteMany({ where: { bidId: bid.id } });
+      await prisma.companyCreditTransaction.deleteMany({ where: { companyId: { in: [carrier.id, otherCarrier.id] } } });
+      await prisma.companyCreditWallet.deleteMany({ where: { companyId: { in: [carrier.id, otherCarrier.id] } } });
+      await prisma.bid.deleteMany({ where: { id: { in: [bid.id, otherBid.id] } } });
+      await prisma.post.deleteMany({ where: { id: post.id } });
+      await prisma.user.deleteMany({ where: { id: { in: [shipperAdmin.id, carrierAdmin.id, carrierDriver.id, otherAdmin.id] } } });
+      await prisma.company.deleteMany({ where: { id: { in: [shipper.id, carrier.id, otherCarrier.id] } } });
+      await prisma.route.deleteMany({ where: { id: route.id } });
+      await prisma.location.deleteMany({ where: { id: { in: [origin.id, destination.id] } } });
+    }
+  }, 25_000);
 });
 

@@ -71,6 +71,23 @@ describe("job seeker billing endpoints", () => {
         .query({ page: 1, pageSize: 10 });
       expect(txResponse.statusCode).toBe(200);
       expect(Array.isArray(txResponse.body.data)).toBe(true);
+
+      const checkout = await prisma.jobSeekerCheckoutSession.create({
+        data: {
+          amountCredits: pack.credits,
+          amountPaid: pack.priceAmount,
+          creditPackId: pack.id,
+          currency: pack.currency,
+          stripeCheckoutSessionId: `cs_test_job_${suffix}`,
+          userId: user.id,
+        },
+      });
+
+      const checkoutByStripeIdResponse = await request(app)
+        .get(`/api/v1/job-seeker-billing/checkout-sessions/${checkout.stripeCheckoutSessionId}`)
+        .set("Authorization", token);
+      expect(checkoutByStripeIdResponse.statusCode).toBe(200);
+      expect(checkoutByStripeIdResponse.body.data.id).toBe(checkout.id);
     } finally {
       await prisma.jobSeekerCreditTransaction.deleteMany({ where: { userId: user.id } });
       await prisma.jobSeekerWallet.deleteMany({ where: { userId: user.id } });

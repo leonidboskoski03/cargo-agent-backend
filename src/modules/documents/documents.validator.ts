@@ -35,6 +35,21 @@ export const createDocumentSchema = z.object({
   query: z.object({}),
 });
 
+export const uploadDocumentSchema = z.object({
+  params: z.object({}),
+  body: z.object({
+    contentBase64: z.string().trim().min(1),
+    fileName: z.string().trim().min(1).max(240),
+    kind: z.nativeEnum(DocumentKind),
+    name: z.string().trim().min(1).max(200),
+    mimeType: z.string().trim().min(3).max(120),
+    metadataJson: z.unknown().optional(),
+    ownerUserId: z.string().cuid().optional(),
+    ownerCompanyId: z.string().cuid().optional(),
+  }),
+  query: z.object({}),
+});
+
 export const deleteDocumentSchema = z.object({
   params: z.object({
     documentId: cuidParam,

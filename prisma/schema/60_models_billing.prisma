@@ -120,3 +120,76 @@ model UsageCounter {
   @@index([metric, periodStart])
 }
 
+model CompanyCreditWallet {
+  id             String   @id @default(cuid())
+  companyId      String   @unique
+  balanceCredits Int      @default(0)
+  version        Int      @default(1)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  company      Company                    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  transactions CompanyCreditTransaction[]
+}
+
+model CompanyCreditTransaction {
+  id               String              @id @default(cuid())
+  walletId         String
+  companyId        String
+  type             CompanyCreditTxType
+  amountCredits    Int
+  reasonCode       String
+  referenceType    String?
+  referenceId      String?
+  stripePaymentRef String?
+  balanceAfter     Int
+  createdAt        DateTime            @default(now())
+
+  wallet  CompanyCreditWallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  company Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, createdAt])
+  @@index([walletId, createdAt])
+  @@index([referenceType, referenceId])
+  @@index([stripePaymentRef])
+}
+
+model CompanyCreditPack {
+  id            String   @id @default(cuid())
+  code          String   @unique
+  name          String
+  credits       Int
+  priceAmount   Decimal  @db.Decimal(10, 2)
+  currency      String
+  stripePriceId String?  @unique
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  checkoutSessions CompanyCreditCheckoutSession[]
+}
+
+model CompanyCreditCheckoutSession {
+  id                      String                             @id @default(cuid())
+  companyId               String
+  creditPackId            String
+  idempotencyKey          String?
+  status                  CompanyCreditCheckoutSessionStatus @default(CREATED)
+  stripeCheckoutSessionId String                             @unique
+  amountCredits           Int
+  amountPaid              Decimal?                          @db.Decimal(10, 2)
+  currency                String
+  completedAt             DateTime?
+  expiresAt               DateTime?
+  createdAt               DateTime                           @default(now())
+  updatedAt               DateTime                           @updatedAt
+
+  company    Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  creditPack CompanyCreditPack @relation(fields: [creditPackId], references: [id], onDelete: Restrict)
+
+  @@index([companyId, createdAt])
+  @@index([status])
+  @@index([expiresAt])
+  @@unique([companyId, idempotencyKey])
+}
+

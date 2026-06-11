@@ -1,8 +1,10 @@
 export type NotificationListItemDto = {
-  id: string;
-  title: string;
   body: string;
-  isRead: boolean;
   createdAt: string;
+  id: string;
+  isRead: boolean;
+  payloadJson?: unknown;
+  title: string;
+  type: string;
 };
 

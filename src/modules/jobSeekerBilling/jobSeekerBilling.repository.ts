@@ -88,6 +88,13 @@ export class JobSeekerBillingRepository {
     });
   }
 
+  async findCheckoutSessionByStripeId(stripeCheckoutSessionId: string) {
+    return prisma.jobSeekerCheckoutSession.findUnique({
+      where: { stripeCheckoutSessionId },
+      include: { creditPack: true },
+    });
+  }
+
   async listTransactionsByUser(input: { userId: string; page: number; pageSize: number }) {
     return prisma.jobSeekerCreditTransaction.findMany({
       where: { userId: input.userId },

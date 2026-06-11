@@ -158,13 +158,10 @@ export class VehiclesService {
 
   async restore(auth: AuthContext, vehicleId: string) {
     requireAuth(auth);
+    assertAllowedRole(auth.role);
 
-    if (auth.role !== Roles.COMPANY_ADMIN) {
-      throw new AppError(403, "FORBIDDEN", "Only company admins can restore vehicles");
-    }
-
-    if (!auth.companyId) {
-      throw new AppError(403, "COMPANY_REQUIRED", "Company admins must belong to a company");
+    if (auth.role === Roles.COMPANY_DRIVER) {
+      throw new AppError(403, "FORBIDDEN", "Company drivers cannot restore vehicles");
     }
 
     const vehicle = await repo.findAnyById(vehicleId);
@@ -177,8 +174,20 @@ export class VehiclesService {
       throw new AppError(400, "VEHICLE_NOT_DELETED", "Vehicle is already active");
     }
 
-    if (vehicle.companyId !== auth.companyId) {
-      throw new AppError(403, "FORBIDDEN", "You can only restore vehicles from your company");
+    if (auth.role === Roles.COMPANY_ADMIN) {
+      if (!auth.companyId) {
+        throw new AppError(403, "COMPANY_REQUIRED", "Company admins must belong to a company");
+      }
+
+      if (vehicle.companyId !== auth.companyId) {
+        throw new AppError(403, "FORBIDDEN", "You can only restore vehicles from your company");
+      }
+
+      return repo.restore(vehicleId);
+    }
+
+    if (vehicle.userId !== auth.userId || vehicle.companyId) {
+      throw new AppError(403, "FORBIDDEN", "You can only restore your own personal vehicles");
     }
 
     return repo.restore(vehicleId);

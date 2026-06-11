@@ -9,6 +9,7 @@ import {
   getContractById,
   listContracts,
   restoreContract,
+  updateContractTimeline,
 } from "./contracts.controller.js";
 import {
   changeContractStatusSchema,
@@ -17,6 +18,7 @@ import {
   getContractByIdSchema,
   listContractsSchema,
   restoreContractSchema,
+  updateContractTimelineSchema,
 } from "./contracts.validator.js";
 
 export const contractsRouter = Router();
@@ -25,6 +27,7 @@ contractsRouter.get("/", requireAuth, validate(listContractsSchema), asyncRoute(
 contractsRouter.get("/:contractId", requireAuth, validate(getContractByIdSchema), asyncRoute(getContractById));
 contractsRouter.post("/", requireAuth, validate(createContractSchema), asyncRoute(createContract));
 contractsRouter.patch("/:contractId/status", requireAuth, validate(changeContractStatusSchema), asyncRoute(changeContractStatus));
+contractsRouter.patch("/:contractId/timeline", requireAuth, validate(updateContractTimelineSchema), asyncRoute(updateContractTimeline));
 contractsRouter.delete("/:contractId", requireAuth, validate(deleteContractSchema), asyncRoute(deleteContract));
 contractsRouter.post("/:contractId/restore", requireAuth, validate(restoreContractSchema), asyncRoute(restoreContract));
 

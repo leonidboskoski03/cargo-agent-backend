@@ -1,7 +1,11 @@
 import { z } from "zod";
 import { AppError } from "../../shared/errors/AppError.js";
+import { companyCreditsConfig } from "../../config/companyCredits.js";
 import { jobSeekerBillingConfig } from "../../config/jobSeekerBilling.js";
+import { useCompanyMonthlyQuotaOrCredits, useJobSeekerMonthlyQuotaOrCredits } from "../../shared/credits/marketplaceCredits.js";
 import { COMPANY_ROLES, Roles, isCompanyRole } from "../../shared/auth/permissions.js";
+import { enqueueNotificationEvent } from "../../shared/queue/notificationEvents.queue.js";
+import { JobSeekerUsageMetric, UsageMetric } from "@prisma/client";
 import { requireAuth } from "./jobApplications.helpers.js";
 import { JobApplicationsRepository } from "./jobApplications.repository.js";
 import type {
@@ -10,6 +14,7 @@ import type {
   CreateJobApplicationInput,
   PromoteListingInput,
   PromoteSubmissionInput,
+  UpdateJobApplicationInput,
 } from "./jobApplications.types.js";
 
 const repo = new JobApplicationsRepository();
@@ -29,7 +34,7 @@ export class JobApplicationsService {
       throw new AppError(403, "FORBIDDEN", "Role is not allowed to create job applications");
     }
 
-    return repo.create({
+    const created = await repo.create({
       createdByUserId: input.auth.userId as string,
       createdByCompanyId,
       title: input.body.title,
@@ -39,6 +44,28 @@ export class JobApplicationsService {
       expectedPayAmount: input.body.expectedPayAmount,
       currency: input.body.currency,
     });
+
+    const billing = input.auth.role === Roles.JOB_SEEKER
+      ? await useJobSeekerMonthlyQuotaOrCredits({
+          creditCost: jobSeekerBillingConfig.listingPublishCreditCost,
+          limit: jobSeekerBillingConfig.freeActiveListings,
+          metric: JobSeekerUsageMetric.ACTIVE_LOOKING_LISTINGS,
+          reasonCode: "JOB_LISTING_PUBLISH",
+          referenceId: created.id,
+          referenceType: "JOB_APPLICATION",
+          userId: input.auth.userId as string,
+        })
+      : await useCompanyMonthlyQuotaOrCredits({
+          companyId: createdByCompanyId as string,
+          creditCost: companyCreditsConfig.jobPostCreditCost,
+          limit: companyCreditsConfig.freeJobPostsPerMonth,
+          metric: UsageMetric.COMPANY_JOB_POSTS_PER_MONTH,
+          reasonCode: "COMPANY_JOB_POST_PUBLISH",
+          referenceId: created.id,
+          referenceType: "JOB_APPLICATION",
+        });
+
+    return { ...created, billing };
   }
 
   async listFeed(auth: AuthContext) {
@@ -58,6 +85,47 @@ export class JobApplicationsService {
   async listMine(auth: AuthContext) {
     requireAuth(auth);
     return repo.listCreatedByUser(auth.userId as string);
+  }
+
+  async update(input: UpdateJobApplicationInput) {
+    requireAuth(input.auth);
+
+    const listing = await repo.getById(input.jobApplicationId);
+    if (!listing || listing.createdByUserId !== input.auth.userId) {
+      throw new AppError(404, "JOB_APPLICATION_NOT_FOUND", "Job application not found");
+    }
+
+    return repo.update(input.jobApplicationId, input.body);
+  }
+
+  async remove(auth: AuthContext, jobApplicationId: string) {
+    requireAuth(auth);
+
+    const listing = await repo.getById(jobApplicationId);
+    if (!listing || listing.createdByUserId !== auth.userId) {
+      throw new AppError(404, "JOB_APPLICATION_NOT_FOUND", "Job application not found");
+    }
+
+    if (listing.deletedAt) {
+      throw new AppError(400, "JOB_APPLICATION_ALREADY_DELETED", "Job listing is already deleted");
+    }
+
+    return repo.softDelete(jobApplicationId);
+  }
+
+  async restore(auth: AuthContext, jobApplicationId: string) {
+    requireAuth(auth);
+
+    const listing = await repo.getById(jobApplicationId);
+    if (!listing || listing.createdByUserId !== auth.userId) {
+      throw new AppError(404, "JOB_APPLICATION_NOT_FOUND", "Job application not found");
+    }
+
+    if (!listing.deletedAt) {
+      throw new AppError(400, "JOB_APPLICATION_NOT_DELETED", "Job listing is not deleted");
+    }
+
+    return repo.restore(jobApplicationId);
   }
 
   async apply(input: ApplyInput) {
@@ -102,18 +170,30 @@ export class JobApplicationsService {
           creditCost: jobSeekerBillingConfig.applicationCreditCost,
         });
 
+        await enqueueNotificationEvent({
+          type: "JOB_APPLICATION_SUBMITTED",
+          submissionId: result.submission.id,
+        });
+
         return {
           ...result.submission,
           billing: result.monetization,
         };
       }
 
-      return await repo.createSubmission({
+      const submission = await repo.createSubmission({
         jobApplicationId: input.jobApplicationId,
         submittedByUserId: input.auth.userId as string,
         submittedByCompanyId: applicantCompanyId,
         message: input.message,
       });
+
+      await enqueueNotificationEvent({
+        type: "JOB_APPLICATION_SUBMITTED",
+        submissionId: submission.id,
+      });
+
+      return submission;
     } catch (error) {
       if (error instanceof Error && error.message === "INSUFFICIENT_CREDITS") {
         const details = (error as Error & { details?: unknown }).details;

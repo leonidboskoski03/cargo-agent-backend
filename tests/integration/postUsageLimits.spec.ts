@@ -225,89 +225,64 @@ describe("post usage limits", () => {
     }
   }, 25_000);
 
-  it("blocks promoted posts on FREE and allows them on PRO", async () => {
+  it("boosts open posts with company credits and records the spend", async () => {
     const { prisma, buildApp, signAccessToken } = await initRuntime();
     if (!dbReady) {
       return;
     }
 
     const app = buildApp();
-    const suffix = `${Date.now()}-promoted`;
+    const suffix = `${Date.now()}-boost`;
 
-    const existingFree = await prisma.plan.findUnique({ where: { code: PlanCode.FREE } });
-    const existingPro = await prisma.plan.findUnique({ where: { code: PlanCode.PRO } });
-
-    const freePlan = await prisma.plan.upsert({
-      where: { code: PlanCode.FREE },
-      update: { isActive: true, hasPromotedPosts: false, maxActivePosts: 10 },
-      create: {
-        code: PlanCode.FREE,
-        name: "Free",
-        priceAmount: 0,
-        currency: "EUR",
-        isActive: true,
-        hasPromotedPosts: false,
-        maxActivePosts: 10,
-      },
-    });
-
-    const proPlan = await prisma.plan.upsert({
-      where: { code: PlanCode.PRO },
-      update: { isActive: true, hasPromotedPosts: true, maxActivePosts: 10 },
-      create: {
-        code: PlanCode.PRO,
-        name: "Pro",
-        billingInterval: "MONTHLY",
-        priceAmount: 49,
-        currency: "EUR",
-        isActive: true,
-        hasPromotedPosts: true,
-        maxActivePosts: 10,
-      },
-    });
-
-    const freeCompany = await prisma.company.create({
+    const ownerCompany = await prisma.company.create({
       data: {
         companyType: CompanyType.SHIPPER,
-        name: `Free Promoted Co ${suffix}`,
-        registrationNumber: `FREE-PROM-${suffix}`,
+        name: `Boost Owner Co ${suffix}`,
+        registrationNumber: `BOOST-OWNER-${suffix}`,
         countryCode: "RS",
         city: "Belgrade",
-        currentPlanId: freePlan.id,
-        subscriptionStatus: "FREE",
       },
     });
 
-    const proCompany = await prisma.company.create({
+    const otherCompany = await prisma.company.create({
       data: {
-        companyType: CompanyType.SHIPPER,
-        name: `Pro Promoted Co ${suffix}`,
-        registrationNumber: `PRO-PROM-${suffix}`,
+        companyType: CompanyType.CARRIER,
+        name: `Boost Other Co ${suffix}`,
+        registrationNumber: `BOOST-OTHER-${suffix}`,
         countryCode: "RS",
-        city: "Belgrade",
-        currentPlanId: proPlan.id,
-        subscriptionStatus: "ACTIVE",
+        city: "Nis",
       },
     });
 
-    const freeAdmin = await prisma.user.create({
+    const ownerAdmin = await prisma.user.create({
       data: {
-        companyId: freeCompany.id,
+        companyId: ownerCompany.id,
         role: UserRole.COMPANY_ADMIN,
-        firstName: "Free",
-        lastName: "Promoted",
-        email: `free-promoted-admin-${suffix}@test.local`,
+        firstName: "Boost",
+        lastName: "Owner",
+        email: `boost-owner-admin-${suffix}@test.local`,
         passwordHash: "hash",
       },
     });
 
-    const proAdmin = await prisma.user.create({
+    const ownerDriver = await prisma.user.create({
       data: {
-        companyId: proCompany.id,
+        companyId: ownerCompany.id,
+        role: UserRole.COMPANY_DRIVER,
+        firstName: "Boost",
+        lastName: "Driver",
+        email: `boost-owner-driver-${suffix}@test.local`,
+        passwordHash: "hash",
+      },
+    });
+
+    const otherAdmin = await prisma.user.create({
+      data: {
+        companyId: otherCompany.id,
         role: UserRole.COMPANY_ADMIN,
-        firstName: "Pro",
-        lastName: "Promoted",
-        email: `pro-promoted-admin-${suffix}@test.local`,
+        firstName: "Boost",
+        lastName: "Other",
+        email: `boost-other-admin-${suffix}@test.local`,
         passwordHash: "hash",
       },
     });
@@ -321,80 +296,110 @@ describe("post usage limits", () => {
       },
     });
 
-    const freeToken = authHeader(signAccessToken, {
-      userId: freeAdmin.id,
-      role: freeAdmin.role,
-      companyId: freeCompany.id,
-      email: freeAdmin.email,
+    const post = await prisma.post.create({
+      data: {
+        companyId: ownerCompany.id,
+        createdByUserId: ownerAdmin.id,
+        routeId: route.id,
+        priceType: PostPriceType.FIXED,
+        priceAmount: 1200,
+        currency: "EUR",
+        title: `Boost target ${suffix}`,
+      },
     });
 
-    const proToken = authHeader(signAccessToken, {
-      userId: proAdmin.id,
-      role: proAdmin.role,
-      companyId: proCompany.id,
-      email: proAdmin.email,
+    await prisma.companyCreditWallet.create({
+      data: {
+        balanceCredits: 5,
+        companyId: ownerCompany.id,
+      },
+    });
+
+    const ownerToken = authHeader(signAccessToken, {
+      userId: ownerAdmin.id,
+      role: ownerAdmin.role,
+      companyId: ownerCompany.id,
+      email: ownerAdmin.email,
+    });
+
+    const driverToken = authHeader(signAccessToken, {
+      userId: ownerDriver.id,
+      role: ownerDriver.role,
+      companyId: ownerCompany.id,
+      email: ownerDriver.email,
+    });
+
+    const otherToken = authHeader(signAccessToken, {
+      userId: otherAdmin.id,
+      role: otherAdmin.role,
+      companyId: otherCompany.id,
+      email: otherAdmin.email,
     });
 
     try {
-      const freeResponse = await request(app)
-        .post("/api/v1/posts")
-        .set("Authorization", freeToken)
-        .send({
+      const driverResponse = await request(app)
+        .post(`/api/v1/posts/${post.id}/boost`)
+        .set("Authorization", driverToken)
+        .send({});
+      expect(driverResponse.statusCode).toBe(403);
+
+      const otherCompanyResponse = await request(app)
+        .post(`/api/v1/posts/${post.id}/boost`)
+        .set("Authorization", otherToken)
+        .send({});
+      expect(otherCompanyResponse.statusCode).toBe(403);
+
+      const boostResponse = await request(app)
+        .post(`/api/v1/posts/${post.id}/boost`)
+        .set("Authorization", ownerToken)
+        .send({});
+      expect(boostResponse.statusCode).toBe(200);
+      expect(boostResponse.body.data.isPromoted).toBe(true);
+      expect(boostResponse.body.data.promotedUntil).toBeTruthy();
+      expect(boostResponse.body.data.billing.mode).toBe("CREDITS");
+      expect(boostResponse.body.data.billing.creditCost).toBe(2);
+      expect(boostResponse.body.data.billing.walletBalanceCredits).toBe(3);
+
+      const transaction = await prisma.companyCreditTransaction.findFirst({
+        where: {
+          companyId: ownerCompany.id,
+          reasonCode: "TRANSPORT_POST_BOOST",
+          referenceId: post.id,
+          referenceType: "POST",
+        },
+      });
+      expect(transaction?.amountCredits).toBe(-2);
+
+      const normalPost = await prisma.post.create({
+        data: {
+          companyId: ownerCompany.id,
+          createdByUserId: ownerAdmin.id,
           routeId: route.id,
-          priceType: "FIXED",
-          priceAmount: 1200,
+          priceType: PostPriceType.FIXED,
+          priceAmount: 1400,
           currency: "EUR",
-          title: "Free promoted blocked",
-          isPromoted: true,
-        });
+          title: `Normal marketplace target ${suffix}`,
+        },
+      });
 
-      expect(freeResponse.statusCode).toBe(403);
-      expect(freeResponse.body.error.code).toBe("PLAN_FEATURE_REQUIRED");
-      expect(freeResponse.body.error.details.feature).toBe("PROMOTED_POSTS");
-
-      const proResponse = await request(app)
-        .post("/api/v1/posts")
-        .set("Authorization", proToken)
-        .send({
-          routeId: route.id,
-          priceType: "FIXED",
-          priceAmount: 2200,
-          currency: "EUR",
-          title: "Pro promoted allowed",
-          isPromoted: true,
-        });
-
-      expect(proResponse.statusCode).toBe(201);
-      expect(proResponse.body.data.isPromoted).toBe(true);
+      const marketplaceResponse = await request(app)
+        .get("/api/v1/posts")
+        .set("Authorization", otherToken)
+        .query({ scope: "marketplace" });
+      expect(marketplaceResponse.statusCode).toBe(200);
+      const marketplaceIds = (marketplaceResponse.body.data as Array<{ id: string }>).map((item) => item.id);
+      expect(marketplaceIds.indexOf(post.id)).toBeGreaterThanOrEqual(0);
+      expect(marketplaceIds.indexOf(normalPost.id)).toBeGreaterThanOrEqual(0);
+      expect(marketplaceIds.indexOf(post.id)).toBeLessThan(marketplaceIds.indexOf(normalPost.id));
     } finally {
-      await prisma.post.deleteMany({ where: { companyId: { in: [freeCompany.id, proCompany.id] } } });
-      await prisma.user.deleteMany({ where: { id: { in: [freeAdmin.id, proAdmin.id] } } });
-      await prisma.company.deleteMany({ where: { id: { in: [freeCompany.id, proCompany.id] } } });
+      await prisma.companyCreditTransaction.deleteMany({ where: { companyId: { in: [ownerCompany.id, otherCompany.id] } } });
+      await prisma.companyCreditWallet.deleteMany({ where: { companyId: { in: [ownerCompany.id, otherCompany.id] } } });
+      await prisma.usageCounter.deleteMany({ where: { companyId: { in: [ownerCompany.id, otherCompany.id] } } });
+      await prisma.post.deleteMany({ where: { companyId: { in: [ownerCompany.id, otherCompany.id] } } });
+      await prisma.user.deleteMany({ where: { id: { in: [ownerAdmin.id, ownerDriver.id, otherAdmin.id] } } });
+      await prisma.company.deleteMany({ where: { id: { in: [ownerCompany.id, otherCompany.id] } } });
       await prisma.route.deleteMany({ where: { id: route.id } });
       await prisma.location.deleteMany({ where: { id: { in: [origin.id, destination.id] } } });
-      await prisma.usageCounter.deleteMany({ where: { companyId: { in: [freeCompany.id, proCompany.id] } } });
-
-      if (existingFree) {
-        await prisma.plan.update({
-          where: { id: existingFree.id },
-          data: {
-            hasPromotedPosts: existingFree.hasPromotedPosts,
-            maxActivePosts: existingFree.maxActivePosts,
-            isActive: existingFree.isActive,
-          },
-        });
-      }
-
-      if (existingPro) {
-        await prisma.plan.update({
-          where: { id: existingPro.id },
-          data: {
-            hasPromotedPosts: existingPro.hasPromotedPosts,
-            maxActivePosts: existingPro.maxActivePosts,
-            isActive: existingPro.isActive,
-          },
-        });
-      }
     }
   }, 25_000);
 });

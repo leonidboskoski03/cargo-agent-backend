@@ -9,6 +9,7 @@ const userSelect = {
   lastName: true,
   email: true,
   phone: true,
+  imageUrl: true,
   countryCode: true,
   city: true,
   headline: true,
@@ -23,10 +24,17 @@ const userSelect = {
 } as const;
 
 type UserProfileUpdateData = {
+  availability?: string | null;
+  city?: string | null;
+  countryCode?: string | null;
   firstName?: string;
+  headline?: string | null;
+  imageUrl?: string | null;
   lastName?: string;
   phone?: string | null;
+  preferredRoutes?: Prisma.InputJsonValue | Prisma.NullableJsonNullValueInput;
   isActive?: boolean;
+  yearsExperience?: number | null;
 };
 
 type UserMembershipUpdateData = {

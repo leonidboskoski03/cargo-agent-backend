@@ -32,7 +32,7 @@ export class JobSeekerBillingService {
     requireJobSeeker(auth);
 
     const periodStart = getCurrentMonthPeriodStartUtc();
-    const [wallet, applicationsCounter, listingsCounter] = await Promise.all([
+    const [wallet, applicationsCounter, listingsCounter, vehicleListingsCounter] = await Promise.all([
       repo.ensureWallet(auth.userId as string),
       repo.getUsageCounter({
         userId: auth.userId as string,
@@ -44,12 +44,19 @@ export class JobSeekerBillingService {
         metric: JobSeekerUsageMetric.ACTIVE_LOOKING_LISTINGS,
         periodStart,
       }),
+      repo.getUsageCounter({
+        userId: auth.userId as string,
+        metric: JobSeekerUsageMetric.VEHICLE_LISTINGS_PER_MONTH,
+        periodStart,
+      }),
     ]);
 
     const applicationsUsed = applicationsCounter?.used ?? 0;
     const applicationsLimit = jobSeekerBillingConfig.freeApplicationsPerMonth;
     const listingsUsed = listingsCounter?.used ?? 0;
     const listingsLimit = jobSeekerBillingConfig.freeActiveListings;
+    const vehicleListingsUsed = vehicleListingsCounter?.used ?? 0;
+    const vehicleListingsLimit = jobSeekerBillingConfig.freeVehicleListingsPerMonth;
 
     return {
       userId: auth.userId,
@@ -68,6 +75,13 @@ export class JobSeekerBillingService {
           used: listingsUsed,
           limit: listingsLimit,
           remaining: Math.max(listingsLimit - listingsUsed, 0),
+          creditCostPerAction: jobSeekerBillingConfig.listingPublishCreditCost,
+        },
+        vehicleListings: {
+          used: vehicleListingsUsed,
+          limit: vehicleListingsLimit,
+          remaining: Math.max(vehicleListingsLimit - vehicleListingsUsed, 0),
+          creditCostPerAction: jobSeekerBillingConfig.vehicleListingCreditCost,
         },
       },
     };
@@ -124,8 +138,8 @@ export class JobSeekerBillingService {
       {
         mode: "payment",
         line_items: [{ price: pack.stripePriceId, quantity: 1 }],
-        success_url: billingConfig.checkoutSuccessUrl,
-        cancel_url: billingConfig.checkoutCancelUrl,
+        success_url: billingConfig.jobWalletSuccessUrl,
+        cancel_url: billingConfig.jobWalletCancelUrl,
         metadata: {
           lane: "JOB_SEEKER_CREDITS",
           userId: auth.userId as string,
@@ -161,7 +175,7 @@ export class JobSeekerBillingService {
   async getCheckoutSession(auth: AuthContext, sessionId: string) {
     requireJobSeeker(auth);
 
-    const session = await repo.findCheckoutSessionById(sessionId);
+    const session = await repo.findCheckoutSessionById(sessionId) ?? await repo.findCheckoutSessionByStripeId(sessionId);
     if (!session) {
       throw new AppError(404, "CHECKOUT_SESSION_NOT_FOUND", "Checkout session not found");
     }

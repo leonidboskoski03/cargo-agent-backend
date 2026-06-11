@@ -12,6 +12,8 @@ summary: Canonical API contract for job seeker wallet, usage, credit packs, chec
 
 # Job Seeker Billing API Contract
 
+Monetization note: the job-seeker wallet covers apply spend, independent looking-listing publish spend, vehicle-listing publish spend, and promotion spend. Included quota is consumed before credits.
+
 ## 1. Scope
 
 This contract defines implemented endpoints for `JOB_SEEKER` monetization and apply-flow billing metadata.
@@ -70,6 +72,7 @@ Includes:
 - `GET /transactions`: paginated credit ledger history.
 - `POST /checkout-sessions`: create Stripe checkout session for credit pack purchase.
 - `GET /checkout-sessions/:sessionId`: return checkout session status/details for own session.
+  - Frontend return/status route: `/job-wallet/checkout/:sessionId`.
 - `POST /admin/adjustments`: apply support/admin credit adjustment to target job seeker.
 - `POST /api/v1/job-applications/:jobApplicationId/apply`: return submission + billing metadata for apply action.
 

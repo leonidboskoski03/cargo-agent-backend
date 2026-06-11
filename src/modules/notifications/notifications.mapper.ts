@@ -1,18 +1,22 @@
 import type { NotificationListItemDto } from "./notifications.dto.js";
 
 export function mapToNotificationListItem(data: {
-  id: string;
-  title: string;
   body: string;
-  isRead: boolean;
   createdAt: Date;
+  id: string;
+  payloadJson?: unknown;
+  readAt?: Date | null;
+  title: string;
+  type: string;
 }): NotificationListItemDto {
   return {
-    id: data.id,
-    title: data.title,
     body: data.body,
-    isRead: data.isRead,
     createdAt: data.createdAt.toISOString(),
+    id: data.id,
+    isRead: Boolean(data.readAt),
+    payloadJson: data.payloadJson,
+    title: data.title,
+    type: data.type,
   };
 }
 

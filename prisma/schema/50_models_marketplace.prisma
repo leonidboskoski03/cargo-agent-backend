@@ -1,3 +1,70 @@
+model VehicleMarketplaceListing {
+  id               String                          @id @default(cuid())
+  ownerCompanyId   String?
+  ownerUserId      String?
+  vehicleId        String?
+  intent           VehicleMarketplaceIntent
+  sourceType       VehicleMarketplaceSourceType
+  status           VehicleMarketplaceListingStatus @default(DRAFT)
+  title            String
+  description      String?
+  vehicleType      VehicleType
+  bodyType         VehicleBodyType?
+  brand            String?
+  model            String?
+  year             Int?
+  countryCode      String
+  city             String
+  priceAmount      Decimal?                        @db.Decimal(12, 2)
+  currency         String?
+  capacityKg       Int?
+  volumeM3         Decimal?                        @db.Decimal(10, 3)
+  refrigerated     Boolean?                        @default(false)
+  hazmatCertified  Boolean?                        @default(false)
+  imageUrlsJson    Json?
+  documentsJson    Json?
+  deletedAt        DateTime?
+  createdAt        DateTime                        @default(now())
+  updatedAt        DateTime                        @updatedAt
+
+  ownerCompany Company? @relation("CompanyVehicleMarketplaceListings", fields: [ownerCompanyId], references: [id], onDelete: Cascade)
+  ownerUser    User?    @relation("UserVehicleMarketplaceListings", fields: [ownerUserId], references: [id], onDelete: Cascade)
+  vehicle      Vehicle? @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  inquiries    VehicleMarketplaceInquiry[]
+
+  @@index([ownerCompanyId])
+  @@index([ownerUserId])
+  @@index([vehicleId])
+  @@index([status, intent, vehicleType])
+  @@index([countryCode, city])
+  @@index([brand, model])
+  @@index([createdAt])
+}
+
+model VehicleMarketplaceInquiry {
+  id              String                          @id @default(cuid())
+  listingId       String
+  senderUserId    String
+  senderCompanyId String?
+  message         String
+  contactName     String?
+  contactEmail    String?
+  contactPhone    String?
+  status          VehicleMarketplaceInquiryStatus @default(OPEN)
+  createdAt       DateTime                        @default(now())
+  updatedAt       DateTime                        @updatedAt
+
+  listing       VehicleMarketplaceListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  senderUser    User                      @relation("UserVehicleMarketplaceInquiries", fields: [senderUserId], references: [id], onDelete: Cascade)
+  senderCompany Company?                  @relation("CompanyVehicleMarketplaceInquiries", fields: [senderCompanyId], references: [id], onDelete: Cascade)
+
+  @@index([listingId])
+  @@index([senderUserId])
+  @@index([senderCompanyId])
+  @@index([status])
+  @@index([createdAt])
+}
+
 model Post {
   id                         String        @id @default(cuid())
   companyId                  String
@@ -103,6 +170,8 @@ model Bid {
   currency            String
   estimatedPickupAt   DateTime?
   estimatedDeliveryAt DateTime?
+  boostCredits        Int       @default(0)
+  boostedUntil        DateTime?
   status              BidStatus @default(PENDING)
   deletedAt           DateTime?
   createdAt           DateTime  @default(now())
@@ -112,12 +181,31 @@ model Bid {
   carrierCompany Company @relation("CarrierCompanyBids", fields: [carrierCompanyId], references: [id], onDelete: Cascade)
   createdByUser  User    @relation("BidCreatedByUser", fields: [createdByUserId], references: [id], onDelete: Cascade)
   contract       Contract?
+  activities     BidActivity[]
 
   @@unique([postId, carrierCompanyId])
   @@index([postId])
   @@index([carrierCompanyId])
   @@index([createdByUserId])
   @@index([status])
+  @@index([boostedUntil, boostCredits])
+}
+
+model BidActivity {
+  id             String          @id @default(cuid())
+  bidId          String
+  actorUserId    String?
+  actorCompanyId String?
+  type           BidActivityType
+  message        String?
+  metadataJson   Json?
+  createdAt      DateTime        @default(now())
+
+  bid Bid @relation(fields: [bidId], references: [id], onDelete: Cascade)
+
+  @@index([bidId, createdAt])
+  @@index([actorCompanyId])
+  @@index([type])
 }
 
 model Contract {

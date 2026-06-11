@@ -8,6 +8,7 @@ const service = new BidsService();
 
 export async function listBids(req: Request, res: Response) {
   const data = await service.list(authFromRequest(req), {
+    scope: req.query.scope as never,
     status: req.query.status as never,
     postId: typeof req.query.postId === "string" ? req.query.postId : undefined,
   });
@@ -17,6 +18,11 @@ export async function listBids(req: Request, res: Response) {
 
 export async function getBidById(req: Request, res: Response) {
   const data = await service.getById(authFromRequest(req), getStringParam(req.params.bidId));
+  return ok(res, data);
+}
+
+export async function listBidActivities(req: Request, res: Response) {
+  const data = await service.listActivities(authFromRequest(req), getStringParam(req.params.bidId));
   return ok(res, data);
 }
 
@@ -48,6 +54,14 @@ export async function updateBid(req: Request, res: Response) {
 export async function changeBidStatus(req: Request, res: Response) {
   const data = await service.changeStatus(authFromRequest(req), getStringParam(req.params.bidId), {
     status: req.body.status,
+  });
+
+  return ok(res, data);
+}
+
+export async function boostBid(req: Request, res: Response) {
+  const data = await service.boost(authFromRequest(req), getStringParam(req.params.bidId), {
+    creditAmount: req.body.creditAmount,
   });
 
   return ok(res, data);

@@ -39,5 +39,30 @@ describe("NotificationEventsService.handleEvent", () => {
 
     expect(createSpy).not.toHaveBeenCalled();
   });
+
+  it("includes linked contract id when notifying a carrier about an accepted bid", async () => {
+    vi.spyOn(prisma.bid, "findFirst").mockResolvedValue({
+      carrierCompanyId: "company_carrier",
+      contract: { id: "contract_1" },
+      id: "bid_1",
+      post: { title: "Skopje to Sofia" },
+      postId: "post_1",
+    } as never);
+    const createSpy = vi.spyOn(NotificationsService.prototype, "create").mockResolvedValue({ id: "notif_1" } as never);
+
+    await service.handleEvent({ type: "BID_ACCEPTED", bidId: "bid_1" });
+
+    expect(createSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        payloadJson: expect.objectContaining({
+          bidId: "bid_1",
+          contractId: "contract_1",
+          postId: "post_1",
+        }),
+        recipientCompanyId: "company_carrier",
+        type: NotificationType.BID_ACCEPTED,
+      }),
+    );
+  });
 });
 

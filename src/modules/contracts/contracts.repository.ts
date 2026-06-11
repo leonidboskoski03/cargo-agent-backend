@@ -1,4 +1,4 @@
-import { ContractStatus, Prisma } from "@prisma/client";
+import { BidActivityType, ContractStatus, Prisma } from "@prisma/client";
 import { prisma } from "../../shared/prisma/prismaClient.js";
 
 type ListFilters = {
@@ -18,6 +18,13 @@ type CreateContractData = {
   deliveryPlannedAt?: Date;
 };
 
+type UpdateTimelineData = {
+  deliveryActualAt?: Date | null;
+  deliveryPlannedAt?: Date | null;
+  pickupActualAt?: Date | null;
+  pickupPlannedAt?: Date | null;
+};
+
 const contractSelect = {
   id: true,
   postId: true,
@@ -35,6 +42,51 @@ const contractSelect = {
   deletedAt: true,
   createdAt: true,
   updatedAt: true,
+  post: {
+    select: {
+      id: true,
+      title: true,
+      cargoDescription: true,
+      status: true,
+    },
+  },
+  route: {
+    select: {
+      id: true,
+      distanceKm: true,
+      estimatedDurationMinutes: true,
+      originLocation: {
+        select: {
+          id: true,
+          city: true,
+          countryCode: true,
+        },
+      },
+      destinationLocation: {
+        select: {
+          id: true,
+          city: true,
+          countryCode: true,
+        },
+      },
+    },
+  },
+  shipperCompany: {
+    select: {
+      id: true,
+      name: true,
+      city: true,
+      countryCode: true,
+    },
+  },
+  carrierCompany: {
+    select: {
+      id: true,
+      name: true,
+      city: true,
+      countryCode: true,
+    },
+  },
 } as const;
 
 export class ContractsRepository {
@@ -111,6 +163,33 @@ export class ContractsRepository {
       where: { id: contractId },
       data: { status },
       select: contractSelect,
+    });
+  }
+
+  async updateTimeline(contractId: string, data: UpdateTimelineData) {
+    return prisma.contract.update({
+      where: { id: contractId },
+      data,
+      select: contractSelect,
+    });
+  }
+
+  async createBidActivity(input: {
+    actorCompanyId?: string;
+    actorUserId?: string;
+    bidId: string;
+    contractId: string;
+    postId: string;
+  }) {
+    return prisma.bidActivity.create({
+      data: {
+        actorCompanyId: input.actorCompanyId,
+        actorUserId: input.actorUserId,
+        bidId: input.bidId,
+        message: "Contract created",
+        metadataJson: { contractId: input.contractId, postId: input.postId },
+        type: BidActivityType.CONTRACT_CREATED,
+      },
     });
   }
 

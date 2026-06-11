@@ -82,6 +82,7 @@ const postBodyBase = z.object({
 export const listPostsSchema = z.object({
   params: z.object({}),
   query: z.object({
+	scope: z.enum(["marketplace", "mine"]).default("marketplace"),
 	status: z.nativeEnum(PostStatus).optional(),
   }),
   body: z.object({}),
@@ -173,5 +174,13 @@ export const changePostStatusSchema = z.object({
   body: z.object({
 	status: z.nativeEnum(PostStatus),
   }),
+});
+
+export const boostPostSchema = z.object({
+  params: z.object({
+	postId: cuidParam,
+  }),
+  query: z.object({}),
+  body: z.object({}),
 });
 

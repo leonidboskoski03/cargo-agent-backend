@@ -4,7 +4,7 @@ doc_type: mvp-readiness
 status: active
 owner: release-owner
 created: 2026-04-19
-updated: 2026-04-20
+updated: 2026-06-09
 summary: Canonical GO/NO-GO decision file for MVP release readiness.
 related_docs:
   - docs/context/implementation-status.md
@@ -12,6 +12,8 @@ related_docs:
   - docs/release/go-no-go.md
   - docs/release/evidence-map.md
   - docs/release/runbook.md
+  - docs/release/stripe-sandbox-runbook.md
+  - docs/release/ci-branch-protection-proof.md
 source_of_truth: true
 ---
 
@@ -29,8 +31,8 @@ source_of_truth: true
 |---|---|---|---|---|---|
 | RB-001 | Manual UAT completion is incomplete | Critical | TBD | NOT READY | Completed `docs/release/uat-smoke-checklist.md` with all required checks marked complete and linked artifacts |
 | RB-002 | Final Product/QA/Ops signoff is missing | Critical | TBD | NOT READY | Named approvers and explicit signoff entries in release review records |
-| RB-003 | Billing/webhook replay evidence is incomplete | Critical | TBD | NOT READY | Replay proof bundle with Stripe event IDs and no-duplicate mutation evidence |
-| RB-004 | CI required-check proof and enforcement validation is incomplete | High | TBD | NOT READY | Branch protection proof (required checks active) and failing-check blocks-merge validation artifact |
+| RB-003 | Billing/webhook replay evidence is incomplete | Critical | TBD | NOT READY | Replay proof bundle with Stripe event IDs and no-duplicate mutation evidence; `docs/release/stripe-sandbox-runbook.md`, `npm run stripe:sandbox:check`, and `docs/release/evidence/2026-06-09/stripe/` support collection but real Stripe event IDs are still required |
+| RB-004 | CI required-check proof and enforcement validation is incomplete | High | TBD | NOT READY | Branch protection proof (required checks active) and failing-check blocks-merge validation artifact; `docs/release/ci-branch-protection-proof.md` defines required evidence |
 | RB-005 | Contract source-of-truth adoption verification is incomplete | High | TBD | NOT READY | Canonical contracts for auth, company invites, company billing/subscriptions, job seeker billing, and job applications are linked from active context/release docs; known contract/code mismatches are explicitly triaged as ACCEPTED or FIXED |
 | RB-006 | Auth/invite outbound delivery mode is unresolved for production policy | Critical | Product/Ops/Security (TBD) | NOT READY | Explicit decision record that either (A) simulated OTP + placeholder invite email are accepted for MVP with risk waiver, or (B) production providers are enabled and validated with evidence |
 
@@ -60,7 +62,7 @@ All criteria must be true:
 - Automated backend evidence: `AVAILABLE`.
 - Manual UAT evidence: `INCOMPLETE`.
 - Cross-functional signoff evidence: `MISSING`.
-- Billing/webhook replay artifact completeness: `INCOMPLETE`.
+- Billing/webhook replay artifact completeness: `PARTIAL`.
 - CI enforcement proof artifacts: `INCOMPLETE`.
 - Contract source-of-truth adoption evidence: `INCOMPLETE`.
 - OTP/invite outbound delivery evidence or waiver: `MISSING`.
@@ -72,6 +74,7 @@ Dependencies:
 - Stable staging environment with API + worker + DB parity.
 - Stripe test webhook flow with retained event/replay artifacts.
 - Repository settings access for branch protection evidence capture.
+- Explicit acceptance that real email provider setup is skipped for now, meaning `RB-006` remains open until a waiver or provider proof exists.
 
 Open decisions:
 
@@ -86,3 +89,5 @@ Open decisions:
 - 2026-04-20: RB-005 wording aligned to contract source-of-truth adoption verification after contract normalization.
 - 2026-04-20: RB-005 evidence expectation tightened to require module-level canonical contract linkage and mismatch triage state.
 - 2026-04-20: Added `RB-006` to explicitly gate MVP on OTP/invite delivery-mode acceptance or provider cutover evidence.
+- 2026-06-08: Added references to Stripe sandbox and CI proof runbooks; release remains `NO-GO` because external proof and delivery-mode decision are still missing.
+- 2026-06-09: Captured Stripe sandbox readiness and automated webhook replay outputs under `docs/release/evidence/2026-06-09/stripe/`; `RB-003` remains open until real Stripe checkout session IDs and webhook event IDs are recorded.

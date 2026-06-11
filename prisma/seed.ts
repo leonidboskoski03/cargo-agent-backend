@@ -8,11 +8,11 @@ async function main() {
     { code: "BG", name: "Bulgaria", nativeName: "България" },
     { code: "RS", name: "Serbia", nativeName: "Србија" },
     { code: "AL", name: "Albania", nativeName: "Shqipëria" },
-    { code: "XK", name: "Kosovo", nativeName: "Kosovë" },
+    { code: "KS", name: "Kosovo", nativeName: "Kosovë" },
     { code: "GR", name: "Greece", nativeName: "Ελλάδα" },
     { code: "HR", name: "Croatia", nativeName: "Hrvatska" },
     { code: "RO", name: "Romania", nativeName: "România" },
-    { code: "BA", name: "Bosnia and Herzegovina", nativeName: "Bosna i Hercegovina" },
+    { code: "BIH", name: "Bosnia and Herzegovina", nativeName: "Bosna i Hercegovina" },
     { code: "TR", name: "Turkey", nativeName: "Türkiye" },
   ];
 
@@ -217,6 +217,63 @@ async function main() {
     create: {
       code: "JS_CREDITS_70",
       name: "Pro 70",
+      credits: 70,
+      priceAmount: 24.99,
+      currency: "EUR",
+      isActive: true,
+    },
+  });
+
+  await prisma.companyCreditPack.upsert({
+    where: { code: "CO_CREDITS_10" },
+    update: {
+      name: "Company Starter 10",
+      credits: 10,
+      priceAmount: 4.99,
+      currency: "EUR",
+      isActive: true,
+    },
+    create: {
+      code: "CO_CREDITS_10",
+      name: "Company Starter 10",
+      credits: 10,
+      priceAmount: 4.99,
+      currency: "EUR",
+      isActive: true,
+    },
+  });
+
+  await prisma.companyCreditPack.upsert({
+    where: { code: "CO_CREDITS_30" },
+    update: {
+      name: "Company Growth 30",
+      credits: 30,
+      priceAmount: 12.99,
+      currency: "EUR",
+      isActive: true,
+    },
+    create: {
+      code: "CO_CREDITS_30",
+      name: "Company Growth 30",
+      credits: 30,
+      priceAmount: 12.99,
+      currency: "EUR",
+      isActive: true,
+    },
+  });
+
+  await prisma.companyCreditPack.upsert({
+    where: { code: "CO_CREDITS_70" },
+    update: {
+      name: "Company Pro 70",
+      credits: 70,
+      priceAmount: 24.99,
+      currency: "EUR",
+      isActive: true,
+    },
+    create: {
+      code: "CO_CREDITS_70",
+      name: "Company Pro 70",
       credits: 70,
       priceAmount: 24.99,
       currency: "EUR",
