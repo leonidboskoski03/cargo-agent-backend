@@ -13,6 +13,7 @@ export async function listLicenseTypes(_req: Request, res: Response) {
 
 export async function listLicenses(req: Request, res: Response) {
   const data = await service.list(authFromRequest(req), {
+    deleted: req.query.deleted === "only" || req.query.deleted === "include" ? req.query.deleted : "active",
     userId: typeof req.query.userId === "string" ? req.query.userId : undefined,
   });
 

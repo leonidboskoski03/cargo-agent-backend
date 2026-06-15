@@ -78,8 +78,10 @@ describe("job applications scenario", () => {
       const applyResponse = await request(app)
         .post(`/api/v1/job-applications/${jobApplicationId}/apply`)
         .set("Authorization", companyToken)
-        .send({ message: "We are interested." });
+        .send({ documentName: "Company capability profile", documentUrl: "https://files.test/company-profile.pdf", message: "We are interested." });
       expect(applyResponse.statusCode).toBe(201);
+      expect(applyResponse.body.data.documentName).toBe("Company capability profile");
+      expect(applyResponse.body.data.documentUrl).toBe("https://files.test/company-profile.pdf");
 
       const ownApplyResponse = await request(app)
         .post(`/api/v1/job-applications/${jobApplicationId}/apply`)
@@ -93,6 +95,7 @@ describe("job applications scenario", () => {
         .set("Authorization", seekerToken);
       expect(submissionsResponse.statusCode).toBe(200);
       expect(submissionsResponse.body.data.length).toBe(1);
+      expect(submissionsResponse.body.data[0].documentName).toBe("Company capability profile");
     } finally {
       await prisma.jobApplicationSubmission.deleteMany({
         where: {

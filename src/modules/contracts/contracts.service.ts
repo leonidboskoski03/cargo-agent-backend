@@ -2,6 +2,7 @@ import { BidStatus, ContractStatus, PostStatus, type UserRole } from "@prisma/cl
 import { AppError } from "../../shared/errors/AppError.js";
 import { writeAuditEvent } from "../../shared/audit/auditLogger.js";
 import { enqueueNotificationEvent } from "../../shared/queue/notificationEvents.queue.js";
+import { assertCompanyMarketplaceSetupComplete } from "../../shared/profileSetup/profileSetupGuard.js";
 import { assertCompanyAdmin, assertCompanyUser, requireAuth } from "./contracts.helpers.js";
 import { ContractsRepository } from "./contracts.repository.js";
 import type {
@@ -35,6 +36,7 @@ export class ContractsService {
 
     return repo.listByCompanyInvolvement({
       companyId,
+      deleted: query.deleted,
       status: query.status,
     });
   }
@@ -63,6 +65,7 @@ export class ContractsService {
     if (!companyId) {
       throw new AppError(403, "COMPANY_REQUIRED", "Company admins must belong to a company");
     }
+    await assertCompanyMarketplaceSetupComplete({ userId: auth.userId, role: auth.role, companyId }, "CREATE_CONTRACT");
 
     const post = await repo.findActivePostById(body.postId);
     if (!post) {

@@ -3,6 +3,7 @@ import { prisma } from "../../shared/prisma/prismaClient.js";
 
 type ListFilters = {
   companyId: string;
+  deleted?: "active" | "only" | "include";
   scope?: "received" | "sent" | "all";
   status?: BidStatus;
   postId?: string;
@@ -125,12 +126,18 @@ const bidSelect = {
   },
 } as const;
 
+function bidDeletedWhere(deleted: ListFilters["deleted"]): Prisma.BidWhereInput {
+  if (deleted === "only") return { deletedAt: { not: null } };
+  if (deleted === "include") return {};
+  return { deletedAt: null };
+}
+
 export class BidsRepository {
   async listByCompanyInvolvement(filters: ListFilters) {
     const now = new Date();
     return prisma.bid.findMany({
       where: {
-        deletedAt: null,
+        ...bidDeletedWhere(filters.deleted ?? "active"),
         ...(filters.status ? { status: filters.status } : {}),
         ...(filters.postId ? { postId: filters.postId } : {}),
         ...(filters.scope === "sent"

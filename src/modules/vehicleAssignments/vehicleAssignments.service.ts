@@ -10,13 +10,14 @@ import {
 import type {
   AuthContext,
   CreateAssignmentBody,
+  ListVehicleAssignmentsQuery,
   UpdateAssignmentBody,
 } from "./vehicleAssignments.types.js";
 
 const repo = new VehicleAssignmentsRepository();
 
 export class VehicleAssignmentsService {
-  async list(auth: AuthContext) {
+  async list(auth: AuthContext, query: ListVehicleAssignmentsQuery) {
     requireAuth(auth);
     assertAllowedRole(auth.role);
 
@@ -25,10 +26,10 @@ export class VehicleAssignmentsService {
         throw new AppError(403, "COMPANY_REQUIRED", "Company users must belong to a company");
       }
 
-      return repo.listActiveByCompany(auth.companyId);
+      return repo.listByCompany(auth.companyId, { deleted: query.deleted });
     }
 
-    return repo.listActiveByUser(auth.userId);
+    return repo.listByUser(auth.userId, { deleted: query.deleted });
   }
 
   async getById(auth: AuthContext, assignmentId: string) {

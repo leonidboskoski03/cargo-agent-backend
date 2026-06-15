@@ -50,7 +50,7 @@ export class AuthService {
     }
 
     const email = normalizeEmail(input.email);
-    const phone = input.phone ? normalizePhone(input.phone) : undefined;
+    const phone = normalizePhone(input.phone);
     const passwordHash = await hashPassword(input.password);
 
     const otp = await this.requestOtp({
@@ -80,7 +80,9 @@ export class AuthService {
       draftId: draft.id,
       challengeId: otp.challengeId,
       expiresAt: otp.expiresAt,
+      nextResendAt: otp.nextResendAt,
       previewCode: otp.previewCode,
+      resendAttemptsRemaining: otp.resendAttemptsRemaining,
     };
   }
 
@@ -115,8 +117,8 @@ export class AuthService {
   async completeJobSeekerRegistration(input: CompleteJobSeekerRegistrationInput, context: SessionContext = {}) {
     const result = await repo.completeJobSeekerRegistration({
       draftId: input.draftId,
-      countryCode: input.countryCode.toUpperCase(),
-      city: input.city.trim(),
+      countryCode: input.countryCode?.toUpperCase(),
+      city: input.city?.trim(),
       headline: input.headline?.trim(),
       yearsExperience: input.yearsExperience,
       availability: input.availability?.trim(),
@@ -167,7 +169,7 @@ export class AuthService {
       companyName: input.companyName.trim(),
       companyType: input.companyType,
       registrationNumber: input.registrationNumber.trim(),
-      address: input.address.trim(),
+      address: input.address?.trim(),
       countryCode: input.countryCode.toUpperCase(),
       city: input.city.trim(),
       vatNumber: input.vatNumber?.trim(),
@@ -262,7 +264,9 @@ export class AuthService {
         mfaRequired: true,
         challengeId: challenge.challengeId,
         expiresAt: challenge.expiresAt,
+        nextResendAt: challenge.nextResendAt,
         code: challenge.previewCode,
+        resendAttemptsRemaining: challenge.resendAttemptsRemaining,
         user: {
           id: user.id,
           email: user.email,
@@ -709,7 +713,9 @@ export class AuthService {
       accepted: true,
       challengeId: challenge.id,
       expiresAt: challenge.expiresAt,
+      nextResendAt: challenge.nextResendAt,
       previewCode: delivery.previewCode,
+      resendAttemptsRemaining: env.AUTH_OTP_MAX_RESENDS,
     };
   }
 
@@ -770,6 +776,10 @@ export class AuthService {
       throw new AppError(429, "OTP_RESEND_COOLDOWN", "Please wait before requesting another OTP");
     }
 
+    if (challenge.resendCount >= env.AUTH_OTP_MAX_RESENDS) {
+      throw new AppError(429, "OTP_RESEND_LIMIT_EXCEEDED", "Maximum OTP resend attempts reached");
+    }
+
     const code = generateOtpCode();
     const delivery = await otpDelivery.sendOtp({
       channel: challenge.channel,
@@ -791,7 +801,9 @@ export class AuthService {
       accepted: true,
       challengeId: updated.id,
       expiresAt: updated.expiresAt,
+      nextResendAt: updated.nextResendAt,
       previewCode: delivery.previewCode,
+      resendAttemptsRemaining: Math.max(0, env.AUTH_OTP_MAX_RESENDS - (challenge.resendCount + 1)),
     };
   }
 }

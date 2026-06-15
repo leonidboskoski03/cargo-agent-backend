@@ -14,7 +14,9 @@ function validateWindow<T extends { startsAt?: Date; endsAt?: Date | null }>(val
 
 export const listVehicleAssignmentsSchema = z.object({
   params: z.object({}),
-  query: z.object({}),
+  query: z.object({
+    deleted: z.enum(["active", "only", "include"]).default("active"),
+  }),
   body: z.object({}),
 });
 

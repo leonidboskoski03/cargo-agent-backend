@@ -44,6 +44,8 @@ describe("auth otp flows", () => {
       expect(requestResponse.statusCode).toBe(200);
       expect(requestResponse.body.data.challengeId).toBeTypeOf("string");
       expect(requestResponse.body.data.code).toBeTypeOf("string");
+      expect(requestResponse.body.data.nextResendAt).toBeTypeOf("string");
+      expect(requestResponse.body.data.resendAttemptsRemaining).toBe(3);
 
       const verifyResponse = await request(app).post("/api/v1/auth/otp/verify").send({
         challengeId: requestResponse.body.data.challengeId,
@@ -555,6 +557,8 @@ describe("auth otp flows", () => {
       const newCode = resendResponse.body.data.code as string;
       expect(newCode).toBeTypeOf("string");
       expect(newCode).not.toBe(oldCode);
+      expect(resendResponse.body.data.nextResendAt).toBeTypeOf("string");
+      expect(resendResponse.body.data.resendAttemptsRemaining).toBe(2);
 
       const oldCodeRejected = await request(app).post("/api/v1/auth/otp/verify").send({
         challengeId,
@@ -569,6 +573,62 @@ describe("auth otp flows", () => {
       });
       expect(newCodeAccepted.statusCode).toBe(200);
       expect(newCodeAccepted.body.data.success).toBe(true);
+    } finally {
+      await prisma.authOtpChallenge.deleteMany({ where: { userId: user.id } });
+      await prisma.user.deleteMany({ where: { id: user.id } });
+    }
+  }, 20_000);
+
+  it("blocks OTP resend after three successful resends", async () => {
+    const { prisma, buildApp } = await initRuntime();
+    if (!dbReady) {
+      return;
+    }
+
+    const app = buildApp();
+    const suffix = `${Date.now()}-resend-limit`;
+    const email = `otp-resend-limit-${suffix}@test.local`;
+
+    const user = await prisma.user.create({
+      data: {
+        role: UserRole.JOB_SEEKER,
+        firstName: "Otp",
+        lastName: "Limit",
+        email,
+        passwordHash: await hashPassword("OldPass123!"),
+      },
+      select: { id: true },
+    });
+
+    try {
+      const requestOtp = await request(app).post("/api/v1/auth/otp/request").send({
+        purpose: OtpPurpose.FORGOT_PASSWORD,
+        channel: OtpChannel.EMAIL,
+        email,
+      });
+
+      expect(requestOtp.statusCode).toBe(200);
+      const challengeId = requestOtp.body.data.challengeId as string;
+
+      for (const remaining of [2, 1, 0]) {
+        await prisma.authOtpChallenge.update({
+          where: { id: challengeId },
+          data: { nextResendAt: new Date(Date.now() - 1_000) },
+        });
+
+        const resendResponse = await request(app).post("/api/v1/auth/otp/resend").send({ challengeId });
+        expect(resendResponse.statusCode).toBe(200);
+        expect(resendResponse.body.data.resendAttemptsRemaining).toBe(remaining);
+      }
+
+      await prisma.authOtpChallenge.update({
+        where: { id: challengeId },
+        data: { nextResendAt: new Date(Date.now() - 1_000) },
+      });
+
+      const blocked = await request(app).post("/api/v1/auth/otp/resend").send({ challengeId });
+      expect(blocked.statusCode).toBe(429);
+      expect(blocked.body.error.code).toBe("OTP_RESEND_LIMIT_EXCEEDED");
     } finally {
       await prisma.authOtpChallenge.deleteMany({ where: { userId: user.id } });
       await prisma.user.deleteMany({ where: { id: user.id } });

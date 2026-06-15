@@ -3,6 +3,7 @@ import { prisma } from "../../shared/prisma/prismaClient.js";
 
 type ListFilters = {
   companyId: string;
+  deleted?: "active" | "only" | "include";
   status?: ReviewStatus;
   contractId?: string;
 };
@@ -45,11 +46,17 @@ const reviewSelect = {
   },
 } as const;
 
+function reviewDeletedWhere(deleted: ListFilters["deleted"]): Prisma.ReviewWhereInput {
+  if (deleted === "only") return { deletedAt: { not: null } };
+  if (deleted === "include") return {};
+  return { deletedAt: null };
+}
+
 export class ReviewsRepository {
   async listByCompanyInvolvement(filters: ListFilters) {
     return prisma.review.findMany({
       where: {
-        deletedAt: null,
+        ...reviewDeletedWhere(filters.deleted ?? "active"),
         ...(filters.status ? { status: filters.status } : {}),
         ...(filters.contractId ? { contractId: filters.contractId } : {}),
         OR: [{ reviewerCompanyId: filters.companyId }, { targetCompanyId: filters.companyId }],

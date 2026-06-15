@@ -17,8 +17,9 @@ export async function getMyProfileCompletion(req: Request, res: Response) {
 }
 
 export async function listUsers(req: Request, res: Response) {
-  const query = req.query as unknown as { includeInactive: boolean };
+  const query = req.query as unknown as { deleted: "active" | "only" | "include"; includeInactive: boolean };
   const data = await service.list(authFromRequest(req), {
+    deleted: query.deleted,
     includeInactive: query.includeInactive,
   });
   return ok(res, data);
@@ -34,6 +35,7 @@ export async function updateMyUser(req: Request, res: Response) {
     firstName: req.body.firstName,
     lastName: req.body.lastName,
     phone: req.body.phone,
+    preferredLanguage: req.body.preferredLanguage,
     isActive: req.body.isActive,
     role: req.body.role,
     companyId: req.body.companyId,

@@ -3,6 +3,7 @@ import { UsageService } from "../../shared/billing/usage.service.js";
 import { companyCreditsConfig } from "../../config/companyCredits.js";
 import { spendCompanyCredits, useCompanyActivePostQuotaOrCredits } from "../../shared/credits/marketplaceCredits.js";
 import { AppError } from "../../shared/errors/AppError.js";
+import { assertCompanyMarketplaceSetupComplete } from "../../shared/profileSetup/profileSetupGuard.js";
 import { assertCompanyAdmin, assertCompanyUser, requireAuth } from "./posts.helpers.js";
 import { PostsRepository } from "./posts.repository.js";
 import type {
@@ -17,11 +18,15 @@ const repo = new PostsRepository();
 const usageService = new UsageService();
 
 const allowedTransitions: Record<PostStatus, PostStatus[]> = {
-  OPEN: [PostStatus.ASSIGNED, PostStatus.CANCELLED, PostStatus.EXPIRED],
+  DRAFT: [PostStatus.OPEN, PostStatus.ARCHIVED],
+  OPEN: [PostStatus.ASSIGNED, PostStatus.ARCHIVED, PostStatus.EXPIRED],
   ASSIGNED: [],
+  ARCHIVED: [PostStatus.DRAFT, PostStatus.OPEN],
   CANCELLED: [],
   EXPIRED: [],
 };
+const creatableStatuses: PostStatus[] = [PostStatus.DRAFT, PostStatus.OPEN];
+const editableStatuses: PostStatus[] = [PostStatus.DRAFT, PostStatus.OPEN, PostStatus.ARCHIVED];
 
 function boostedUntilFrom(existing?: Date | null) {
   const now = new Date();
@@ -29,6 +34,15 @@ function boostedUntilFrom(existing?: Date | null) {
   return new Date(base.getTime() + companyCreditsConfig.marketplaceBoostDurationDays * 24 * 60 * 60 * 1000);
 }
 
+async function spendPublishQuota(companyId: string, postId: string) {
+  return useCompanyActivePostQuotaOrCredits({
+	companyId,
+	creditCost: companyCreditsConfig.transportPostCreditCost,
+	reasonCode: "TRANSPORT_POST_PUBLISH",
+	referenceId: postId,
+	referenceType: "POST",
+  });
+}
 
 export class PostsService {
   async list(auth: AuthContext, query: ListPostsQuery) {
@@ -43,6 +57,7 @@ export class PostsService {
 	if (query.scope === "mine") {
 	  return repo.listActiveByCompany({
 		companyId,
+		deleted: query.deleted,
 		status: query.status,
 	  });
 	}
@@ -76,6 +91,7 @@ export class PostsService {
 	if (!companyId) {
 	  throw new AppError(403, "COMPANY_REQUIRED", "Company admins must belong to a company");
 	}
+	await assertCompanyMarketplaceSetupComplete({ userId: auth.userId, role: auth.role, companyId }, "CREATE_TRANSPORT_POST");
 
 	const route = await repo.findActiveRouteById(body.routeId, companyId);
 	if (!route) {
@@ -84,6 +100,10 @@ export class PostsService {
 
 	if (body.priceType !== "REQUEST_QUOTE" && body.priceAmount === undefined) {
 	  throw new AppError(400, "PRICE_REQUIRED", "priceAmount is required for FIXED and NEGOTIABLE posts");
+	}
+	const status = body.status ?? PostStatus.OPEN;
+	if (!creatableStatuses.includes(status)) {
+	  throw new AppError(400, "INVALID_POST_CREATE_STATUS", "Posts can only be created as DRAFT or OPEN");
 	}
 
 	const created = await repo.create({
@@ -109,16 +129,15 @@ export class PostsService {
 	  priceType: body.priceType,
 	  priceAmount: body.priceAmount,
 	  currency: body.currency.toUpperCase(),
+	  status,
 	  isPromoted: false,
 	});
 
-	const billing = await useCompanyActivePostQuotaOrCredits({
-	  companyId,
-	  creditCost: companyCreditsConfig.transportPostCreditCost,
-	  reasonCode: "TRANSPORT_POST_PUBLISH",
-	  referenceId: created.id,
-	  referenceType: "POST",
-	});
+	if (status === PostStatus.DRAFT) {
+	  return created;
+	}
+
+	const billing = await spendPublishQuota(companyId, created.id);
 
 	return { ...created, billing };
   }
@@ -136,8 +155,8 @@ export class PostsService {
 	  throw new AppError(403, "FORBIDDEN", "You can only manage posts from your company");
 	}
 
-	if (existing.status !== PostStatus.OPEN) {
-	  throw new AppError(409, "POST_NOT_EDITABLE", "Only OPEN posts can be edited");
+	if (!editableStatuses.includes(existing.status)) {
+	  throw new AppError(409, "POST_NOT_EDITABLE", "Only DRAFT, OPEN, or ARCHIVED posts can be edited");
 	}
 
 	if (body.routeId) {
@@ -239,7 +258,13 @@ export class PostsService {
 	  throw new AppError(409, "INVALID_POST_STATUS_TRANSITION", `Cannot change post status from ${existing.status} to ${body.status}`);
 	}
 
-	return repo.updateStatus(postId, body.status);
+	const updated = await repo.updateStatus(postId, body.status);
+	if (existing.status !== PostStatus.OPEN && body.status === PostStatus.OPEN) {
+	  const billing = await spendPublishQuota(existing.companyId, postId);
+	  return { ...updated, billing };
+	}
+
+	return updated;
   }
 
   async remove(auth: AuthContext, postId: string) {

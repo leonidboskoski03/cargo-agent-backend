@@ -8,13 +8,19 @@ export function requireAuth(auth: AuthContext): asserts auth is RequiredAuthCont
   }
 }
 
-export function assertCompanyAdmin(auth: RequiredAuthContext) {
+export function assertCompanyAdmin(auth: RequiredAuthContext): asserts auth is RequiredAuthContext & { companyId: string } {
   if (auth.role !== Roles.COMPANY_ADMIN) {
     throw new AppError(403, "FORBIDDEN", "Only company admins can perform this action");
   }
 
   if (!auth.companyId) {
     throw new AppError(403, "COMPANY_REQUIRED", "Company admins must belong to a company");
+  }
+}
+
+export function assertCompanyScope(auth: RequiredAuthContext): asserts auth is RequiredAuthContext & { companyId: string } {
+  if (!auth.companyId) {
+    throw new AppError(403, "COMPANY_REQUIRED", "Company context is required for locations");
   }
 }
 

@@ -5,6 +5,7 @@ const cuidParam = z.string().cuid();
 export const listRoutesSchema = z.object({
   params: z.object({}),
   query: z.object({
+    deleted: z.enum(["active", "only", "include"]).default("active"),
     originLocationId: z.string().cuid().optional(),
     destinationLocationId: z.string().cuid().optional(),
   }),

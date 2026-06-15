@@ -4,6 +4,14 @@ enum CompanyType {
   BOTH
 }
 
+enum CompanyVerificationStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  FAILED
+  NEEDS_REVIEW
+}
+
 enum UserRole {
   COMPANY_ADMIN
   COMPANY_DRIVER
@@ -57,8 +65,10 @@ enum PostPriceType {
 }
 
 enum PostStatus {
+  DRAFT
   OPEN
   ASSIGNED
+  ARCHIVED
   CANCELLED
   EXPIRED
 }

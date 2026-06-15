@@ -64,7 +64,7 @@ const envSchema = z.object({
   EMAIL_PROVIDER: z.enum(["simulated", "resend"]).default("simulated"),
   RESEND_API_KEY: z.preprocess(emptyStringToUndefined, z.string().optional()),
   RESEND_FROM_EMAIL: z.preprocess(emptyStringToUndefined, z.string().email().optional()),
-  AUTH_OTP_PROVIDER: z.enum(["simulated", "twilio_simulated"]).default("simulated"),
+  AUTH_OTP_PROVIDER: z.enum(["simulated", "twilio_simulated", "resend_email"]).default("simulated"),
   AUTH_LOGIN_MFA_REQUIRED_ROLES: z
     .string()
     .default("COMPANY_ADMIN")
@@ -77,6 +77,7 @@ const envSchema = z.object({
   AUTH_OTP_CODE_LENGTH: z.coerce.number().int().min(4).max(8).default(6),
   AUTH_OTP_TTL_MINUTES: z.coerce.number().int().min(1).max(30).default(10),
   AUTH_OTP_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(10).default(5),
+  AUTH_OTP_MAX_RESENDS: z.coerce.number().int().min(0).max(10).default(3),
   AUTH_OTP_RESEND_COOLDOWN_SECONDS: z.coerce.number().int().min(10).max(300).default(60),
   AUTH_OTP_PREVIEW_IN_NON_PROD: z
     .string()
@@ -123,6 +124,8 @@ const envSchema = z.object({
     ),
   S3_ENDPOINT: z.preprocess(emptyStringToUndefined, z.string().url().optional()),
   S3_BUCKET: z.preprocess(emptyStringToUndefined, z.string().optional()),
+  S3_REGION: z.preprocess(emptyStringToUndefined, z.string().default("us-east-1")),
+  S3_PUBLIC_BASE_URL: z.preprocess(emptyStringToUndefined, z.string().url().optional()),
   S3_ACCESS_KEY_ID: z.preprocess(emptyStringToUndefined, z.string().optional()),
   S3_SECRET_ACCESS_KEY: z.preprocess(emptyStringToUndefined, z.string().optional()),
 });

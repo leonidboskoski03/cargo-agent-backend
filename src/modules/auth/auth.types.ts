@@ -25,7 +25,7 @@ export type RegistrationStartInput = {
   firstName: string;
   lastName: string;
   email: string;
-  phone?: string;
+  phone: string;
   password: string;
   ipAddress?: string;
   userAgent?: string;
@@ -38,8 +38,8 @@ export type VerifyRegistrationOtpInput = {
 
 export type CompleteJobSeekerRegistrationInput = {
   draftId: string;
-  countryCode: string;
-  city: string;
+  countryCode?: string;
+  city?: string;
   headline?: string;
   yearsExperience?: number;
   availability?: string;
@@ -51,7 +51,7 @@ export type CompleteCompanyRegistrationInput = {
   companyName: string;
   companyType: CompanyType;
   registrationNumber: string;
-  address: string;
+  address?: string;
   countryCode: string;
   city: string;
   vatNumber?: string;

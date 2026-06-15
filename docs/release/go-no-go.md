@@ -4,7 +4,7 @@ doc_type: go-no-go
 status: active
 owner: release-owner
 created: 2026-04-20
-updated: 2026-06-09
+updated: 2026-06-14
 summary: Decision ledger and verdict history for release readiness reviews.
 related_docs:
   - docs/release/mvp-readiness.md
@@ -41,6 +41,7 @@ Current blocker summary remains in `docs/release/mvp-readiness.md`.
 | 2026-06-06 | NO-GO | release-owner | Backend only | Product `NO`; QA `NO`; Ops `NO`; Backend `YES` | `tests/integration/fleetCloseout.spec.ts`; `tests/integration/supportCloseout.spec.ts`; `tests/integration/billingPlans.spec.ts`; `docs/contracts/api/fleet.md`; `docs/contracts/api/support-platform.md`; `docs/contracts/api/reviews.md`; `docs/release/evidence-map.md` | Backend automation and contract evidence improved for Stage 4-6 surfaces; manual UAT, CI enforcement proof, Stripe replay artifacts, delivery-mode decision, and cross-functional signoff remain unresolved. |
 | 2026-06-08 | NO-GO | release-owner | Backend only | Product `NO`; QA `NO`; Ops `NO`; Backend `YES` | `docs/release/stripe-sandbox-runbook.md`; `docs/release/ci-branch-protection-proof.md`; `npm run stripe:sandbox:check`; `.github/workflows/ci.yml` | Stripe sandbox and CI proof collection paths are clearer, CI uses the active split Prisma schema, BullMQ/local-upload state is documented, and email provider setup is intentionally skipped. External Stripe event evidence, branch protection proof, delivery waiver/provider evidence, UAT, and signoff are still unresolved. |
 | 2026-06-09 | NO-GO | release-owner | Backend only | Product `NO`; QA `NO`; Ops `NO`; Backend `YES` | `docs/release/evidence/2026-06-09/stripe/stripe-sandbox-check.txt`; `docs/release/evidence/2026-06-09/stripe/webhook-replay-tests.txt`; `docs/release/evidence/2026-06-09/stripe/manual-stripe-smoke.md` | Stripe sandbox readiness now shows signature verification mode and automated webhook replay tests pass. Release remains `NO-GO` because real Stripe event IDs, manual smoke results, CI enforcement proof, UAT, delivery waiver/provider proof, and cross-functional signoff are still unresolved. |
+| 2026-06-14 | NO-GO | release-owner | Backend only | Product `NO`; QA `NO`; Ops `NO`; Backend `YES` | `docs/release/evidence/2026-06-14/automation-verification.md`; `npm run test:ci:integration`; `npm run test:release:ci`; frontend `npm test`; frontend/backend builds; `npm run stripe:sandbox:check` | Backend and frontend automation are green locally after UAT polish, location privacy, credit linking, and backend build cleanup. Release remains `NO-GO` because manual UAT, real Stripe event IDs/replay artifacts, CI enforcement proof, delivery-mode proof/waiver, and cross-functional signoff are still unresolved. |
 
 ## Next review trigger
 

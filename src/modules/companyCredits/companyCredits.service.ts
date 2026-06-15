@@ -12,6 +12,10 @@ import type { AuthContext } from "./companyCredits.types.js";
 
 const repo = new CompanyCreditsRepository();
 
+function isStripePriceId(value: string | null | undefined) {
+  return Boolean(value?.trim().startsWith("price_"));
+}
+
 export class CompanyCreditsService {
   async getWallet(auth: AuthContext) {
     requireCompanyUser(auth);
@@ -93,7 +97,8 @@ export class CompanyCreditsService {
       throw new AppError(404, "CREDIT_PACK_NOT_FOUND", "Credit pack not found or inactive");
     }
 
-    if (!pack.stripePriceId) {
+    const stripePriceId = pack.stripePriceId?.trim();
+    if (!isStripePriceId(stripePriceId)) {
       throw new AppError(500, "CREDIT_PACK_PRICE_NOT_CONFIGURED", "Stripe price is not configured for this credit pack");
     }
 
@@ -101,7 +106,7 @@ export class CompanyCreditsService {
     const stripeSession = await stripe.checkout.sessions.create(
       {
         client_reference_id: companyId,
-        line_items: [{ price: pack.stripePriceId, quantity: 1 }],
+        line_items: [{ price: stripePriceId, quantity: 1 }],
         metadata: { companyId, creditPackCode: pack.code, lane: "COMPANY_CREDITS" },
         mode: "payment",
         success_url: billingConfig.companyCreditsSuccessUrl,

@@ -78,6 +78,34 @@ export class CompanyInvitesService {
     };
   }
 
+  async preview(input: { token: string }) {
+    const invite = await repo.findPreviewByToken(input.token);
+    if (!invite) {
+      throw new AppError(404, "INVITE_NOT_FOUND", "Invite not found");
+    }
+
+    if (invite.status === CompanyInviteStatus.REVOKED) {
+      throw new AppError(410, "INVITE_REVOKED", "Invite has been revoked");
+    }
+
+    if (invite.status === CompanyInviteStatus.EXPIRED || invite.expiresAt.getTime() < Date.now()) {
+      if (invite.status === CompanyInviteStatus.PENDING) {
+        await repo.markInviteExpired(invite.id);
+      }
+      throw new AppError(410, "INVITE_EXPIRED", "Invite has expired");
+    }
+
+    return {
+      company: invite.company,
+      companyId: invite.companyId,
+      expiresAt: invite.expiresAt,
+      id: invite.id,
+      invitedEmail: invite.invitedEmail,
+      status: invite.status,
+      targetRole: invite.targetRole,
+    };
+  }
+
   async accept(auth: AuthContext, input: { token: string; otpChallengeId: string }) {
     requireAuth(auth);
 

@@ -7,7 +7,9 @@ const decimalLike = z.union([z.string().trim(), z.number()]);
 
 export const listVehiclesSchema = z.object({
   params: z.object({}),
-  query: z.object({}),
+  query: z.object({
+    deleted: z.enum(["active", "only", "include"]).optional().default("active"),
+  }),
   body: z.object({}),
 });
 

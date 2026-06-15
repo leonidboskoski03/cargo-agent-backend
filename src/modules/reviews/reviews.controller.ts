@@ -8,6 +8,7 @@ const service = new ReviewsService();
 
 export async function listReviews(req: Request, res: Response) {
   const data = await service.list(authFromRequest(req), {
+    deleted: req.query.deleted === "only" || req.query.deleted === "include" ? req.query.deleted : "active",
     status: req.query.status as never,
     contractId: typeof req.query.contractId === "string" ? req.query.contractId : undefined,
   });

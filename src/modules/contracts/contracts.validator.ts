@@ -39,6 +39,7 @@ function validateTimeline(value: {
 export const listContractsSchema = z.object({
   params: z.object({}),
   query: z.object({
+    deleted: z.enum(["active", "only", "include"]).default("active"),
     status: z.nativeEnum(ContractStatus).optional(),
   }),
   body: z.object({}),

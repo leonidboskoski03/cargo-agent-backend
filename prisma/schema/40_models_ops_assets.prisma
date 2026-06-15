@@ -129,6 +129,7 @@ model VehicleAssignment {
 
 model Location {
   id          String   @id @default(cuid())
+  companyId   String?
   countryCode String
   city        String
   region      String?
@@ -139,30 +140,39 @@ model Location {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  company           Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
   originRoutes      Route[] @relation("OriginLocationRoutes")
   destinationRoutes Route[] @relation("DestinationLocationRoutes")
 
+  @@index([companyId])
   @@index([countryCode, city])
 }
 
 model SupportedCountry {
-  code       String   @id
-  name       String
-  nativeName String?
-  isActive   Boolean  @default(true)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  code        String   @id
+  name        String
+  nativeName  String?
+  displayName String?
+  region      String?
+  lat         Decimal? @db.Decimal(10, 7)
+  lng         Decimal? @db.Decimal(10, 7)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   cities SupportedCity[]
 
   @@index([isActive, name])
+  @@index([region, isActive])
 }
 
 model SupportedCity {
   id          String   @id @default(cuid())
   countryCode String
   name        String
+  displayName String?
   region      String?
+  adminCode   String?
   lat         Decimal? @db.Decimal(10, 7)
   lng         Decimal? @db.Decimal(10, 7)
   isActive    Boolean  @default(true)

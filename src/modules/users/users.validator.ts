@@ -3,6 +3,14 @@ import { z } from "zod";
 import { queryBoolean } from "../../shared/validation/queryBoolean.js";
 
 const cuidParam = z.string().cuid();
+const supportedLanguageCodes = ["en", "mk", "sr", "tr", "sq", "bg", "hr", "ro", "bs"];
+const supportedLanguageCode = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .refine((value) => supportedLanguageCodes.includes(value), {
+    message: "Unsupported language",
+  });
 
 export const getMeSchema = z.object({
   params: z.object({}),
@@ -19,6 +27,7 @@ export const getMyProfileCompletionSchema = z.object({
 export const listUsersSchema = z.object({
   params: z.object({}),
   query: z.object({
+    deleted: z.enum(["active", "only", "include"]).default("active"),
     includeInactive: queryBoolean().optional().default(false),
   }),
   body: z.object({}),
@@ -46,6 +55,7 @@ export const updateMyProfileSchema = z.object({
       headline: z.string().trim().min(1).max(180).nullable().optional(),
       yearsExperience: z.number().int().min(0).max(60).nullable().optional(),
       availability: z.string().trim().min(1).max(120).nullable().optional(),
+      preferredLanguage: supportedLanguageCode.nullable().optional(),
       preferredRoutes: z.array(z.string().trim().min(2).max(120)).max(20).nullable().optional(),
       isActive: z.boolean().optional(),
       role: z.nativeEnum(UserRole).optional(),
