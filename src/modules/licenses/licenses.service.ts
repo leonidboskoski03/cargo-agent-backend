@@ -39,10 +39,10 @@ export class LicensesService {
         }
       }
 
-      return repo.listActiveByCompany(auth.companyId, query.userId);
+      return repo.listByCompany(auth.companyId, { deleted: query.deleted, userId: query.userId });
     }
 
-    return repo.listActiveByUser(auth.userId);
+    return repo.listByUser(auth.userId, { deleted: query.deleted });
   }
 
   async getById(auth: AuthContext, licenseId: string) {
@@ -67,10 +67,6 @@ export class LicensesService {
     requireAuth(auth);
     assertAllowedRole(auth.role);
     assertSupportedLicenseType(body.licenseType);
-
-    if (auth.role === Roles.COMPANY_DRIVER) {
-      throw new AppError(403, "FORBIDDEN", "Company drivers cannot create licenses");
-    }
 
     const targetUserId = auth.role === Roles.COMPANY_ADMIN && body.userId ? body.userId : auth.userId;
 
@@ -97,7 +93,7 @@ export class LicensesService {
         documentUrl: body.documentUrl,
         issuedAt: body.issuedAt,
         expiresAt: body.expiresAt,
-        isValid: body.isValid,
+        isValid: auth.role === Roles.COMPANY_DRIVER ? false : body.isValid,
       });
     } catch (error) {
       if (repo.isUniqueConstraintError(error)) {
@@ -112,10 +108,6 @@ export class LicensesService {
     requireAuth(auth);
     assertAllowedRole(auth.role);
     assertSupportedLicenseType(body.licenseType);
-
-    if (auth.role === Roles.COMPANY_DRIVER) {
-      throw new AppError(403, "FORBIDDEN", "Company drivers cannot update licenses");
-    }
 
     const license = await repo.findActiveById(licenseId);
 
@@ -135,7 +127,7 @@ export class LicensesService {
         documentUrl: body.documentUrl,
         issuedAt: body.issuedAt,
         expiresAt: body.expiresAt,
-        isValid: body.isValid,
+        isValid: auth.role === Roles.COMPANY_DRIVER ? undefined : body.isValid,
       });
     } catch (error) {
       if (repo.isUniqueConstraintError(error)) {

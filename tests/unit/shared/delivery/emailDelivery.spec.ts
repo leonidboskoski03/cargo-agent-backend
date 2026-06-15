@@ -3,11 +3,11 @@ import { describe, expect, it, vi } from "vitest";
 const baseEnv = {
   AUTH_OTP_PREVIEW_IN_NON_PROD: true,
   AUTH_OTP_PROVIDER: "simulated",
-  EMAIL_FROM: "Cargo Agent <no-reply@cargo-agent.local>",
   EMAIL_PROVIDER: "simulated",
   INVITE_ACCEPT_URL_BASE: "http://localhost:3000/invites/accept",
   NODE_ENV: "test",
   RESEND_API_KEY: undefined,
+  RESEND_FROM_EMAIL: "Cargo Agent <no-reply@cargo-agent.local>",
 };
 
 async function loadDelivery(envOverrides: Record<string, unknown>) {
@@ -58,8 +58,8 @@ describe("emailDelivery", () => {
     const { sendEmail } = await loadDelivery({
       AUTH_OTP_PROVIDER: "resend_email",
       EMAIL_PROVIDER: "resend",
-      EMAIL_FROM: "Cargo Agent <ops@example.test>",
       RESEND_API_KEY: "re_test_key",
+      RESEND_FROM_EMAIL: "Cargo Agent <ops@example.test>",
     });
 
     await expect(
@@ -88,8 +88,8 @@ describe("emailDelivery", () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false, status: 401, text: async () => "invalid key" }));
     const { sendEmail } = await loadDelivery({
       EMAIL_PROVIDER: "resend",
-      EMAIL_FROM: "Cargo Agent <ops@example.test>",
       RESEND_API_KEY: "bad_key",
+      RESEND_FROM_EMAIL: "Cargo Agent <ops@example.test>",
     });
 
     await expect(

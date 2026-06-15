@@ -1,6 +1,6 @@
 import type { UserRole } from "@prisma/client";
 import { AppError } from "../../shared/errors/AppError.js";
-import { assertCompanyAdmin, requireAuth } from "./locations.helpers.js";
+import { assertCompanyAdmin, assertCompanyScope, requireAuth } from "./locations.helpers.js";
 import { LocationsRepository } from "./locations.repository.js";
 import type {
   AuthContext,
@@ -15,17 +15,21 @@ const repo = new LocationsRepository();
 export class LocationsService {
   async list(auth: AuthContext, query: ListLocationsQuery) {
     requireAuth(auth);
+    assertCompanyScope(auth);
 
-    return repo.listActive({
+    return repo.list({
+      companyId: auth.companyId,
       countryCode: query.countryCode?.toUpperCase(),
       city: query.city,
+      deleted: query.deleted,
     });
   }
 
   async getById(auth: AuthContext, locationId: string) {
     requireAuth(auth);
+    assertCompanyScope(auth);
 
-    const location = await repo.findActiveById(locationId);
+    const location = await repo.findActiveById(locationId, auth.companyId);
 
     if (!location) {
       throw new AppError(404, "LOCATION_NOT_FOUND", "Location not found");
@@ -39,6 +43,7 @@ export class LocationsService {
     assertCompanyAdmin(auth);
 
     return repo.create({
+      companyId: auth.companyId,
       countryCode: body.countryCode.toUpperCase(),
       city: body.city,
       region: body.region,
@@ -52,7 +57,7 @@ export class LocationsService {
     requireAuth(auth);
     assertCompanyAdmin(auth);
 
-    const existing = await repo.findActiveById(locationId);
+    const existing = await repo.findActiveById(locationId, auth.companyId);
 
     if (!existing) {
       throw new AppError(404, "LOCATION_NOT_FOUND", "Location not found");
@@ -72,7 +77,7 @@ export class LocationsService {
     requireAuth(auth);
     assertCompanyAdmin(auth);
 
-    const existing = await repo.findActiveById(locationId);
+    const existing = await repo.findActiveById(locationId, auth.companyId);
 
     if (!existing) {
       throw new AppError(404, "LOCATION_NOT_FOUND", "Location not found");
@@ -85,7 +90,7 @@ export class LocationsService {
     requireAuth(auth);
     assertCompanyAdmin(auth);
 
-    const existing = await repo.findAnyById(locationId);
+    const existing = await repo.findAnyById(locationId, auth.companyId);
 
     if (!existing) {
       throw new AppError(404, "LOCATION_NOT_FOUND", "Location not found");

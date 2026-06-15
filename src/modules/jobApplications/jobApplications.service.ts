@@ -82,9 +82,9 @@ export class JobApplicationsService {
     throw new AppError(403, "FORBIDDEN", "Role is not allowed to browse job applications");
   }
 
-  async listMine(auth: AuthContext) {
+  async listMine(auth: AuthContext, query: { deleted?: "active" | "only" | "include" } = {}) {
     requireAuth(auth);
-    return repo.listCreatedByUser(auth.userId as string);
+    return repo.listCreatedByUser(auth.userId as string, { deleted: query.deleted });
   }
 
   async update(input: UpdateJobApplicationInput) {
@@ -165,6 +165,8 @@ export class JobApplicationsService {
         const result = await repo.createJobSeekerSubmissionWithMonetization({
           jobApplicationId: input.jobApplicationId,
           submittedByUserId: input.auth.userId as string,
+          documentName: input.documentName,
+          documentUrl: input.documentUrl,
           message: input.message,
           freeMonthlyLimit: jobSeekerBillingConfig.freeApplicationsPerMonth,
           creditCost: jobSeekerBillingConfig.applicationCreditCost,
@@ -185,6 +187,8 @@ export class JobApplicationsService {
         jobApplicationId: input.jobApplicationId,
         submittedByUserId: input.auth.userId as string,
         submittedByCompanyId: applicantCompanyId,
+        documentName: input.documentName,
+        documentUrl: input.documentUrl,
         message: input.message,
       });
 

@@ -3,6 +3,7 @@ import { prisma } from "../../shared/prisma/prismaClient.js";
 
 type ListFilters = {
   companyId: string;
+  deleted?: "active" | "only" | "include";
   status?: PostStatus;
 };
 
@@ -29,6 +30,7 @@ type CreatePostData = {
   priceType: PostPriceType;
   priceAmount?: Prisma.Decimal | string | number;
   currency: string;
+  status?: PostStatus;
   isPromoted?: boolean;
   promotedUntil?: Date;
 };
@@ -125,7 +127,8 @@ export class PostsRepository {
 	return prisma.post.findMany({
 	  where: {
 		companyId: filters.companyId,
-		deletedAt: null,
+		...(filters.deleted === "only" ? { deletedAt: { not: null } } : {}),
+		...(!filters.deleted || filters.deleted === "active" ? { deletedAt: null } : {}),
 		...(filters.status ? { status: filters.status } : {}),
 	  },
 	  orderBy: { createdAt: "desc" },

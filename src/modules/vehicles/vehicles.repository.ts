@@ -37,6 +37,10 @@ type VehicleUpdateData = {
   isActive?: boolean;
 };
 
+type VehicleListFilters = {
+  deleted?: "active" | "only" | "include";
+};
+
 const vehicleSelect = {
   id: true,
   companyId: true,
@@ -61,22 +65,24 @@ const vehicleSelect = {
 } as const;
 
 export class VehiclesRepository {
-  async listActiveByCompany(companyId: string) {
+  async listByCompany(companyId: string, filters: VehicleListFilters = {}) {
     return prisma.vehicle.findMany({
       where: {
         companyId,
-        deletedAt: null,
+        ...(filters.deleted === "only" ? { deletedAt: { not: null } } : {}),
+        ...(!filters.deleted || filters.deleted === "active" ? { deletedAt: null } : {}),
       },
       orderBy: { createdAt: "desc" },
       select: vehicleSelect,
     });
   }
 
-  async listActiveByUser(userId: string) {
+  async listByUser(userId: string, filters: VehicleListFilters = {}) {
     return prisma.vehicle.findMany({
       where: {
         userId,
-        deletedAt: null,
+        ...(filters.deleted === "only" ? { deletedAt: { not: null } } : {}),
+        ...(!filters.deleted || filters.deleted === "active" ? { deletedAt: null } : {}),
       },
       orderBy: { createdAt: "desc" },
       select: vehicleSelect,

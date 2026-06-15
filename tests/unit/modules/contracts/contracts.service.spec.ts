@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { BidStatus, PostStatus, UserRole } from "@prisma/client";
 import { ContractsService } from "../../../../src/modules/contracts/contracts.service.js";
 import { ContractsRepository } from "../../../../src/modules/contracts/contracts.repository.js";
+import { prisma } from "../../../../src/shared/prisma/prismaClient.js";
 
 describe("ContractsService.create", () => {
   const service = new ContractsService();
@@ -11,6 +12,14 @@ describe("ContractsService.create", () => {
   });
 
   it("rejects accepted bid that does not belong to provided post", async () => {
+    vi.spyOn(prisma.company, "findUnique").mockResolvedValue({
+      city: "Skopje",
+      companyType: "SHIPPER",
+      countryCode: "MK",
+      name: "Shipper One",
+      registrationNumber: "REG-1",
+    } as never);
+
     vi.spyOn(ContractsRepository.prototype, "findActivePostById").mockResolvedValue({
       id: "post_1",
       companyId: "shipper_1",

@@ -1,7 +1,9 @@
-import type { UserRole } from "@prisma/client";
+import { Prisma, type UserRole } from "@prisma/client";
 import { AppError } from "../../shared/errors/AppError.js";
+import { enqueueCompanyVerification } from "../../shared/queue/companyVerification.queue.js";
 import { assertCompanyAdmin, assertCompanyRole, requireAuth } from "./companies.helpers.js";
 import { CompaniesRepository } from "./companies.repository.js";
+import { verifyCompanyWithProvider } from "./companyVerification.provider.js";
 import type { AuthContext, UpdateMyCompanyBody } from "./companies.types.js";
 
 const repo = new CompaniesRepository();
@@ -34,7 +36,7 @@ export class CompaniesService {
       throw new AppError(403, "COMPANY_REQUIRED", "Company users must belong to a company");
     }
 
-    const company = await repo.findActiveById(companyId);
+    const company = await repo.findAnyById(companyId);
 
     if (!company) {
       throw new AppError(404, "COMPANY_NOT_FOUND", "Company not found");
@@ -70,6 +72,13 @@ export class CompaniesService {
     }
 
     try {
+      const identityChanged =
+        body.name !== undefined ||
+        body.countryCode !== undefined ||
+        body.city !== undefined ||
+        body.registrationNumber !== undefined ||
+        body.vatNumber !== undefined;
+
       return await repo.update(companyId, {
         companyType: body.companyType,
         name: body.name,
@@ -84,7 +93,12 @@ export class CompaniesService {
         bio: body.bio,
         foundedAt: body.foundedAt,
         employeeCount: body.employeeCount,
-        isVerified: body.isVerified,
+        isVerified: identityChanged ? false : body.isVerified,
+        verificationStatus: identityChanged ? "UNVERIFIED" : undefined,
+        verificationProvider: identityChanged ? null : undefined,
+        verificationCheckedAt: identityChanged ? null : undefined,
+        verificationFailureReason: identityChanged ? null : undefined,
+        verificationDetails: identityChanged ? Prisma.JsonNull : undefined,
         registrationNumber: body.registrationNumber,
         vatNumber: body.vatNumber,
         stripeCustomerId: body.stripeCustomerId,
@@ -96,6 +110,46 @@ export class CompaniesService {
 
       throw error;
     }
+  }
+
+  async requestVerification(auth: AuthContext) {
+    requireAuth(auth);
+    assertCompanyAdmin(auth);
+    const companyId = auth.companyId;
+
+    if (!companyId) {
+      throw new AppError(403, "COMPANY_REQUIRED", "Company admins must belong to a company");
+    }
+
+    const company = await repo.findActiveById(companyId);
+    if (!company) {
+      throw new AppError(404, "COMPANY_NOT_FOUND", "Company not found");
+    }
+
+    const pending = await repo.markVerificationPending(companyId);
+    const queued = await enqueueCompanyVerification({ companyId });
+
+    if (queued) {
+      return pending;
+    }
+
+    return this.processVerificationJob(companyId);
+  }
+
+  async processVerificationJob(companyId: string) {
+    const company = await repo.findVerificationTarget(companyId);
+
+    if (!company) {
+      throw new AppError(404, "COMPANY_NOT_FOUND", "Company not found");
+    }
+
+    const result = await verifyCompanyWithProvider(company);
+    return repo.markVerificationResult(companyId, {
+      details: result.details as Prisma.InputJsonValue,
+      failureReason: result.failureReason,
+      provider: result.provider,
+      status: result.status,
+    });
   }
 
   async removeMine(auth: AuthContext) {

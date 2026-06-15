@@ -58,6 +58,26 @@ export class CompanyInvitesRepository {
     });
   }
 
+  async findPreviewByToken(token: string) {
+    return prisma.companyInvite.findFirst({
+      where: { token },
+      select: {
+        company: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        companyId: true,
+        expiresAt: true,
+        id: true,
+        invitedEmail: true,
+        status: true,
+        targetRole: true,
+      },
+    });
+  }
+
   async markInviteExpired(inviteId: string) {
     return prisma.companyInvite.updateMany({
       where: {

@@ -18,6 +18,7 @@ function validateTiming(value: { estimatedPickupAt?: Date | null; estimatedDeliv
 export const listBidsSchema = z.object({
   params: z.object({}),
   query: z.object({
+    deleted: z.enum(["active", "only", "include"]).default("active"),
     scope: bidScopeSchema.default("all"),
     status: z.nativeEnum(BidStatus).optional(),
     postId: z.string().cuid().optional(),

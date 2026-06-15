@@ -23,6 +23,13 @@ export async function createCompanyInvite(req: Request, res: Response) {
   return created(res, data);
 }
 
+export async function previewCompanyInvite(req: Request, res: Response) {
+  const data = await service.preview({
+    token: req.query.token as string,
+  });
+  return ok(res, data);
+}
+
 export async function acceptCompanyInvite(req: Request, res: Response) {
   const data = await service.accept(authFromRequest(req), {
     token: req.body.token,

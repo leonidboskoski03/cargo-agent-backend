@@ -1,4 +1,5 @@
 import { CompanyType, Prisma } from "@prisma/client";
+import type { CompanyVerificationStatus } from "./companyVerification.constants.js";
 import { prisma } from "../../shared/prisma/prismaClient.js";
 
 type CompanyUpdateData = {
@@ -16,6 +17,11 @@ type CompanyUpdateData = {
   foundedAt?: Date | null;
   employeeCount?: number | null;
   isVerified?: boolean;
+  verificationStatus?: CompanyVerificationStatus;
+  verificationProvider?: string | null;
+  verificationCheckedAt?: Date | null;
+  verificationFailureReason?: string | null;
+  verificationDetails?: Prisma.InputJsonValue | Prisma.NullableJsonNullValueInput;
   registrationNumber?: string;
   vatNumber?: string | null;
   stripeCustomerId?: string | null;
@@ -39,6 +45,11 @@ const companySelect = {
   foundedAt: true,
   employeeCount: true,
   isVerified: true,
+  verificationStatus: true,
+  verificationProvider: true,
+  verificationCheckedAt: true,
+  verificationFailureReason: true,
+  verificationDetails: true,
   stripeCustomerId: true,
   currentPlanId: true,
   subscriptionStatus: true,
@@ -68,7 +79,61 @@ export class CompaniesRepository {
   async update(companyId: string, data: CompanyUpdateData) {
     return prisma.company.update({
       where: { id: companyId },
-      data,
+      data: data as Prisma.CompanyUncheckedUpdateInput,
+      select: companySelect,
+    });
+  }
+
+  async findVerificationTarget(companyId: string) {
+    return prisma.company.findFirst({
+      where: {
+        id: companyId,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        city: true,
+        countryCode: true,
+        name: true,
+        registrationNumber: true,
+        vatNumber: true,
+      },
+    });
+  }
+
+  async markVerificationPending(companyId: string) {
+    return prisma.company.update({
+      where: { id: companyId },
+      data: {
+        isVerified: false,
+        verificationStatus: "PENDING",
+        verificationProvider: null,
+        verificationFailureReason: null,
+        verificationDetails: Prisma.JsonNull,
+      } as Prisma.CompanyUncheckedUpdateInput,
+      select: companySelect,
+    });
+  }
+
+  async markVerificationResult(
+    companyId: string,
+    result: {
+      details: Prisma.InputJsonValue;
+      failureReason: string | null;
+      provider: string;
+      status: CompanyVerificationStatus;
+    },
+  ) {
+    return prisma.company.update({
+      where: { id: companyId },
+      data: {
+        isVerified: result.status === "VERIFIED",
+        verificationStatus: result.status,
+        verificationProvider: result.provider,
+        verificationCheckedAt: new Date(),
+        verificationFailureReason: result.failureReason,
+        verificationDetails: result.details,
+      } as Prisma.CompanyUncheckedUpdateInput,
       select: companySelect,
     });
   }

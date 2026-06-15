@@ -8,6 +8,7 @@ const service = new ContractsService();
 
 export async function listContracts(req: Request, res: Response) {
   const data = await service.list(authFromRequest(req), {
+    deleted: req.query.deleted === "only" || req.query.deleted === "include" ? req.query.deleted : "active",
     status: req.query.status as never,
   });
 

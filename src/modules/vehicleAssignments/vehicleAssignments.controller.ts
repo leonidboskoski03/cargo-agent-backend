@@ -7,7 +7,9 @@ const service = new VehicleAssignmentsService();
 
 
 export async function listVehicleAssignments(req: Request, res: Response) {
-  const data = await service.list(authFromRequest(req));
+  const data = await service.list(authFromRequest(req), {
+    deleted: req.query.deleted === "only" || req.query.deleted === "include" ? req.query.deleted : "active",
+  });
   return ok(res, data);
 }
 

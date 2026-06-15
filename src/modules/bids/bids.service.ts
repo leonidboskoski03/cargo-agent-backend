@@ -5,6 +5,7 @@ import { enqueueNotificationEvent } from "../../shared/queue/notificationEvents.
 import { UsageService } from "../../shared/billing/usage.service.js";
 import { companyCreditsConfig } from "../../config/companyCredits.js";
 import { spendCompanyCredits } from "../../shared/credits/marketplaceCredits.js";
+import { assertCompanyMarketplaceSetupComplete } from "../../shared/profileSetup/profileSetupGuard.js";
 import { BidsRepository } from "./bids.repository.js";
 import { assertCompanyAdmin, assertCompanyUser, requireAuth } from "./bids.helpers.js";
 import type {
@@ -45,6 +46,7 @@ export class BidsService {
 
     return repo.listByCompanyInvolvement({
       companyId,
+      deleted: query.deleted,
       scope: query.scope,
       status: query.status,
       postId: query.postId,
@@ -91,6 +93,7 @@ export class BidsService {
     if (!companyId) {
       throw new AppError(403, "COMPANY_REQUIRED", "Company admins must belong to a company");
     }
+    await assertCompanyMarketplaceSetupComplete({ userId: auth.userId, role: auth.role, companyId }, "SUBMIT_BID");
 
     const post = await repo.findActivePostById(body.postId);
     if (!post) {

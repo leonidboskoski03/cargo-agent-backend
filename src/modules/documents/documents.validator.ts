@@ -10,6 +10,7 @@ export const listDocumentsSchema = z.object({
     page: z.coerce.number().int().min(1).default(1),
     pageSize: z.coerce.number().int().min(1).max(100).default(20),
     kind: z.nativeEnum(DocumentKind).optional(),
+    deleted: z.enum(["active", "only", "include"]).optional().default("active"),
   }),
 });
 

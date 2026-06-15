@@ -30,6 +30,7 @@ function validateIssuedAndExpiry<T extends { issuedAt?: Date; expiresAt?: Date }
 export const listLicensesSchema = z.object({
   params: z.object({}),
   query: z.object({
+    deleted: z.enum(["active", "only", "include"]).default("active"),
     userId: z.string().cuid().optional(),
   }),
   body: z.object({}),

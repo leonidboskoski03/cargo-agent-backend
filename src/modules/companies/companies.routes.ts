@@ -7,6 +7,7 @@ import {
   getCompanyById,
   getMyCompany,
   listCompanies,
+  requestMyCompanyVerification,
   restoreCompany,
   updateMyCompany,
 } from "./companies.controller.js";
@@ -15,6 +16,7 @@ import {
   getCompanyByIdSchema,
   getMyCompanySchema,
   listCompaniesSchema,
+  requestMyCompanyVerificationSchema,
   restoreCompanySchema,
   updateMyCompanySchema,
 } from "./companies.validator.js";
@@ -25,6 +27,7 @@ companiesRouter.get("/", requireAuth, validate(listCompaniesSchema), asyncRoute(
 companiesRouter.get("/me", requireAuth, validate(getMyCompanySchema), asyncRoute(getMyCompany));
 companiesRouter.get("/:companyId", requireAuth, validate(getCompanyByIdSchema), asyncRoute(getCompanyById));
 companiesRouter.patch("/me", requireAuth, validate(updateMyCompanySchema), asyncRoute(updateMyCompany));
+companiesRouter.post("/me/verification", requireAuth, validate(requestMyCompanyVerificationSchema), asyncRoute(requestMyCompanyVerification));
 companiesRouter.delete("/me", requireAuth, validate(deleteMyCompanySchema), asyncRoute(deleteMyCompany));
 companiesRouter.post("/:companyId/restore", requireAuth, validate(restoreCompanySchema), asyncRoute(restoreCompany));
 

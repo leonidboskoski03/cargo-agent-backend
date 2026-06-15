@@ -10,6 +10,7 @@ export async function listLocations(req: Request, res: Response) {
   const data = await service.list(authFromRequest(req), {
     countryCode: typeof req.query.countryCode === "string" ? req.query.countryCode : undefined,
     city: typeof req.query.city === "string" ? req.query.city : undefined,
+    deleted: req.query.deleted === "only" || req.query.deleted === "include" ? req.query.deleted : "active",
   });
 
   return ok(res, data);

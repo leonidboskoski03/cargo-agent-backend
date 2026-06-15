@@ -173,14 +173,14 @@ export async function uploadAsset(input: UploadAssetInput): Promise<UploadAssetR
     };
   }
 
-  const absolutePath = path.resolve(process.cwd(), env.LOCAL_STORAGE_PATH, key);
+  const absolutePath = path.resolve(process.cwd(), env.LOCAL_UPLOAD_DIR, key);
   await mkdir(path.dirname(absolutePath), { recursive: true });
   await writeFile(absolutePath, buffer);
 
   return {
     provider: "local",
     key,
-    url: `${env.PUBLIC_UPLOADS_BASE_URL.replace(/\/$/, "")}/${key.replace(/\\/g, "/")}`,
+    url: `${env.UPLOAD_PUBLIC_BASE_URL.replace(/\/$/, "")}/${key.replace(/\\/g, "/")}`,
     sizeBytes: buffer.length,
     mimeType: input.mimeType,
     fileName: safeName,

@@ -2,11 +2,14 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../../shared/prisma/prismaClient.js";
 
 type LocationListFilters = {
+  companyId: string;
   countryCode?: string;
   city?: string;
+  deleted?: "active" | "only" | "include";
 };
 
 type LocationCreateData = {
+  companyId: string;
   countryCode: string;
   city: string;
   region?: string;
@@ -26,6 +29,7 @@ type LocationUpdateData = {
 
 const locationSelect = {
   id: true,
+  companyId: true,
   countryCode: true,
   city: true,
   region: true,
@@ -38,31 +42,34 @@ const locationSelect = {
 } as const;
 
 export class LocationsRepository {
-  async listActive(filters: LocationListFilters) {
+  async list(filters: LocationListFilters) {
     return prisma.location.findMany({
       where: {
-        deletedAt: null,
+        companyId: filters.companyId,
+        ...(filters.deleted === "only" ? { deletedAt: { not: null } } : {}),
+        ...(!filters.deleted || filters.deleted === "active" ? { deletedAt: null } : {}),
         ...(filters.countryCode ? { countryCode: filters.countryCode } : {}),
         ...(filters.city ? { city: { contains: filters.city, mode: "insensitive" } } : {}),
       },
-      orderBy: [{ countryCode: "asc" }, { city: "asc" }],
+      orderBy: filters.deleted === "only" ? [{ deletedAt: "desc" }] : [{ countryCode: "asc" }, { city: "asc" }],
       select: locationSelect,
     });
   }
 
-  async findActiveById(locationId: string) {
+  async findActiveById(locationId: string, companyId: string) {
     return prisma.location.findFirst({
       where: {
         id: locationId,
+        companyId,
         deletedAt: null,
       },
       select: locationSelect,
     });
   }
 
-  async findAnyById(locationId: string) {
-    return prisma.location.findUnique({
-      where: { id: locationId },
+  async findAnyById(locationId: string, companyId: string) {
+    return prisma.location.findFirst({
+      where: { id: locationId, companyId },
       select: locationSelect,
     });
   }

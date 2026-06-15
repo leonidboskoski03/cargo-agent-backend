@@ -12,6 +12,7 @@ import { enqueueNotificationEvent } from "../../shared/queue/notificationEvents.
 import { companyCreditsConfig } from "../../config/companyCredits.js";
 import { jobSeekerBillingConfig } from "../../config/jobSeekerBilling.js";
 import { useCompanyMonthlyQuotaOrCredits, useJobSeekerMonthlyQuotaOrCredits } from "../../shared/credits/marketplaceCredits.js";
+import { assertVehicleListingPublishSetupComplete } from "../../shared/profileSetup/profileSetupGuard.js";
 import {
   assertCanBrowseMarketplace,
   assertCanMutateListing,
@@ -181,6 +182,10 @@ export class VehicleMarketplaceService {
     const requiredAuth = requireAuth(auth);
     assertCanMutateListing(requiredAuth);
 
+    if ((body.status ?? VehicleMarketplaceListingStatus.DRAFT) === VehicleMarketplaceListingStatus.PUBLISHED) {
+      await assertVehicleListingPublishSetupComplete(requiredAuth);
+    }
+
     const ownership =
       requiredAuth.role === Roles.COMPANY_ADMIN
         ? { ownerCompanyId: requiredAuth.companyId, ownerUserId: null }
@@ -254,6 +259,10 @@ export class VehicleMarketplaceService {
     }
 
     assertCanOwnListing(requiredAuth, listing);
+
+    if (listing.status !== VehicleMarketplaceListingStatus.PUBLISHED && body.status === VehicleMarketplaceListingStatus.PUBLISHED) {
+      await assertVehicleListingPublishSetupComplete(requiredAuth);
+    }
 
     const wasPublished = listing.status === VehicleMarketplaceListingStatus.PUBLISHED;
     const updated = await repo.update(listingId, {

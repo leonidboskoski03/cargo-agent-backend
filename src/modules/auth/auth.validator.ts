@@ -22,7 +22,7 @@ export const registrationStartSchema = z.object({
     firstName: z.string().trim().min(1).max(80),
     lastName: z.string().trim().min(1).max(80),
     email: z.string().trim().email(),
-    phone: z.string().trim().min(5).max(40).optional(),
+    phone: z.string().trim().min(5).max(40),
     password: z.string().min(8).max(120),
   }),
   params: z.object({}),
@@ -41,8 +41,8 @@ export const registrationVerifyOtpSchema = z.object({
 export const completeJobSeekerRegistrationSchema = z.object({
   body: z.object({
     draftId: z.string().trim().cuid(),
-    countryCode: z.string().trim().min(2).max(2).transform((value) => value.toUpperCase()),
-    city: z.string().trim().min(1).max(120),
+    countryCode: z.string().trim().min(2).max(2).transform((value) => value.toUpperCase()).optional(),
+    city: z.string().trim().min(1).max(120).optional(),
     headline: z.string().trim().min(1).max(180).optional(),
     yearsExperience: z.number().int().min(0).max(60).optional(),
     availability: z.string().trim().min(1).max(120).optional(),
@@ -58,7 +58,7 @@ export const completeCompanyRegistrationSchema = z.object({
     companyName: z.string().trim().min(2).max(120),
     companyType: z.nativeEnum(CompanyType),
     registrationNumber: z.string().trim().min(3).max(100),
-    address: z.string().trim().min(2).max(255),
+    address: z.string().trim().min(2).max(255).optional(),
     countryCode: z.string().trim().min(2).max(2).transform((value) => value.toUpperCase()),
     city: z.string().trim().min(1).max(120),
     vatNumber: z.string().trim().min(3).max(120).optional(),

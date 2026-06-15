@@ -5,6 +5,7 @@ type ListFilters = {
   ownerUserId?: string;
   ownerCompanyId?: string;
   kind?: DocumentKind;
+  deleted?: "active" | "only" | "include";
   page: number;
   pageSize: number;
 };
@@ -24,7 +25,8 @@ export class DocumentsRepository {
   async list(filters: ListFilters) {
     return prisma.document.findMany({
       where: {
-        deletedAt: null,
+        ...(filters.deleted === "only" ? { deletedAt: { not: null } } : {}),
+        ...(!filters.deleted || filters.deleted === "active" ? { deletedAt: null } : {}),
         ...(filters.ownerUserId ? { ownerUserId: filters.ownerUserId } : {}),
         ...(filters.ownerCompanyId ? { ownerCompanyId: filters.ownerCompanyId } : {}),
         ...(filters.kind ? { kind: filters.kind } : {}),

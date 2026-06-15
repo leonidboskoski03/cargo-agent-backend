@@ -143,6 +143,8 @@ model JobApplicationSubmission {
   submittedByUserId    String
   submittedByCompanyId String?
   message              String?
+  documentName         String?
+  documentUrl          String?
   status               JobApplicationSubmissionStatus @default(PENDING)
   isPromoted           Boolean                        @default(false)
   promotedUntil        DateTime?

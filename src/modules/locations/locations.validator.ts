@@ -8,6 +8,7 @@ export const listLocationsSchema = z.object({
   query: z.object({
     countryCode: z.string().trim().length(2).optional(),
     city: z.string().trim().min(1).max(120).optional(),
+    deleted: z.enum(["active", "only", "include"]).optional().default("active"),
   }),
   body: z.object({}),
 });

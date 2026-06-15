@@ -16,6 +16,7 @@ const userSelect = {
   yearsExperience: true,
   availability: true,
   preferredRoutes: true,
+  preferredLanguage: true,
   emailVerifiedAt: true,
   isActive: true,
   deletedAt: true,
@@ -32,6 +33,7 @@ type UserProfileUpdateData = {
   imageUrl?: string | null;
   lastName?: string;
   phone?: string | null;
+  preferredLanguage?: string | null;
   preferredRoutes?: Prisma.InputJsonValue | Prisma.NullableJsonNullValueInput;
   isActive?: boolean;
   yearsExperience?: number | null;
@@ -40,6 +42,11 @@ type UserProfileUpdateData = {
 type UserMembershipUpdateData = {
   role: UserRole;
   companyId: string | null;
+};
+
+type UserListFilters = {
+  deleted?: "active" | "only" | "include";
+  includeInactive: boolean;
 };
 
 export class UsersRepository {
@@ -93,12 +100,13 @@ export class UsersRepository {
     });
   }
 
-  async listForCompany(companyId: string, includeInactive: boolean) {
+  async listForCompany(companyId: string, filters: UserListFilters) {
     return prisma.user.findMany({
       where: {
         companyId,
-        deletedAt: null,
-        ...(includeInactive ? {} : { isActive: true }),
+        ...(filters.deleted === "only" ? { deletedAt: { not: null } } : {}),
+        ...(!filters.deleted || filters.deleted === "active" ? { deletedAt: null } : {}),
+        ...(filters.deleted === "active" && !filters.includeInactive ? { isActive: true } : {}),
       },
       orderBy: { createdAt: "desc" },
       select: userSelect,

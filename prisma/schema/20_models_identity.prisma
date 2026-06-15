@@ -16,6 +16,11 @@ model Company {
   foundedAt          DateTime?           @db.Date
   employeeCount      Int?
   isVerified         Boolean             @default(false)
+  verificationStatus CompanyVerificationStatus @default(UNVERIFIED)
+  verificationProvider String?
+  verificationCheckedAt DateTime?
+  verificationFailureReason String?
+  verificationDetails Json?
   stripeCustomerId   String?             @unique
   currentPlanId      String?
   subscriptionStatus SubscriptionStatus? @default(FREE)
@@ -25,6 +30,7 @@ model Company {
 
   currentPlan              Plan?                      @relation("CompanyCurrentPlan", fields: [currentPlanId], references: [id])
   users                    User[]
+  locations                Location[]
   routes                   Route[]
   vehicles                 Vehicle[]
   posts                    Post[]
@@ -65,6 +71,7 @@ model User {
   yearsExperience         Int?
   availability            String?
   preferredRoutes         Json?
+  preferredLanguage       String?  @default("en")
   passwordHash            String
   tokenVersion            Int      @default(1)
   passwordChangedAt       DateTime?

@@ -13,6 +13,8 @@ type CreateJobApplicationInput = {
 };
 
 type CreateSubmissionInput = {
+  documentName?: string;
+  documentUrl?: string;
   jobApplicationId: string;
   submittedByUserId: string;
   submittedByCompanyId?: string;
@@ -29,7 +31,13 @@ type UpdateJobApplicationInput = {
   title?: string;
 };
 
+type JobApplicationListFilters = {
+  deleted?: "active" | "only" | "include";
+};
+
 type CreateJobSeekerSubmissionInput = {
+  documentName?: string;
+  documentUrl?: string;
   jobApplicationId: string;
   submittedByUserId: string;
   message?: string;
@@ -47,6 +55,8 @@ type JobSeekerSubmissionResult = {
     status: string;
     createdAt: Date;
     updatedAt: Date;
+    documentName: string | null;
+    documentUrl: string | null;
   };
   monetization: {
     mode: "FREE_QUOTA" | "CREDITS";
@@ -95,9 +105,13 @@ export class JobApplicationsRepository {
     });
   }
 
-  async listCreatedByUser(userId: string) {
+  async listCreatedByUser(userId: string, filters: JobApplicationListFilters = {}) {
     return prisma.jobApplication.findMany({
-      where: { createdByUserId: userId },
+      where: {
+        createdByUserId: userId,
+        ...(filters.deleted === "only" ? { deletedAt: { not: null } } : {}),
+        ...(!filters.deleted || filters.deleted === "active" ? { deletedAt: null } : {}),
+      },
       orderBy: [{ isPromoted: "desc" }, { createdAt: "desc" }],
     });
   }
@@ -150,6 +164,8 @@ export class JobApplicationsRepository {
         submittedByUserId: input.submittedByUserId,
         submittedByCompanyId: input.submittedByCompanyId ?? null,
         message: input.message,
+        documentName: input.documentName,
+        documentUrl: input.documentUrl,
       },
     });
   }
@@ -163,6 +179,8 @@ export class JobApplicationsRepository {
             submittedByUserId: input.submittedByUserId,
             submittedByCompanyId: null,
             message: input.message,
+            documentName: input.documentName,
+            documentUrl: input.documentUrl,
           },
         });
 

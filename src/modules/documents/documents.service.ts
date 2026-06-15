@@ -45,6 +45,7 @@ export class DocumentsService {
         page: query.page,
         pageSize: query.pageSize,
         kind: query.kind,
+        deleted: query.deleted,
       });
     }
 
@@ -54,6 +55,7 @@ export class DocumentsService {
         page: query.page,
         pageSize: query.pageSize,
         kind: query.kind,
+        deleted: query.deleted,
       });
     }
 

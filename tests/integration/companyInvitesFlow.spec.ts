@@ -78,6 +78,13 @@ describe("company invites flow", () => {
       const acceptToken = createInviteResponse.body.data.acceptToken as string;
       expect(acceptToken).toBeTruthy();
 
+      const previewInviteResponse = await request(app)
+        .get("/api/v1/company-invites/preview")
+        .query({ token: acceptToken });
+      expect(previewInviteResponse.statusCode).toBe(200);
+      expect(previewInviteResponse.body.data.invitedEmail).toBe(invited.email);
+      expect(previewInviteResponse.body.data.company.name).toBe(company.name);
+
       const listInvitesResponse = await request(app).get("/api/v1/company-invites").set("Authorization", adminToken);
       expect(listInvitesResponse.statusCode).toBe(200);
       const ids = (listInvitesResponse.body.data as Array<{ id: string }>).map((item) => item.id);

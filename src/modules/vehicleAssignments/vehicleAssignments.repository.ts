@@ -15,6 +15,10 @@ type AssignmentUpdateData = {
   endsAt?: Date | null;
 };
 
+type AssignmentListFilters = {
+  deleted?: "active" | "only" | "include";
+};
+
 const assignmentSelect = {
   id: true,
   vehicleId: true,
@@ -42,14 +46,21 @@ const assignmentSelect = {
   },
 } as const;
 
+function assignmentDeletedWhere(deleted: AssignmentListFilters["deleted"]): Prisma.VehicleAssignmentWhereInput {
+  if (deleted === "only") return { deletedAt: { not: null } };
+  if (deleted === "include") return {};
+  return { deletedAt: null };
+}
+
 export class VehicleAssignmentsRepository {
-  async listActiveByCompany(companyId: string) {
+  async listByCompany(companyId: string, filters: AssignmentListFilters = {}) {
+    const deleted = filters.deleted ?? "active";
     return prisma.vehicleAssignment.findMany({
       where: {
-        deletedAt: null,
+        ...assignmentDeletedWhere(deleted),
         vehicle: {
           companyId,
-          deletedAt: null,
+          ...(deleted === "active" ? { deletedAt: null } : {}),
         },
       },
       orderBy: { startsAt: "desc" },
@@ -57,10 +68,10 @@ export class VehicleAssignmentsRepository {
     });
   }
 
-  async listActiveByUser(userId: string) {
+  async listByUser(userId: string, filters: AssignmentListFilters = {}) {
     return prisma.vehicleAssignment.findMany({
       where: {
-        deletedAt: null,
+        ...assignmentDeletedWhere(filters.deleted ?? "active"),
         driverUserId: userId,
       },
       orderBy: { startsAt: "desc" },

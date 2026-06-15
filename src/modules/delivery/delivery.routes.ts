@@ -24,6 +24,7 @@ deliveryRouter.get("/status", requireAuth, asyncRoute(async (req, res) => {
   const storageMissing = [
     env.STORAGE_PROVIDER === "s3" && !env.S3_ENDPOINT ? "S3_ENDPOINT" : null,
     env.STORAGE_PROVIDER === "s3" && !env.S3_BUCKET ? "S3_BUCKET" : null,
+    env.STORAGE_PROVIDER === "s3" && !env.S3_PUBLIC_BASE_URL ? "S3_PUBLIC_BASE_URL" : null,
     env.STORAGE_PROVIDER === "s3" && !env.S3_ACCESS_KEY_ID ? "S3_ACCESS_KEY_ID" : null,
     env.STORAGE_PROVIDER === "s3" && !env.S3_SECRET_ACCESS_KEY ? "S3_SECRET_ACCESS_KEY" : null,
   ].filter((item): item is string => Boolean(item));
