@@ -7,7 +7,7 @@ export class AuthRepository {
     firstName: string;
     lastName: string;
     email: string;
-    phone?: string;
+    phone: string;
     passwordHash: string;
     expiresAt: Date;
     otpChallengeId: string;
@@ -54,8 +54,8 @@ export class AuthRepository {
 
   async completeJobSeekerRegistration(input: {
     draftId: string;
-    countryCode: string;
-    city: string;
+    countryCode?: string;
+    city?: string;
     headline?: string;
     yearsExperience?: number;
     availability?: string;
@@ -77,8 +77,8 @@ export class AuthRepository {
           passwordHash: draft.passwordHash,
           role: UserRole.JOB_SEEKER,
           companyId: null,
-          countryCode: input.countryCode,
-          city: input.city,
+          countryCode: input.countryCode ?? null,
+          city: input.city ?? null,
           headline: input.headline,
           yearsExperience: input.yearsExperience,
           availability: input.availability,
@@ -119,7 +119,7 @@ export class AuthRepository {
     companyName: string;
     companyType: CompanyType;
     registrationNumber: string;
-    address: string;
+    address?: string;
     countryCode: string;
     city: string;
     vatNumber?: string;
@@ -154,7 +154,7 @@ export class AuthRepository {
           vatNumber: input.vatNumber,
           countryCode: input.countryCode,
           city: input.city,
-          address: input.address,
+          address: input.address ?? null,
           phone: input.companyPhone,
           email: input.companyEmail,
           website: input.website,
@@ -650,6 +650,7 @@ export class AuthRepository {
         purpose: true,
         destination: true,
         expiresAt: true,
+        nextResendAt: true,
       },
     });
   }
@@ -726,6 +727,7 @@ export class AuthRepository {
         channel: true,
         purpose: true,
         expiresAt: true,
+        nextResendAt: true,
       },
     });
   }

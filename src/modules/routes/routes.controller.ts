@@ -8,6 +8,7 @@ const service = new RoutesService();
 
 export async function listRoutes(req: Request, res: Response) {
   const data = await service.list(authFromRequest(req), {
+    deleted: req.query.deleted === "only" || req.query.deleted === "include" ? req.query.deleted : "active",
     originLocationId: typeof req.query.originLocationId === "string" ? req.query.originLocationId : undefined,
     destinationLocationId:
       typeof req.query.destinationLocationId === "string" ? req.query.destinationLocationId : undefined,

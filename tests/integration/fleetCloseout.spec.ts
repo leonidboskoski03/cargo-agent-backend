@@ -11,7 +11,7 @@ describe("fleet closeout endpoints", () => {
     dbReady = await isDatabaseAvailable(runtime.prisma);
   }, 20_000);
 
-  it("enforces admin mutation and driver read-only access across vehicles, licenses, and assignments", async () => {
+  it("enforces fleet permissions and allows drivers to attach their own licenses", async () => {
     const { prisma, buildApp, signAccessToken } = await initRuntime();
     if (!dbReady) return;
 
@@ -170,16 +170,25 @@ describe("fleet closeout endpoints", () => {
       expect((driverLicenseList.body.data as Array<{ id: string }>).map((item) => item.id)).toContain(licenseId);
 
       const driverLicenseCreate = await request(app).post("/api/v1/licenses").set("Authorization", driverAuth).send({
-        licenseType: `SELF-${suffix}`,
+        documentUrl: "https://cdn.example.test/licenses/self.pdf",
+        licenseType: "C",
       });
-      expect(driverLicenseCreate.statusCode).toBe(403);
-      expect(driverLicenseCreate.body.error.code).toBe("FORBIDDEN");
+      expect(driverLicenseCreate.statusCode).toBe(201);
+      const selfLicenseId = driverLicenseCreate.body.data.id as string;
+      expect(driverLicenseCreate.body.data.userId).toBe(driver.id);
+      expect(driverLicenseCreate.body.data.isValid).toBe(false);
+
+      const adminLicenseList = await request(app).get("/api/v1/licenses").set("Authorization", adminAuth);
+      expect(adminLicenseList.statusCode).toBe(200);
+      expect((adminLicenseList.body.data as Array<{ id: string }>).map((item) => item.id)).toContain(selfLicenseId);
 
       const driverLicenseUpdate = await request(app)
-        .patch(`/api/v1/licenses/${licenseId}`)
+        .patch(`/api/v1/licenses/${selfLicenseId}`)
         .set("Authorization", driverAuth)
-        .send({ isValid: false });
-      expect(driverLicenseUpdate.statusCode).toBe(403);
+        .send({ documentUrl: "https://cdn.example.test/licenses/self-updated.pdf", isValid: true });
+      expect(driverLicenseUpdate.statusCode).toBe(200);
+      expect(driverLicenseUpdate.body.data.documentUrl).toBe("https://cdn.example.test/licenses/self-updated.pdf");
+      expect(driverLicenseUpdate.body.data.isValid).toBe(false);
 
       const deleteLicense = await request(app).delete(`/api/v1/licenses/${licenseId}`).set("Authorization", adminAuth);
       expect(deleteLicense.statusCode).toBe(200);

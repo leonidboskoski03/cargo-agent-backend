@@ -9,6 +9,10 @@ function present(value: string | undefined) {
   return Boolean(value && value.trim().length > 0);
 }
 
+function validStripePriceId(value: string | null | undefined) {
+  return Boolean(value?.trim().startsWith("price_"));
+}
+
 function stripeKeyMode(key: string | undefined) {
   if (!present(key)) {
     return "missing";
@@ -42,9 +46,9 @@ async function main() {
     },
     database: {
       connected: false,
-      plans: [] as Array<{ code: string; stripePriceIdPresent: boolean }>,
-      jobSeekerCreditPacks: [] as Array<{ code: string; stripePriceIdPresent: boolean }>,
-      companyCreditPacks: [] as Array<{ code: string; stripePriceIdPresent: boolean }>,
+      plans: [] as Array<{ code: string; stripePriceIdConfigured: boolean; stripePriceIdPresent: boolean }>,
+      jobSeekerCreditPacks: [] as Array<{ code: string; stripePriceIdConfigured: boolean; stripePriceIdPresent: boolean }>,
+      companyCreditPacks: [] as Array<{ code: string; stripePriceIdConfigured: boolean; stripePriceIdPresent: boolean }>,
       error: null as string | null,
     },
     automatedEvidence: {
@@ -73,14 +77,17 @@ async function main() {
     report.database.connected = true;
     report.database.plans = plans.map((plan) => ({
       code: plan.code,
+      stripePriceIdConfigured: validStripePriceId(plan.stripePriceId),
       stripePriceIdPresent: present(plan.stripePriceId ?? undefined),
     }));
     report.database.jobSeekerCreditPacks = jobSeekerCreditPacks.map((pack) => ({
       code: pack.code,
+      stripePriceIdConfigured: validStripePriceId(pack.stripePriceId),
       stripePriceIdPresent: present(pack.stripePriceId ?? undefined),
     }));
     report.database.companyCreditPacks = companyCreditPacks.map((pack) => ({
       code: pack.code,
+      stripePriceIdConfigured: validStripePriceId(pack.stripePriceId),
       stripePriceIdPresent: present(pack.stripePriceId ?? undefined),
     }));
   } catch (error) {

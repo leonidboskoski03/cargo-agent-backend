@@ -36,6 +36,30 @@ Database-seeded records also need Stripe test price IDs before checkout can work
 - `JobSeekerCreditPack` records `JS_CREDITS_10`, `JS_CREDITS_30`, `JS_CREDITS_70` need `stripePriceId`.
 - `CompanyCreditPack` records `CO_CREDITS_10`, `CO_CREDITS_30`, `CO_CREDITS_70` need `stripePriceId`.
 
+There are two supported ways to set credit-pack prices:
+
+1. Automatic sandbox bootstrap:
+
+```powershell
+npm run stripe:sandbox:bootstrap
+```
+
+This creates or reuses Stripe test-mode prices using stable lookup keys, then writes `price_...` IDs directly into the database.
+
+2. Manual price IDs through seed env:
+
+```powershell
+STRIPE_JOB_SEEKER_CREDITS_10_PRICE_ID=price_...
+STRIPE_JOB_SEEKER_CREDITS_30_PRICE_ID=price_...
+STRIPE_JOB_SEEKER_CREDITS_70_PRICE_ID=price_...
+STRIPE_COMPANY_CREDITS_10_PRICE_ID=price_...
+STRIPE_COMPANY_CREDITS_30_PRICE_ID=price_...
+STRIPE_COMPANY_CREDITS_70_PRICE_ID=price_...
+npm run prisma:seed
+```
+
+When these variables are blank, seed leaves any existing credit-pack `stripePriceId` values untouched. When they are present, seed creates or updates the matching pack with that price ID.
+
 Run the local readiness report:
 
 ```powershell

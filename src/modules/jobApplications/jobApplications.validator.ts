@@ -1,7 +1,9 @@
 import { z } from "zod";
 
 export const listJobApplicationsSchema = z.object({
-  query: z.object({}),
+  query: z.object({
+    deleted: z.enum(["active", "only", "include"]).default("active"),
+  }),
   params: z.object({}),
   body: z.object({}),
 });
@@ -54,6 +56,8 @@ export const applyToJobApplicationSchema = z.object({
   }),
   body: z.object({
     message: z.string().trim().max(2000).optional(),
+    documentName: z.string().trim().min(1).max(120).optional(),
+    documentUrl: z.string().trim().url().optional(),
   }),
 });
 

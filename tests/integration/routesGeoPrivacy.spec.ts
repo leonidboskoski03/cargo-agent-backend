@@ -94,12 +94,23 @@ describe("geo catalog and company-private routes", () => {
       }),
     ]);
     const [origin, destination] = await Promise.all([
-      prisma.location.create({ data: { city: `Origin ${suffix}`, countryCode: "MK", lat: 41.9973, lng: 21.428 } }),
-      prisma.location.create({ data: { city: `Destination ${suffix}`, countryCode: "MK", lat: 41.0319, lng: 21.3347 } }),
+      prisma.location.create({ data: { city: `Origin ${suffix}`, companyId: companyA.id, countryCode: "MK", lat: 41.9973, lng: 21.428 } }),
+      prisma.location.create({ data: { city: `Destination ${suffix}`, companyId: companyA.id, countryCode: "MK", lat: 41.0319, lng: 21.3347 } }),
     ]);
 
     const tokenA = authHeader(signAccessToken, { companyId: companyA.id, email: adminA.email, role: adminA.role, userId: adminA.id });
     const tokenB = authHeader(signAccessToken, { companyId: companyB.id, email: adminB.email, role: adminB.role, userId: adminB.id });
+
+    const companyALocations = await request(app).get("/api/v1/locations").set("Authorization", tokenA);
+    expect(companyALocations.statusCode).toBe(200);
+    expect(companyALocations.body.data.map((location: { id: string }) => location.id)).toEqual(expect.arrayContaining([origin.id, destination.id]));
+
+    const companyBLocations = await request(app).get("/api/v1/locations").set("Authorization", tokenB);
+    expect(companyBLocations.statusCode).toBe(200);
+    expect(companyBLocations.body.data.map((location: { id: string }) => location.id)).not.toEqual(expect.arrayContaining([origin.id, destination.id]));
+
+    const companyBOriginDetail = await request(app).get(`/api/v1/locations/${origin.id}`).set("Authorization", tokenB);
+    expect(companyBOriginDetail.statusCode).toBe(404);
 
     const created = await request(app)
       .post("/api/v1/routes")
@@ -153,8 +164,8 @@ describe("geo catalog and company-private routes", () => {
       },
     });
     const [origin, destination] = await Promise.all([
-      prisma.location.create({ data: { city: `Estimate Origin ${suffix}`, countryCode: "MK", lat: 41.9973, lng: 21.428 } }),
-      prisma.location.create({ data: { city: `Estimate Destination ${suffix}`, countryCode: "MK", lat: 41.0319, lng: 21.3347 } }),
+      prisma.location.create({ data: { city: `Estimate Origin ${suffix}`, companyId: company.id, countryCode: "MK", lat: 41.9973, lng: 21.428 } }),
+      prisma.location.create({ data: { city: `Estimate Destination ${suffix}`, companyId: company.id, countryCode: "MK", lat: 41.0319, lng: 21.3347 } }),
     ]);
     const token = authHeader(signAccessToken, { companyId: company.id, email: admin.email, role: admin.role, userId: admin.id });
     const previousKey = process.env.OPENROUTESERVICE_API_KEY;

@@ -6,6 +6,7 @@ const cuidParam = z.string().cuid();
 export const listReviewsSchema = z.object({
   params: z.object({}),
   query: z.object({
+    deleted: z.enum(["active", "only", "include"]).default("active"),
     status: z.nativeEnum(ReviewStatus).optional(),
     contractId: z.string().cuid().optional(),
   }),

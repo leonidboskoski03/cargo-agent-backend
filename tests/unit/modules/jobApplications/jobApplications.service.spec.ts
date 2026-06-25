@@ -102,6 +102,8 @@ describe("JobApplicationsService edge cases", () => {
         submittedByUserId: "jobseeker_3",
         submittedByCompanyId: null,
         message: "hello",
+        documentName: "CV",
+        documentUrl: "https://files.test/cv.pdf",
         status: "PENDING",
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -122,11 +124,15 @@ describe("JobApplicationsService edge cases", () => {
         role: Roles.JOB_SEEKER,
       },
       jobApplicationId: "job_3",
+      documentName: "CV",
+      documentUrl: "https://files.test/cv.pdf",
       message: "hello",
     });
 
     expect(result).toMatchObject({
       id: "submission_1",
+      documentName: "CV",
+      documentUrl: "https://files.test/cv.pdf",
       billing: {
         mode: "FREE_QUOTA",
         remainingFreeApplications: 9,

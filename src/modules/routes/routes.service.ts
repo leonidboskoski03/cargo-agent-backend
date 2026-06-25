@@ -27,8 +27,9 @@ export class RoutesService {
     requireAuth(auth);
     const companyId = requireCompany(auth);
 
-    return repo.listActive({
+    return repo.list({
       companyId,
+      deleted: query.deleted,
       originLocationId: query.originLocationId,
       destinationLocationId: query.destinationLocationId,
     });
@@ -52,7 +53,7 @@ export class RoutesService {
     assertCompanyAdmin(auth);
     const companyId = requireCompany(auth);
 
-    await assertLocationsExist(repo, body.originLocationId, body.destinationLocationId);
+    await assertLocationsExist(repo, companyId, body.originLocationId, body.destinationLocationId);
 
     try {
       return await repo.create({
@@ -86,7 +87,7 @@ export class RoutesService {
     const originLocationId = body.originLocationId ?? existing.originLocationId;
     const destinationLocationId = body.destinationLocationId ?? existing.destinationLocationId;
 
-    await assertLocationsExist(repo, originLocationId, destinationLocationId);
+    await assertLocationsExist(repo, companyId, originLocationId, destinationLocationId);
 
     try {
       return await repo.update(routeId, {
@@ -134,7 +135,7 @@ export class RoutesService {
       throw new AppError(400, "ROUTE_NOT_DELETED", "Route is already active");
     }
 
-    await assertLocationsExist(repo, existing.originLocationId, existing.destinationLocationId);
+    await assertLocationsExist(repo, companyId, existing.originLocationId, existing.destinationLocationId);
 
     return repo.restore(routeId);
   }
@@ -142,6 +143,7 @@ export class RoutesService {
   async estimate(auth: AuthContext, body: CreateRouteEstimateBody) {
     requireAuth(auth);
     assertCompanyAdmin(auth);
+    const companyId = requireCompany(auth);
 
     const apiKey = process.env.OPENROUTESERVICE_API_KEY?.trim();
     if (!apiKey) {
@@ -149,8 +151,8 @@ export class RoutesService {
     }
 
     const [origin, destination] = await Promise.all([
-      repo.findActiveLocationWithCoordsById(body.originLocationId),
-      repo.findActiveLocationWithCoordsById(body.destinationLocationId),
+      repo.findActiveLocationWithCoordsById(body.originLocationId, companyId),
+      repo.findActiveLocationWithCoordsById(body.destinationLocationId, companyId),
     ]);
 
     if (!origin) {

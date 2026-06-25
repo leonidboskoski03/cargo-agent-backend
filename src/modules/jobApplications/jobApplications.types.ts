@@ -25,6 +25,8 @@ export type CreateJobApplicationInput = {
 
 export type ApplyInput = {
   auth: AuthContext;
+  documentName?: ApplyJobApplicationBody["documentName"];
+  documentUrl?: ApplyJobApplicationBody["documentUrl"];
   jobApplicationId: ApplyJobApplicationParams["jobApplicationId"];
   message?: ApplyJobApplicationBody["message"];
 };

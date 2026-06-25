@@ -18,6 +18,14 @@ enum CompanyType {
   BOTH
 }
 
+enum CompanyVerificationStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  FAILED
+  NEEDS_REVIEW
+}
+
 enum UserRole {
   COMPANY_ADMIN
   COMPANY_DRIVER
@@ -45,8 +53,10 @@ enum PostPriceType {
 }
 
 enum PostStatus {
+  DRAFT
   OPEN
   ASSIGNED
+  ARCHIVED
   CANCELLED
   EXPIRED
 }
@@ -222,6 +232,11 @@ model Company {
   foundedAt          DateTime?           @db.Date
   employeeCount      Int?
   isVerified         Boolean             @default(false)
+  verificationStatus CompanyVerificationStatus @default(UNVERIFIED)
+  verificationProvider String?
+  verificationCheckedAt DateTime?
+  verificationFailureReason String?
+  verificationDetails Json?
   stripeCustomerId   String?             @unique
   currentPlanId      String?
   subscriptionStatus SubscriptionStatus? @default(FREE)
@@ -231,6 +246,7 @@ model Company {
 
   currentPlan              Plan?                      @relation("CompanyCurrentPlan", fields: [currentPlanId], references: [id])
   users                    User[]
+  locations                Location[]
   vehicles                 Vehicle[]
   posts                    Post[]
   carrierBids              Bid[]                      @relation("CarrierCompanyBids")
@@ -264,6 +280,7 @@ model User {
   yearsExperience Int?
   availability String?
   preferredRoutes Json?
+  preferredLanguage String? @default("en")
   passwordHash String
   tokenVersion Int      @default(1)
   passwordChangedAt DateTime?
@@ -639,6 +656,7 @@ model VehicleAssignment {
 
 model Location {
   id          String   @id @default(cuid())
+  companyId   String?
   countryCode String
   city        String
   region      String?
@@ -649,9 +667,11 @@ model Location {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  company           Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
   originRoutes      Route[] @relation("OriginLocationRoutes")
   destinationRoutes Route[] @relation("DestinationLocationRoutes")
 
+  @@index([companyId])
   @@index([countryCode, city])
 }
 
@@ -754,6 +774,8 @@ model JobApplicationSubmission {
   submittedByUserId    String
   submittedByCompanyId String?
   message              String?
+  documentName         String?
+  documentUrl          String?
   status               JobApplicationSubmissionStatus @default(PENDING)
   isPromoted           Boolean                         @default(false)
   promotedUntil        DateTime?

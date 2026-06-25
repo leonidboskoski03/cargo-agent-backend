@@ -20,7 +20,9 @@ export async function listJobApplicationFeed(req: Request, res: Response) {
 }
 
 export async function listMyJobApplications(req: Request, res: Response) {
-  const data = await service.listMine(authFromRequest(req));
+  const data = await service.listMine(authFromRequest(req), {
+    deleted: req.query.deleted === "only" || req.query.deleted === "include" ? req.query.deleted : "active",
+  });
   return ok(res, data);
 }
 
@@ -47,6 +49,8 @@ export async function restoreJobApplication(req: Request, res: Response) {
 export async function applyToJobApplication(req: Request, res: Response) {
   const data = await service.apply({
     auth: authFromRequest(req),
+    documentName: req.body.documentName,
+    documentUrl: req.body.documentUrl,
     jobApplicationId: getStringParam(req.params.jobApplicationId),
     message: req.body.message,
   });

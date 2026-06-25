@@ -3,6 +3,7 @@ import { prisma } from "../../shared/prisma/prismaClient.js";
 
 type RouteListFilters = {
   companyId: string;
+  deleted?: "active" | "only" | "include";
   originLocationId?: string;
   destinationLocationId?: string;
 };
@@ -53,12 +54,18 @@ const routeSelect = {
   },
 } as const;
 
+function routeDeletedWhere(deleted: RouteListFilters["deleted"]): Prisma.RouteWhereInput {
+  if (deleted === "only") return { deletedAt: { not: null } };
+  if (deleted === "include") return {};
+  return { deletedAt: null };
+}
+
 export class RoutesRepository {
-  async listActive(filters: RouteListFilters) {
+  async list(filters: RouteListFilters) {
     return prisma.route.findMany({
       where: {
         companyId: filters.companyId,
-        deletedAt: null,
+        ...routeDeletedWhere(filters.deleted ?? "active"),
         ...(filters.originLocationId ? { originLocationId: filters.originLocationId } : {}),
         ...(filters.destinationLocationId ? { destinationLocationId: filters.destinationLocationId } : {}),
       },
@@ -85,20 +92,22 @@ export class RoutesRepository {
     });
   }
 
-  async findActiveLocationById(locationId: string) {
+  async findActiveLocationById(locationId: string, companyId: string) {
     return prisma.location.findFirst({
       where: {
         id: locationId,
+        companyId,
         deletedAt: null,
       },
       select: { id: true },
     });
   }
 
-  async findActiveLocationWithCoordsById(locationId: string) {
+  async findActiveLocationWithCoordsById(locationId: string, companyId: string) {
     return prisma.location.findFirst({
       where: {
         id: locationId,
+        companyId,
         deletedAt: null,
       },
       select: {

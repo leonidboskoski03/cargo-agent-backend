@@ -20,6 +20,11 @@ type LicenseUpdateData = {
   isValid?: boolean;
 };
 
+type LicenseListFilters = {
+  deleted?: "active" | "only" | "include";
+  userId?: string;
+};
+
 const licenseSelect = {
   id: true,
   userId: true,
@@ -48,6 +53,12 @@ const userSelect = {
   deletedAt: true,
 } as const;
 
+function licenseDeletedWhere(deleted: LicenseListFilters["deleted"]): Prisma.LicenseWhereInput {
+  if (deleted === "only") return { deletedAt: { not: null } };
+  if (deleted === "include") return {};
+  return { deletedAt: null };
+}
+
 export class LicensesRepository {
   async findUserById(userId: string) {
     return prisma.user.findUnique({
@@ -56,25 +67,26 @@ export class LicensesRepository {
     });
   }
 
-  async listActiveByUser(userId: string) {
+  async listByUser(userId: string, filters: LicenseListFilters = {}) {
     return prisma.license.findMany({
       where: {
+        ...licenseDeletedWhere(filters.deleted ?? "active"),
         userId,
-        deletedAt: null,
       },
       orderBy: { createdAt: "desc" },
       select: licenseSelect,
     });
   }
 
-  async listActiveByCompany(companyId: string, userId?: string) {
+  async listByCompany(companyId: string, filters: LicenseListFilters = {}) {
+    const deleted = filters.deleted ?? "active";
     return prisma.license.findMany({
       where: {
-        deletedAt: null,
-        userId,
+        ...licenseDeletedWhere(deleted),
+        userId: filters.userId,
         user: {
           companyId,
-          deletedAt: null,
+          ...(deleted === "active" ? { deletedAt: null } : {}),
         },
       },
       orderBy: { createdAt: "desc" },

@@ -11,6 +11,9 @@ import type { AuthContext } from "./jobSeekerBilling.types.js";
 
 const repo = new JobSeekerBillingRepository();
 
+function isStripePriceId(value: string | null | undefined) {
+  return Boolean(value?.trim().startsWith("price_"));
+}
 
 export class JobSeekerBillingService {
   async getWallet(auth: AuthContext) {
@@ -129,7 +132,8 @@ export class JobSeekerBillingService {
       throw new AppError(404, "CREDIT_PACK_NOT_FOUND", "Credit pack not found or inactive");
     }
 
-    if (!pack.stripePriceId) {
+    const stripePriceId = pack.stripePriceId?.trim();
+    if (!isStripePriceId(stripePriceId)) {
       throw new AppError(500, "CREDIT_PACK_PRICE_NOT_CONFIGURED", "Stripe price is not configured for this credit pack");
     }
 
@@ -137,7 +141,7 @@ export class JobSeekerBillingService {
     const stripeSession = await stripe.checkout.sessions.create(
       {
         mode: "payment",
-        line_items: [{ price: pack.stripePriceId, quantity: 1 }],
+        line_items: [{ price: stripePriceId, quantity: 1 }],
         success_url: billingConfig.jobWalletSuccessUrl,
         cancel_url: billingConfig.jobWalletCancelUrl,
         metadata: {

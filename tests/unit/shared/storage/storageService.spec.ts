@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 
 const baseEnv = {
-  LOCAL_STORAGE_PATH: "uploads-test",
-  PUBLIC_UPLOADS_BASE_URL: "http://localhost:4000/uploads",
+  LOCAL_UPLOAD_DIR: "uploads-test",
+  UPLOAD_PUBLIC_BASE_URL: "http://localhost:4000/uploads",
   S3_ACCESS_KEY_ID: undefined,
   S3_BUCKET: undefined,
   S3_ENDPOINT: undefined,

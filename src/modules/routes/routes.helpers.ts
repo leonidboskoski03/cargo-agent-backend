@@ -9,7 +9,7 @@ export function requireAuth(auth: AuthContext): asserts auth is RequiredAuthCont
   }
 }
 
-export function assertCompanyAdmin(auth: RequiredAuthContext) {
+export function assertCompanyAdmin(auth: RequiredAuthContext): asserts auth is RequiredAuthContext & { companyId: string } {
   if (auth.role !== Roles.COMPANY_ADMIN) {
     throw new AppError(403, "FORBIDDEN", "Only company admins can perform this action");
   }
@@ -19,14 +19,14 @@ export function assertCompanyAdmin(auth: RequiredAuthContext) {
   }
 }
 
-export async function assertLocationsExist(repo: RoutesRepository, originLocationId: string, destinationLocationId: string) {
+export async function assertLocationsExist(repo: RoutesRepository, companyId: string, originLocationId: string, destinationLocationId: string) {
   if (originLocationId === destinationLocationId) {
     throw new AppError(400, "INVALID_ROUTE", "Origin and destination must be different");
   }
 
   const [origin, destination] = await Promise.all([
-    repo.findActiveLocationById(originLocationId),
-    repo.findActiveLocationById(destinationLocationId),
+    repo.findActiveLocationById(originLocationId, companyId),
+    repo.findActiveLocationById(destinationLocationId, companyId),
   ]);
 
   if (!origin) {

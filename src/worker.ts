@@ -3,6 +3,7 @@ import { logger } from "./config/logger.js";
 import { prisma } from "./shared/prisma/prismaClient.js";
 import { closeRedisConnection } from "./shared/queue/redisConnection.js";
 import { startBillingWebhookWorker } from "./workers/billingWebhook.worker.js";
+import { startCompanyVerificationWorker } from "./workers/companyVerification.worker.js";
 import { startNotificationEventsWorker } from "./workers/notificationEvents.worker.js";
 
 if (!env.BULLMQ_ENABLED) {
@@ -13,11 +14,12 @@ if (!env.BULLMQ_ENABLED) {
 const redisTarget = new URL(env.REDIS_URL);
 
 const billingWebhookWorker = startBillingWebhookWorker();
+const companyVerificationWorker = startCompanyVerificationWorker();
 const notificationEventsWorker = startNotificationEventsWorker();
 logger.info(
   {
     pid: process.pid,
-    queues: ["billing_webhooks", "notification_events"],
+    queues: ["billing_webhooks", "company_verification", "notification_events"],
     redisHost: redisTarget.hostname,
     redisPort: redisTarget.port ? Number(redisTarget.port) : 6379,
     redisTls: redisTarget.protocol === "rediss:",
@@ -25,11 +27,13 @@ logger.info(
   "Worker process started",
 );
 logger.info({ pid: process.pid }, "Billing webhook worker started");
+logger.info({ pid: process.pid }, "Company verification worker started");
 logger.info({ pid: process.pid }, "Notification events worker started");
 
 async function shutdown(signal: string) {
   logger.info({ signal }, "Worker graceful shutdown started");
   await billingWebhookWorker.close();
+  await companyVerificationWorker.close();
   await notificationEventsWorker.close();
   await closeRedisConnection();
   await prisma.$disconnect();

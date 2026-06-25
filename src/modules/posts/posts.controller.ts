@@ -10,6 +10,7 @@ export async function listPosts(req: Request, res: Response) {
   const data = await service.list(authFromRequest(req), {
 	scope: req.query.scope as never,
 	status: req.query.status as never,
+	deleted: req.query.deleted === "only" || req.query.deleted === "include" ? req.query.deleted : "active",
   });
 
   return ok(res, data);
@@ -42,6 +43,7 @@ export async function createPost(req: Request, res: Response) {
 	priceType: req.body.priceType,
 	priceAmount: req.body.priceAmount,
 	currency: req.body.currency,
+	status: req.body.status,
 	isPromoted: req.body.isPromoted,
 	promotedUntil: req.body.promotedUntil,
   });

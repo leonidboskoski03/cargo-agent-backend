@@ -75,6 +75,7 @@ const postBodyBase = z.object({
   priceType: z.nativeEnum(PostPriceType),
   priceAmount: decimalLike.optional(),
   currency: z.string().trim().min(3).max(3),
+  status: z.nativeEnum(PostStatus).optional(),
   isPromoted: z.boolean().optional(),
   promotedUntil: z.coerce.date().optional(),
 });
@@ -84,6 +85,7 @@ export const listPostsSchema = z.object({
   query: z.object({
 	scope: z.enum(["marketplace", "mine"]).default("marketplace"),
 	status: z.nativeEnum(PostStatus).optional(),
+	deleted: z.enum(["active", "only", "include"]).optional().default("active"),
   }),
   body: z.object({}),
 });

@@ -24,6 +24,8 @@ export async function login(req: Request, res: Response) {
       challengeId: data.challengeId,
       expiresAt: data.expiresAt,
       code: data.code,
+      nextResendAt: data.nextResendAt,
+      resendAttemptsRemaining: data.resendAttemptsRemaining,
       nextAction: {
         type: "MFA_REQUIRED",
         purpose: "LOGIN_MFA",
@@ -108,6 +110,8 @@ export async function startRegistration(req: Request, res: Response) {
     challengeId: data.challengeId,
     expiresAt: data.expiresAt,
     code: data.previewCode,
+    nextResendAt: data.nextResendAt,
+    resendAttemptsRemaining: data.resendAttemptsRemaining,
     nextAction: {
       type: "VERIFY_OTP",
       purpose: "REGISTER_VERIFY",
@@ -277,6 +281,8 @@ export async function forgotPassword(req: Request, res: Response) {
     challengeId: data.challengeId,
     expiresAt: data.expiresAt,
     code: data.previewCode,
+    nextResendAt: data.nextResendAt,
+    resendAttemptsRemaining: data.resendAttemptsRemaining,
     nextAction: {
       type: "VERIFY_OTP",
       purpose: "FORGOT_PASSWORD",
@@ -335,6 +341,8 @@ export async function requestOtp(req: Request, res: Response) {
     challengeId: data.challengeId,
     expiresAt: data.expiresAt,
     code: data.previewCode,
+    nextResendAt: data.nextResendAt,
+    resendAttemptsRemaining: data.resendAttemptsRemaining,
     nextAction: {
       type: "ENTER_OTP",
       purpose: req.body.purpose,
@@ -372,6 +380,8 @@ export async function resendOtp(req: Request, res: Response) {
     challengeId: data.challengeId,
     expiresAt: data.expiresAt,
     code: data.previewCode,
+    nextResendAt: data.nextResendAt,
+    resendAttemptsRemaining: data.resendAttemptsRemaining,
     nextAction: {
       type: "ENTER_OTP",
     },

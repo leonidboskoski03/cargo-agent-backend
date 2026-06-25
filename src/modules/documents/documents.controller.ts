@@ -11,6 +11,7 @@ export async function listDocuments(req: Request, res: Response) {
     page: Number(req.query.page ?? 1),
     pageSize: Number(req.query.pageSize ?? 20),
     kind: req.query.kind as never,
+    deleted: req.query.deleted === "only" || req.query.deleted === "include" ? req.query.deleted : "active",
   });
 
   return ok(res, data);

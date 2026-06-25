@@ -1,6 +1,10 @@
 import type { UserRole } from "@prisma/client";
 import { z } from "zod";
-import { createVehicleAssignmentSchema, updateVehicleAssignmentSchema } from "./vehicleAssignments.validator.js";
+import {
+  createVehicleAssignmentSchema,
+  listVehicleAssignmentsSchema,
+  updateVehicleAssignmentSchema,
+} from "./vehicleAssignments.validator.js";
 
 export type AuthContext = {
   userId?: string;
@@ -15,5 +19,6 @@ export type RequiredAuthContext = {
 };
 
 export type CreateAssignmentBody = z.infer<typeof createVehicleAssignmentSchema>["body"];
+export type ListVehicleAssignmentsQuery = z.infer<typeof listVehicleAssignmentsSchema>["query"];
 export type UpdateAssignmentBody = z.infer<typeof updateVehicleAssignmentSchema>["body"];
 

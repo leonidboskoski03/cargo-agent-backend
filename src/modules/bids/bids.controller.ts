@@ -8,6 +8,7 @@ const service = new BidsService();
 
 export async function listBids(req: Request, res: Response) {
   const data = await service.list(authFromRequest(req), {
+    deleted: req.query.deleted === "only" || req.query.deleted === "include" ? req.query.deleted : "active",
     scope: req.query.scope as never,
     status: req.query.status as never,
     postId: typeof req.query.postId === "string" ? req.query.postId : undefined,

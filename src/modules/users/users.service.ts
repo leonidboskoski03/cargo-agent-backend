@@ -103,7 +103,10 @@ export class UsersService {
         throw new AppError(403, "COMPANY_REQUIRED", "Company admins must belong to a company");
       }
 
-      return repo.listForCompany(companyId, query.includeInactive);
+      return repo.listForCompany(companyId, {
+        deleted: query.deleted,
+        includeInactive: query.includeInactive,
+      });
     }
 
     return repo.listPersonalUser(auth.userId);
@@ -162,6 +165,7 @@ export class UsersService {
       imageUrl: body.imageUrl,
       lastName: body.lastName,
       phone: body.phone,
+      preferredLanguage: body.preferredLanguage,
       preferredRoutes: body.preferredRoutes === undefined ? undefined : body.preferredRoutes === null ? Prisma.JsonNull : body.preferredRoutes,
       isActive: body.isActive,
       yearsExperience: body.yearsExperience,

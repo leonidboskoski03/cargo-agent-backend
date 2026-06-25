@@ -4,7 +4,7 @@ doc_type: release-evidence-map
 status: active
 owner: release-owner
 created: 2026-04-20
-updated: 2026-06-09
+updated: 2026-06-14
 summary: Table-driven mapping of release gates to proof artifacts and pass criteria.
 related_docs:
   - docs/release/mvp-readiness.md
@@ -68,3 +68,9 @@ Allowed status values: `NOT STARTED`, `PARTIAL`, `PROVEN`, `FAILED`.
 - Captured `docs/release/evidence/2026-06-09/stripe/webhook-replay-tests.txt`.
 - Added `docs/release/evidence/2026-06-09/stripe/manual-stripe-smoke.md` for real Stripe checkout session IDs, webhook event IDs, and wallet/subscription verification notes.
 - `G-003` remains `PARTIAL` until real Stripe Dashboard/CLI event IDs and manual smoke results are recorded.
+
+## Automation verification added on 2026-06-14
+
+- Recorded `docs/release/evidence/2026-06-14/automation-verification.md` after backend build, Prisma validation, full backend integration tests, release smoke tests, delivery/storage unit tests, frontend tests, frontend build, and Stripe sandbox readiness all passed locally.
+- Confirmed local Stripe test-mode company credit checkout session creation can return a checkout URL when Node runs with `NODE_OPTIONS=--use-system-ca`.
+- This is useful engineering evidence, but it does not close `G-001`, `G-002`, `G-003`, `G-004`, or `G-006` without manual UAT, real Stripe event IDs, CI enforcement proof, delivery-mode proof/waiver, and signoff.

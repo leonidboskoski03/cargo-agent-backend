@@ -1,6 +1,6 @@
 import type { UserRole } from "@prisma/client";
 import { z } from "zod";
-import { createVehicleSchema, updateVehicleSchema } from "./vehicles.validator.js";
+import { createVehicleSchema, listVehiclesSchema, updateVehicleSchema } from "./vehicles.validator.js";
 
 export type AuthContext = {
   userId?: string;
@@ -15,5 +15,6 @@ export type RequiredAuthContext = {
 };
 
 export type CreateVehicleBody = z.infer<typeof createVehicleSchema>["body"];
+export type ListVehiclesQuery = z.infer<typeof listVehiclesSchema>["query"];
 export type UpdateVehicleBody = z.infer<typeof updateVehicleSchema>["body"];
 

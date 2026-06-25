@@ -45,6 +45,11 @@ export async function updateMyCompany(req: Request, res: Response) {
   return ok(res, data);
 }
 
+export async function requestMyCompanyVerification(req: Request, res: Response) {
+  const data = await service.requestVerification(authFromRequest(req));
+  return ok(res, data);
+}
+
 export async function deleteMyCompany(req: Request, res: Response) {
   const data = await service.removeMine(authFromRequest(req));
   return ok(res, data);

@@ -32,6 +32,7 @@ export class ReviewsService {
 
     const reviews = await repo.listByCompanyInvolvement({
       companyId,
+      deleted: query.deleted,
       status: query.status,
       contractId: query.contractId,
     });

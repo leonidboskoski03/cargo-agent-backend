@@ -200,7 +200,7 @@ Covered flows:
   - `user`, `nextAction`.
 - `POST /login` returns one of:
   - authenticated form: `{ user }`
-  - MFA form: `{ user, challengeId, expiresAt, code, nextAction }`
+  - MFA form: `{ user, challengeId, expiresAt, code, nextResendAt, resendAttemptsRemaining, nextAction }`
 - `POST /login/verify-otp` returns `{ user }`.
 - `POST /refresh` returns `{ message: "Session refreshed" }`.
 - `POST /logout` returns `{ message: "Logged out" }`.
@@ -210,17 +210,17 @@ Covered flows:
 - `DELETE /sessions/:sessionId` returns:
   - `message`, `revokedSessionId`.
 - `POST /forgot-password` returns generic message and may include challenge metadata:
-  - `challengeId`, `expiresAt`, `code`, `nextAction`.
+  - `challengeId`, `expiresAt`, `code`, `nextResendAt`, `resendAttemptsRemaining`, `nextAction`.
 - `POST /reset-password` returns:
   - `message`, `nextAction`.
 - `POST /change-password` returns:
   - `message`.
 - `POST /otp/request` returns:
-  - `accepted`, `challengeId`, `expiresAt`, `code`, `nextAction`.
+  - `accepted`, `challengeId`, `expiresAt`, `code`, `nextResendAt`, `resendAttemptsRemaining`, `nextAction`.
 - `POST /otp/verify` returns:
   - `success`, `challengeId`, `purpose`, `channel`, `nextAction`.
 - `POST /otp/resend` returns:
-  - `accepted`, `challengeId`, `expiresAt`, `code`, `nextAction`.
+  - `accepted`, `challengeId`, `expiresAt`, `code`, `nextResendAt`, `resendAttemptsRemaining`, `nextAction`.
 
 ## 8. Error cases
 
@@ -229,7 +229,7 @@ Covered flows:
   - `401`: `UNAUTHENTICATED`, `INVALID_TOKEN`, `INVALID_REFRESH_TOKEN`, `INVALID_CREDENTIALS`
   - `404`: `REGISTRATION_DRAFT_NOT_FOUND`, `SESSION_NOT_FOUND`
   - `409`: `EMAIL_ALREADY_IN_USE`
-  - `429`: `OTP_ATTEMPTS_EXCEEDED`, `OTP_RESEND_COOLDOWN`, `OTP_REQUEST_RATE_LIMITED`, `OTP_VERIFY_RATE_LIMITED`
+  - `429`: `OTP_ATTEMPTS_EXCEEDED`, `OTP_RESEND_COOLDOWN`, `OTP_RESEND_LIMIT_EXCEEDED`, `OTP_REQUEST_RATE_LIMITED`, `OTP_VERIFY_RATE_LIMITED`
   - `500`: `OTP_CHALLENGE_NOT_CREATED`
 - `POST /logout` and `POST /refresh` use success `200` fallback messages instead of errors when no refresh cookie is present.
 

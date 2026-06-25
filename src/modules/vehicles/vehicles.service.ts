@@ -7,13 +7,13 @@ import {
   assertCanReadVehicle,
   requireAuth,
 } from "./vehicles.helpers.js";
-import type { AuthContext, CreateVehicleBody, UpdateVehicleBody } from "./vehicles.types.js";
+import type { AuthContext, CreateVehicleBody, ListVehiclesQuery, UpdateVehicleBody } from "./vehicles.types.js";
 
 const repo = new VehiclesRepository();
 
 
 export class VehiclesService {
-  async list(auth: AuthContext) {
+  async list(auth: AuthContext, query: ListVehiclesQuery = { deleted: "active" }) {
     requireAuth(auth);
     assertAllowedRole(auth.role);
 
@@ -22,10 +22,10 @@ export class VehiclesService {
         throw new AppError(403, "COMPANY_REQUIRED", "Company users must belong to a company");
       }
 
-      return repo.listActiveByCompany(auth.companyId);
+      return repo.listByCompany(auth.companyId, { deleted: query.deleted });
     }
 
-    return repo.listActiveByUser(auth.userId);
+    return repo.listByUser(auth.userId, { deleted: query.deleted });
   }
 
   async getById(auth: AuthContext, vehicleId: string) {

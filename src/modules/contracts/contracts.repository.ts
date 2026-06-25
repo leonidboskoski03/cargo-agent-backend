@@ -3,6 +3,7 @@ import { prisma } from "../../shared/prisma/prismaClient.js";
 
 type ListFilters = {
   companyId: string;
+  deleted?: "active" | "only" | "include";
   status?: ContractStatus;
 };
 
@@ -89,11 +90,17 @@ const contractSelect = {
   },
 } as const;
 
+function contractDeletedWhere(deleted: ListFilters["deleted"]): Prisma.ContractWhereInput {
+  if (deleted === "only") return { deletedAt: { not: null } };
+  if (deleted === "include") return {};
+  return { deletedAt: null };
+}
+
 export class ContractsRepository {
   async listByCompanyInvolvement(filters: ListFilters) {
     return prisma.contract.findMany({
       where: {
-        deletedAt: null,
+        ...contractDeletedWhere(filters.deleted ?? "active"),
         ...(filters.status ? { status: filters.status } : {}),
         OR: [{ shipperCompanyId: filters.companyId }, { carrierCompanyId: filters.companyId }],
       },

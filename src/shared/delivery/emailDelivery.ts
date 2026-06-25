@@ -41,7 +41,7 @@ export function getDeliveryStatus(): DeliveryStatus {
   const wantsProvider = env.EMAIL_PROVIDER === "resend" || env.AUTH_OTP_PROVIDER === "resend_email";
 
   if (wantsProvider && !env.RESEND_API_KEY) missing.push("RESEND_API_KEY");
-  if (wantsProvider && !env.EMAIL_FROM) missing.push("EMAIL_FROM");
+  if (wantsProvider && !env.RESEND_FROM_EMAIL) missing.push("RESEND_FROM_EMAIL");
 
   const provider = wantsProvider && missing.length === 0 ? "resend" : "simulated";
 
@@ -94,7 +94,7 @@ export async function sendEmail(input: EmailDeliveryInput): Promise<EmailDeliver
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: env.EMAIL_FROM,
+      from: env.RESEND_FROM_EMAIL,
       to: [input.to],
       subject: input.subject,
       text: input.text,

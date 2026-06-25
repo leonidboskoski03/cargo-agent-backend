@@ -39,3 +39,11 @@ export const acceptCompanyInviteSchema = z.object({
   }),
 });
 
+export const previewCompanyInviteSchema = z.object({
+  params: z.object({}),
+  query: z.object({
+    token: z.string().trim().min(20).max(200),
+  }),
+  body: z.object({}),
+});
+

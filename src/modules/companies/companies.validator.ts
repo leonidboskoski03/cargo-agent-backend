@@ -61,6 +61,12 @@ export const deleteMyCompanySchema = z.object({
   body: z.object({}),
 });
 
+export const requestMyCompanyVerificationSchema = z.object({
+  params: z.object({}),
+  query: z.object({}),
+  body: z.object({}),
+});
+
 export const restoreCompanySchema = z.object({
   params: z.object({
     companyId: cuidParam,
