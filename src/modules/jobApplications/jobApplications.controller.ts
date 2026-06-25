@@ -80,3 +80,22 @@ export async function promoteJobApplicationSubmission(req: Request, res: Respons
   return ok(res, data);
 }
 
+export async function listSubmissionReplies(req: Request, res: Response) {
+  const data = await service.listSubmissionReplies(authFromRequest(req), getStringParam(req.params.submissionId));
+  return ok(res, data);
+}
+
+export async function createSubmissionReply(req: Request, res: Response) {
+  const data = await service.createSubmissionReply(authFromRequest(req), getStringParam(req.params.submissionId), req.body);
+  return created(res, data);
+}
+
+export async function deleteSubmissionReply(req: Request, res: Response) {
+  const data = await service.deleteSubmissionReply(
+    authFromRequest(req),
+    getStringParam(req.params.submissionId),
+    getStringParam(req.params.replyId),
+  );
+  return ok(res, data);
+}
+

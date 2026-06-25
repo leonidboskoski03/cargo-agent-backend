@@ -19,6 +19,13 @@ type CreateSubmissionInput = {
   message?: string;
 };
 
+type CreateSubmissionReplyInput = {
+  authorCompanyId?: string;
+  authorUserId: string;
+  message: string;
+  submissionId: string;
+};
+
 type UpdateJobApplicationInput = {
   currency?: string | null;
   description?: string | null;
@@ -62,6 +69,17 @@ function getCurrentMonthPeriodStartUtc() {
   const now = new Date();
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 0, 0, 0, 0));
 }
+
+const submissionReplySelect = {
+  id: true,
+  submissionId: true,
+  authorUserId: true,
+  authorCompanyId: true,
+  message: true,
+  deletedAt: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
 
 export class JobApplicationsRepository {
   async create(input: CreateJobApplicationInput) {
@@ -320,6 +338,56 @@ export class JobApplicationsRepository {
         },
         submittedByCompany: true,
       },
+    });
+  }
+
+  async findSubmissionById(submissionId: string) {
+    return prisma.jobApplicationSubmission.findUnique({
+      where: { id: submissionId },
+      include: {
+        jobApplication: {
+          select: {
+            id: true,
+            createdByUserId: true,
+            createdByCompanyId: true,
+          },
+        },
+      },
+    });
+  }
+
+  async listSubmissionReplies(submissionId: string) {
+    return prisma.jobApplicationSubmissionReply.findMany({
+      where: { submissionId, deletedAt: null },
+      orderBy: { createdAt: "asc" },
+      select: submissionReplySelect,
+    });
+  }
+
+  async createSubmissionReply(input: CreateSubmissionReplyInput) {
+    return prisma.jobApplicationSubmissionReply.create({
+      data: {
+        authorCompanyId: input.authorCompanyId,
+        authorUserId: input.authorUserId,
+        message: input.message,
+        submissionId: input.submissionId,
+      },
+      select: submissionReplySelect,
+    });
+  }
+
+  async findSubmissionReplyById(replyId: string) {
+    return prisma.jobApplicationSubmissionReply.findUnique({
+      where: { id: replyId },
+      select: submissionReplySelect,
+    });
+  }
+
+  async softDeleteSubmissionReply(replyId: string) {
+    return prisma.jobApplicationSubmissionReply.update({
+      where: { id: replyId },
+      data: { deletedAt: new Date() },
+      select: submissionReplySelect,
     });
   }
 

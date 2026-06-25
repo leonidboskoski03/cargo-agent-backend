@@ -81,6 +81,27 @@ describe("job applications scenario", () => {
         .send({ message: "We are interested." });
       expect(applyResponse.statusCode).toBe(201);
 
+      const ownerReply = await request(app)
+        .post(`/api/v1/job-applications/submissions/${applyResponse.body.data.id}/replies`)
+        .set("Authorization", seekerToken)
+        .send({ message: "I am available from Monday." });
+      expect(ownerReply.statusCode).toBe(201);
+
+      const companyReply = await request(app)
+        .post(`/api/v1/job-applications/submissions/${applyResponse.body.data.id}/replies`)
+        .set("Authorization", companyToken)
+        .send({ message: "Monday works for our dispatcher." });
+      expect(companyReply.statusCode).toBe(201);
+
+      const replies = await request(app)
+        .get(`/api/v1/job-applications/submissions/${applyResponse.body.data.id}/replies`)
+        .set("Authorization", companyToken);
+      expect(replies.statusCode).toBe(200);
+      expect((replies.body.data as Array<{ message: string }>).map((reply) => reply.message)).toEqual([
+        "I am available from Monday.",
+        "Monday works for our dispatcher.",
+      ]);
+
       const ownApplyResponse = await request(app)
         .post(`/api/v1/job-applications/${jobApplicationId}/apply`)
         .set("Authorization", seekerToken)

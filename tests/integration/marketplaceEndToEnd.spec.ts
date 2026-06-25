@@ -188,6 +188,32 @@ describe("marketplace end-to-end flows", () => {
         });
       expect(bid.statusCode).toBe(201);
 
+      const carrierBidReply = await request(app)
+        .post(`/api/v1/bids/${bid.body.data.id}/replies`)
+        .set("Authorization", carrierToken)
+        .send({ message: "We can load early if needed." });
+      expect(carrierBidReply.statusCode).toBe(201);
+
+      const shipperBidReply = await request(app)
+        .post(`/api/v1/bids/${bid.body.data.id}/replies`)
+        .set("Authorization", shipperToken)
+        .send({ message: "Early loading works for us." });
+      expect(shipperBidReply.statusCode).toBe(201);
+
+      const bidReplies = await request(app)
+        .get(`/api/v1/bids/${bid.body.data.id}/replies`)
+        .set("Authorization", shipperToken);
+      expect(bidReplies.statusCode).toBe(200);
+      expect((bidReplies.body.data as Array<{ message: string }>).map((reply) => reply.message)).toEqual([
+        "We can load early if needed.",
+        "Early loading works for us.",
+      ]);
+
+      const nonCompanyBidReplies = await request(app)
+        .get(`/api/v1/bids/${bid.body.data.id}/replies`)
+        .set("Authorization", invitedToken);
+      expect(nonCompanyBidReplies.statusCode).toBe(403);
+
       const accepted = await request(app)
         .patch(`/api/v1/bids/${bid.body.data.id}/status`)
         .set("Authorization", shipperToken)

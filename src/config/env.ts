@@ -64,7 +64,8 @@ const envSchema = z.object({
   EMAIL_PROVIDER: z.enum(["simulated", "resend"]).default("simulated"),
   RESEND_API_KEY: z.preprocess(emptyStringToUndefined, z.string().optional()),
   RESEND_FROM_EMAIL: z.preprocess(emptyStringToUndefined, z.string().email().optional()),
-  AUTH_OTP_PROVIDER: z.enum(["simulated", "twilio_simulated"]).default("simulated"),
+  EMAIL_FROM: z.preprocess(emptyStringToUndefined, z.string().optional()),
+  AUTH_OTP_PROVIDER: z.enum(["simulated", "twilio_simulated", "resend_email"]).default("simulated"),
   AUTH_LOGIN_MFA_REQUIRED_ROLES: z
     .string()
     .default("COMPANY_ADMIN")
@@ -111,6 +112,8 @@ const envSchema = z.object({
   STORAGE_PROVIDER: z.enum(["local", "s3"]).default("local"),
   LOCAL_UPLOAD_DIR: z.string().default("uploads"),
   UPLOAD_PUBLIC_BASE_URL: z.string().url().default("http://localhost:4000/uploads"),
+  LOCAL_STORAGE_PATH: z.string().default("uploads"),
+  PUBLIC_UPLOADS_BASE_URL: z.string().url().default("http://localhost:4000/uploads"),
   UPLOAD_MAX_BYTES: z.coerce.number().int().min(1_024).default(5 * 1024 * 1024),
   UPLOAD_ALLOWED_MIME_TYPES: z
     .string()
@@ -125,6 +128,8 @@ const envSchema = z.object({
   S3_BUCKET: z.preprocess(emptyStringToUndefined, z.string().optional()),
   S3_ACCESS_KEY_ID: z.preprocess(emptyStringToUndefined, z.string().optional()),
   S3_SECRET_ACCESS_KEY: z.preprocess(emptyStringToUndefined, z.string().optional()),
+  S3_PUBLIC_BASE_URL: z.preprocess(emptyStringToUndefined, z.string().url().optional()),
+  S3_REGION: z.string().default("auto"),
 });
 
 const parsed = envSchema.safeParse(process.env);

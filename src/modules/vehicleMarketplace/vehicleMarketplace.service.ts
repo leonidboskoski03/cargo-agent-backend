@@ -23,6 +23,7 @@ import { VehicleMarketplaceRepository, type InquiryFilters, type ListingFilters 
 import type {
   AuthContext,
   CreateListingBody,
+  CreateInquiryReplyBody,
   CreateListingInquiryBody,
   ListInquiriesQuery,
   ListListingsQuery,
@@ -222,6 +223,8 @@ export class VehicleMarketplaceService {
       countryCode: body.countryCode.toUpperCase(),
       city: body.city,
       priceAmount: body.priceAmount,
+      isRegistered: body.isRegistered,
+      registrationExpiresAt: body.isRegistered ? body.registrationExpiresAt ?? null : null,
       currency: body.currency?.toUpperCase() ?? null,
       capacityKg: body.capacityKg ?? sourceVehicle?.capacityKg ?? null,
       volumeM3: body.volumeM3 ?? sourceVehicle?.volumeM3 ?? null,
@@ -269,6 +272,8 @@ export class VehicleMarketplaceService {
       countryCode: body.countryCode?.toUpperCase(),
       city: body.city,
       priceAmount: body.priceAmount,
+      isRegistered: body.isRegistered,
+      registrationExpiresAt: body.isRegistered === false ? null : body.registrationExpiresAt,
       currency: body.currency?.toUpperCase() ?? body.currency,
       capacityKg: body.capacityKg,
       volumeM3: body.volumeM3,
@@ -405,5 +410,63 @@ export class VehicleMarketplaceService {
     }
 
     return updated;
+  }
+
+  async listInquiryReplies(auth: AuthContext, inquiryId: string) {
+    const requiredAuth = requireAuth(auth);
+    const inquiry = await this.getAccessibleInquiry(requiredAuth, inquiryId);
+    return repo.listInquiryReplies(inquiry.id);
+  }
+
+  async createInquiryReply(auth: AuthContext, inquiryId: string, body: CreateInquiryReplyBody) {
+    const requiredAuth = requireAuth(auth);
+    const inquiry = await this.getAccessibleInquiry(requiredAuth, inquiryId);
+
+    const reply = await repo.createInquiryReply({
+      inquiryId: inquiry.id,
+      authorUserId: requiredAuth.userId,
+      authorCompanyId: requiredAuth.companyId ?? null,
+      message: body.message,
+    });
+
+    await enqueueNotificationEvent({
+      type: "VEHICLE_MARKETPLACE_INQUIRY_REPLY_CREATED",
+      replyId: reply.id,
+    });
+
+    return reply;
+  }
+
+  async deleteInquiryReply(auth: AuthContext, inquiryId: string, replyId: string) {
+    const requiredAuth = requireAuth(auth);
+    await this.getAccessibleInquiry(requiredAuth, inquiryId);
+    const reply = await repo.findInquiryReplyById(replyId);
+
+    if (!reply || reply.inquiryId !== inquiryId || reply.deletedAt) {
+      throw new AppError(404, "VEHICLE_MARKETPLACE_INQUIRY_REPLY_NOT_FOUND", "Vehicle marketplace inquiry reply not found");
+    }
+
+    if (reply.authorUserId !== requiredAuth.userId) {
+      throw new AppError(403, "FORBIDDEN", "You can only delete your own inquiry replies");
+    }
+
+    return repo.softDeleteInquiryReply(replyId);
+  }
+
+  private async getAccessibleInquiry(requiredAuth: ReturnType<typeof requireAuth>, inquiryId: string) {
+    const inquiry = await repo.findInquiryById(inquiryId);
+
+    if (!inquiry) {
+      throw new AppError(404, "VEHICLE_MARKETPLACE_INQUIRY_NOT_FOUND", "Vehicle marketplace inquiry not found");
+    }
+
+    const ownsListing = canOwnListing(requiredAuth, inquiry.listing);
+    const sentInquiry = inquiry.senderUserId === requiredAuth.userId || (requiredAuth.companyId && inquiry.senderCompanyId === requiredAuth.companyId);
+
+    if (!ownsListing && !sentInquiry) {
+      throw new AppError(403, "FORBIDDEN", "You can only access inquiry replies you own or received");
+    }
+
+    return inquiry;
   }
 }

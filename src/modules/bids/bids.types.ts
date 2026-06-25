@@ -3,6 +3,7 @@ import { z } from "zod";
 import {
   boostBidSchema,
   changeBidStatusSchema,
+  createBidReplySchema,
   createBidSchema,
   listBidsSchema,
   updateBidSchema,
@@ -25,4 +26,5 @@ export type CreateBidBody = z.infer<typeof createBidSchema>["body"];
 export type UpdateBidBody = z.infer<typeof updateBidSchema>["body"];
 export type ChangeBidStatusBody = z.infer<typeof changeBidStatusSchema>["body"];
 export type BoostBidBody = z.infer<typeof boostBidSchema>["body"];
+export type CreateBidReplyBody = z.infer<typeof createBidReplySchema>["body"];
 

@@ -132,6 +132,8 @@ describe("vehicle marketplace endpoints", () => {
         vehicleType: "TRUCK",
         countryCode: "mk",
         city: "Skopje",
+        isRegistered: true,
+        registrationExpiresAt: "2027-05-20",
         priceAmount: "900",
         currency: "eur",
       });
@@ -140,6 +142,8 @@ describe("vehicle marketplace endpoints", () => {
       expect(createFleetListing.body.data.ownerCompanyId).toBe(company.id);
       expect(createFleetListing.body.data.brand).toBe("MAN");
       expect(createFleetListing.body.data.currency).toBe("EUR");
+      expect(createFleetListing.body.data.isRegistered).toBe(true);
+      expect(createFleetListing.body.data.registrationExpiresAt).toContain("2027-05-20");
       expect(createFleetListing.body.data.billing.mode).toBe("INCLUDED_QUOTA");
 
       const otherCompanyListing = await request(app).post("/api/v1/vehicle-marketplace").set("Authorization", otherAdminAuth).send({
@@ -177,12 +181,16 @@ describe("vehicle marketplace endpoints", () => {
         year: 2021,
         countryCode: "RS",
         city: "Nis",
+        isRegistered: false,
+        registrationExpiresAt: "2027-05-20",
         priceAmount: "18000",
         currency: "EUR",
       });
       expect(createSeekerListing.statusCode).toBe(201);
       seekerListingId = createSeekerListing.body.data.id as string;
       expect(createSeekerListing.body.data.ownerUserId).toBe(jobSeeker.id);
+      expect(createSeekerListing.body.data.isRegistered).toBe(false);
+      expect(createSeekerListing.body.data.registrationExpiresAt).toBeNull();
       expect(createSeekerListing.body.data.billing).toBeUndefined();
 
       const publishSeekerListing = await request(app)
@@ -245,6 +253,43 @@ describe("vehicle marketplace endpoints", () => {
       const ownerInquiries = await request(app).get("/api/v1/vehicle-marketplace/inquiries").set("Authorization", adminAuth);
       expect(ownerInquiries.statusCode).toBe(200);
       expect((ownerInquiries.body.data as Array<{ id: string }>).map((item) => item.id)).toContain(inquiryId);
+
+      const senderReply = await request(app)
+        .post(`/api/v1/vehicle-marketplace/inquiries/${inquiryId}/replies`)
+        .set("Authorization", jobSeekerAuth)
+        .send({ message: "I can pick it up from Skopje." });
+      expect(senderReply.statusCode).toBe(201);
+
+      const ownerReply = await request(app)
+        .post(`/api/v1/vehicle-marketplace/inquiries/${inquiryId}/replies`)
+        .set("Authorization", adminAuth)
+        .send({ message: "Yes, it is available next month." });
+      expect(ownerReply.statusCode).toBe(201);
+
+      const ownerReplies = await request(app)
+        .get(`/api/v1/vehicle-marketplace/inquiries/${inquiryId}/replies`)
+        .set("Authorization", adminAuth);
+      expect(ownerReplies.statusCode).toBe(200);
+      expect((ownerReplies.body.data as Array<{ message: string }>).map((reply) => reply.message)).toEqual([
+        "I can pick it up from Skopje.",
+        "Yes, it is available next month.",
+      ]);
+
+      const unrelatedReplies = await request(app)
+        .get(`/api/v1/vehicle-marketplace/inquiries/${inquiryId}/replies`)
+        .set("Authorization", otherAdminAuth);
+      expect(unrelatedReplies.statusCode).toBe(403);
+
+      const deleteReply = await request(app)
+        .delete(`/api/v1/vehicle-marketplace/inquiries/${inquiryId}/replies/${senderReply.body.data.id}`)
+        .set("Authorization", jobSeekerAuth);
+      expect(deleteReply.statusCode).toBe(200);
+
+      const repliesAfterDelete = await request(app)
+        .get(`/api/v1/vehicle-marketplace/inquiries/${inquiryId}/replies`)
+        .set("Authorization", adminAuth);
+      expect(repliesAfterDelete.statusCode).toBe(200);
+      expect((repliesAfterDelete.body.data as Array<{ id: string }>).map((reply) => reply.id)).not.toContain(senderReply.body.data.id);
 
       const senderRespond = await request(app)
         .patch(`/api/v1/vehicle-marketplace/inquiries/${inquiryId}`)

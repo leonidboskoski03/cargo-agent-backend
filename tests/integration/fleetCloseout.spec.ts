@@ -64,6 +64,7 @@ describe("fleet closeout endpoints", () => {
     });
 
     let vehicleId = "";
+    let trailerId = "";
     let licenseId = "";
     let assignmentId = "";
 
@@ -95,9 +96,22 @@ describe("fleet closeout endpoints", () => {
         yearlyInspection: "https://cdn.example.test/trucks/inspection.pdf",
       });
 
+      const createTrailer = await request(app).post("/api/v1/vehicles").set("Authorization", adminAuth).send({
+        vehicleType: "TRAILER",
+        plateNumber: `TRL-${suffix}`,
+        countryOfRegistration: "RS",
+        brand: "Schmitz",
+        model: "S01",
+        year: 2022,
+      });
+      expect(createTrailer.statusCode).toBe(201);
+      trailerId = createTrailer.body.data.id as string;
+      expect(createTrailer.body.data.vehicleType).toBe("TRAILER");
+
       const driverVehicleList = await request(app).get("/api/v1/vehicles").set("Authorization", driverAuth);
       expect(driverVehicleList.statusCode).toBe(200);
       expect((driverVehicleList.body.data as Array<{ id: string }>).map((item) => item.id)).toContain(vehicleId);
+      expect((driverVehicleList.body.data as Array<{ id: string }>).map((item) => item.id)).toContain(trailerId);
 
       const driverVehicleCreate = await request(app).post("/api/v1/vehicles").set("Authorization", driverAuth).send({
         vehicleType: "VAN",
@@ -211,7 +225,7 @@ describe("fleet closeout endpoints", () => {
     } finally {
       await prisma.vehicleAssignment.deleteMany({ where: { OR: [{ id: assignmentId }, { driverUserId: driver.id }] } });
       await prisma.license.deleteMany({ where: { OR: [{ id: licenseId }, { userId: driver.id }] } });
-      await prisma.vehicle.deleteMany({ where: { OR: [{ id: vehicleId }, { companyId: company.id }] } });
+      await prisma.vehicle.deleteMany({ where: { OR: [{ id: { in: [vehicleId, trailerId].filter(Boolean) } }, { companyId: company.id }] } });
       await prisma.user.deleteMany({ where: { id: { in: [admin.id, driver.id] } } });
       await prisma.company.deleteMany({ where: { id: company.id } });
     }

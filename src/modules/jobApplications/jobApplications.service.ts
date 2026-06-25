@@ -12,6 +12,7 @@ import type {
   ApplyInput,
   AuthContext,
   CreateJobApplicationInput,
+  CreateSubmissionReplyBody,
   PromoteListingInput,
   PromoteSubmissionInput,
   UpdateJobApplicationInput,
@@ -311,5 +312,64 @@ export class JobApplicationsService {
 
       throw error;
     }
+  }
+
+  async listSubmissionReplies(auth: AuthContext, submissionId: string) {
+    const submission = await this.getAccessibleSubmission(auth, submissionId);
+    return repo.listSubmissionReplies(submission.id);
+  }
+
+  async createSubmissionReply(auth: AuthContext, submissionId: string, body: CreateSubmissionReplyBody) {
+    const submission = await this.getAccessibleSubmission(auth, submissionId);
+    const reply = await repo.createSubmissionReply({
+      authorCompanyId: auth.companyId,
+      authorUserId: auth.userId as string,
+      message: body.message,
+      submissionId: submission.id,
+    });
+
+    await enqueueNotificationEvent({
+      type: "JOB_APPLICATION_SUBMISSION_REPLY_CREATED",
+      replyId: reply.id,
+    });
+
+    return reply;
+  }
+
+  async deleteSubmissionReply(auth: AuthContext, submissionId: string, replyId: string) {
+    await this.getAccessibleSubmission(auth, submissionId);
+    const reply = await repo.findSubmissionReplyById(replyId);
+
+    if (!reply || reply.submissionId !== submissionId || reply.deletedAt) {
+      throw new AppError(404, "JOB_APPLICATION_SUBMISSION_REPLY_NOT_FOUND", "Job application submission reply not found");
+    }
+
+    if (reply.authorUserId !== auth.userId) {
+      throw new AppError(403, "FORBIDDEN", "You can only delete your own submission replies");
+    }
+
+    return repo.softDeleteSubmissionReply(replyId);
+  }
+
+  private async getAccessibleSubmission(auth: AuthContext, submissionId: string) {
+    requireAuth(auth);
+    const submission = await repo.findSubmissionById(submissionId);
+
+    if (!submission || submission.deletedAt) {
+      throw new AppError(404, "JOB_APPLICATION_SUBMISSION_NOT_FOUND", "Job application submission not found");
+    }
+
+    const ownsListing =
+      submission.jobApplication.createdByUserId === auth.userId ||
+      (auth.companyId && submission.jobApplication.createdByCompanyId === auth.companyId);
+    const submitted =
+      submission.submittedByUserId === auth.userId ||
+      (auth.companyId && submission.submittedByCompanyId === auth.companyId);
+
+    if (!ownsListing && !submitted) {
+      throw new AppError(403, "FORBIDDEN", "You can only access replies for submissions you own or received");
+    }
+
+    return submission;
   }
 }

@@ -45,6 +45,7 @@ Fields returned by listing endpoints include:
 - `bodyType`
 - `brand`, `model`, `year`
 - `countryCode`, `city`
+- `isRegistered`, `registrationExpiresAt`
 - `priceAmount`, `currency`
 - `capacityKg`, `volumeM3`
 - `refrigerated`, `hazmatCertified`
@@ -120,6 +121,7 @@ Optional body:
 - `vehicleId`; required for `FLEET_VEHICLE`, forbidden for `STANDALONE`
 - `bodyType`, `brand`, `model`, `year`
 - `priceAmount`, `currency`
+- `isRegistered`, `registrationExpiresAt`
 - `capacityKg`, `volumeM3`
 - `refrigerated`, `hazmatCertified`
 - `imageUrlsJson`, `documentsJson`
@@ -142,6 +144,7 @@ Mutable fields:
 - `vehicleType`, `bodyType`, `brand`, `model`, `year`
 - `countryCode`, `city`
 - `priceAmount`, `currency`
+- `isRegistered`, `registrationExpiresAt`
 - `capacityKg`, `volumeM3`
 - `refrigerated`, `hazmatCertified`
 - `imageUrlsJson`, `documentsJson`
@@ -235,7 +238,9 @@ Common errors:
 Integration coverage:
 
 - `tests/integration/vehicleMarketplace.spec.ts`
+- Trailer records/listings use the existing `VehicleType.TRAILER` enum value. See `docs/plans/task3-trailer-support-plan.md`.
 
 ## Changelog
 
+- 2026-06-16: Added marketplace registration fields and documented trailer support as `VehicleType.TRAILER`.
 - 2026-06-07: Created canonical vehicle marketplace contract with listing, filter, ownership, restore, and inquiry behavior.
