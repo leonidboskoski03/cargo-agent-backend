@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   applyToJobApplicationSchema,
+  createSubmissionReplySchema,
   createJobApplicationSchema,
   updateJobApplicationSchema,
 } from "./jobApplications.validator.js";
@@ -8,6 +9,7 @@ import {
 export type CreateJobApplicationBody = z.infer<typeof createJobApplicationSchema>["body"];
 export type ApplyJobApplicationParams = z.infer<typeof applyToJobApplicationSchema>["params"];
 export type ApplyJobApplicationBody = z.infer<typeof applyToJobApplicationSchema>["body"];
+export type CreateSubmissionReplyBody = z.infer<typeof createSubmissionReplySchema>["body"];
 export type UpdateJobApplicationBody = z.infer<typeof updateJobApplicationSchema>["body"];
 
 export type AuthContext = {

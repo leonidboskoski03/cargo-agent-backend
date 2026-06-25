@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -36,6 +37,8 @@ async function main() {
     { code: "BA", name: "Bosnia and Herzegovina", nativeName: "Bosna i Hercegovina" },
     { code: "TR", name: "Turkey", nativeName: "Türkiye" },
   ];
+  const supportedCountryCodes = new Set(supportedCountries.map((country) => country.code));
+  const obsoleteCountryCodes = ["KS", "BIH"];
 
   const countryMetadata: Record<string, {
     displayName: string;
@@ -69,6 +72,11 @@ async function main() {
     data: { isActive: false },
   });
 
+  await prisma.supportedCountry.updateMany({
+    where: { code: { in: obsoleteCountryCodes } },
+    data: { isActive: false },
+  });
+
   const supportedCities = [
     { countryCode: "MK", name: "Skopje", region: "Skopje", lat: 41.9973, lng: 21.4280 },
     { countryCode: "MK", name: "Bitola", region: "Pelagonia", lat: 41.0319, lng: 21.3347 },
@@ -87,6 +95,15 @@ async function main() {
     { countryCode: "BA", name: "Sarajevo", region: "Sarajevo", lat: 43.8563, lng: 18.4131 },
     { countryCode: "TR", name: "Istanbul", region: "Istanbul", lat: 41.0082, lng: 28.9784 },
   ];
+  const unsupportedCities = supportedCities.filter((city) => !supportedCountryCodes.has(city.countryCode));
+
+  if (unsupportedCities.length > 0) {
+    throw new Error(
+      `Seed city countryCode mismatch: ${unsupportedCities
+        .map((city) => `${city.name}:${city.countryCode}`)
+        .join(", ")}`
+    );
+  }
 
   const cityMetadata: Record<string, { adminCode: string; displayName: string }> = {
     "AL:Tirana:Tirana": { adminCode: "AL-11", displayName: "Tirana, Tirana" },
@@ -136,6 +153,9 @@ async function main() {
       },
     });
   }
+  const activeCountryCount = await prisma.supportedCountry.count({ where: { isActive: true } });
+  const activeCityCount = await prisma.supportedCity.count({ where: { isActive: true } });
+  console.log(`Seeded geo catalog: ${activeCountryCount} active countries, ${activeCityCount} active cities.`);
 
   const freePlan = await prisma.plan.upsert({
     where: { code: "FREE" },

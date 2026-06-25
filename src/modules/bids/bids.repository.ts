@@ -3,7 +3,6 @@ import { prisma } from "../../shared/prisma/prismaClient.js";
 
 type ListFilters = {
   companyId: string;
-  deleted?: "active" | "only" | "include";
   scope?: "received" | "sent" | "all";
   status?: BidStatus;
   postId?: string;
@@ -47,6 +46,13 @@ type CreateBidActivityData = {
   message?: string;
   metadataJson?: Prisma.InputJsonValue;
   type: BidActivityType;
+};
+
+type CreateBidReplyData = {
+  actorCompanyId?: string;
+  actorUserId: string;
+  bidId: string;
+  message: string;
 };
 
 const bidSelect = {
@@ -126,18 +132,23 @@ const bidSelect = {
   },
 } as const;
 
-function bidDeletedWhere(deleted: ListFilters["deleted"]): Prisma.BidWhereInput {
-  if (deleted === "only") return { deletedAt: { not: null } };
-  if (deleted === "include") return {};
-  return { deletedAt: null };
-}
+const bidReplySelect = {
+  id: true,
+  bidId: true,
+  authorUserId: true,
+  authorCompanyId: true,
+  message: true,
+  deletedAt: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
 
 export class BidsRepository {
   async listByCompanyInvolvement(filters: ListFilters) {
     const now = new Date();
     return prisma.bid.findMany({
       where: {
-        ...bidDeletedWhere(filters.deleted ?? "active"),
+        deletedAt: null,
         ...(filters.status ? { status: filters.status } : {}),
         ...(filters.postId ? { postId: filters.postId } : {}),
         ...(filters.scope === "sent"
@@ -207,6 +218,41 @@ export class BidsRepository {
         metadataJson: data.metadataJson,
         type: data.type,
       },
+    });
+  }
+
+  async listReplies(bidId: string) {
+    return prisma.bidReply.findMany({
+      where: { bidId, deletedAt: null },
+      orderBy: { createdAt: "asc" },
+      select: bidReplySelect,
+    });
+  }
+
+  async createReply(data: CreateBidReplyData) {
+    return prisma.bidReply.create({
+      data: {
+        authorCompanyId: data.actorCompanyId,
+        authorUserId: data.actorUserId,
+        bidId: data.bidId,
+        message: data.message,
+      },
+      select: bidReplySelect,
+    });
+  }
+
+  async findReplyById(replyId: string) {
+    return prisma.bidReply.findUnique({
+      where: { id: replyId },
+      select: bidReplySelect,
+    });
+  }
+
+  async softDeleteReply(replyId: string) {
+    return prisma.bidReply.update({
+      where: { id: replyId },
+      data: { deletedAt: new Date() },
+      select: bidReplySelect,
     });
   }
 

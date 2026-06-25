@@ -12,7 +12,10 @@ export type NotificationEventJobPayload =
   | { type: "REVIEW_PUBLISHED"; reviewId: string }
   | { type: "VEHICLE_MARKETPLACE_INQUIRY_CREATED"; inquiryId: string }
   | { type: "VEHICLE_MARKETPLACE_INQUIRY_RESPONDED"; inquiryId: string }
-  | { type: "JOB_APPLICATION_SUBMITTED"; submissionId: string };
+  | { type: "VEHICLE_MARKETPLACE_INQUIRY_REPLY_CREATED"; replyId: string }
+  | { type: "JOB_APPLICATION_SUBMITTED"; submissionId: string }
+  | { type: "JOB_APPLICATION_SUBMISSION_REPLY_CREATED"; replyId: string }
+  | { type: "BID_REPLY_CREATED"; replyId: string };
 
 let notificationEventsQueue: Queue<NotificationEventJobPayload> | undefined;
 
@@ -61,7 +64,11 @@ export async function enqueueNotificationEvent(input: NotificationEventJobPayloa
       return `${input.type.toLowerCase()}__${input.inquiryId}`;
     }
 
-    return `job_application_submitted__${input.submissionId}`;
+    if (input.type === "JOB_APPLICATION_SUBMITTED") {
+      return `job_application_submitted__${input.submissionId}`;
+    }
+
+    return `${input.type.toLowerCase()}__${input.replyId}`;
   })();
 
   return getNotificationEventsQueue().add(input.type, input, { jobId });

@@ -13,6 +13,7 @@ import type {
   BoostBidBody,
   ChangeBidStatusBody,
   CreateBidBody,
+  CreateBidReplyBody,
   ListBidsQuery,
   UpdateBidBody,
 } from "./bids.types.js";
@@ -83,6 +84,43 @@ export class BidsService {
     }
 
     return repo.listActivities(bidId);
+  }
+
+  async listReplies(auth: AuthContext, bidId: string) {
+    const bid = await this.getAccessibleBid(auth, bidId, "replies");
+    return repo.listReplies(bid.id);
+  }
+
+  async createReply(auth: AuthContext, bidId: string, body: CreateBidReplyBody) {
+    const bid = await this.getAccessibleBid(auth, bidId, "replies");
+    const reply = await repo.createReply({
+      actorCompanyId: auth.companyId,
+      actorUserId: auth.userId as string,
+      bidId: bid.id,
+      message: body.message,
+    });
+
+    await enqueueNotificationEvent({
+      type: "BID_REPLY_CREATED",
+      replyId: reply.id,
+    });
+
+    return reply;
+  }
+
+  async deleteReply(auth: AuthContext, bidId: string, replyId: string) {
+    await this.getAccessibleBid(auth, bidId, "replies");
+    const reply = await repo.findReplyById(replyId);
+
+    if (!reply || reply.bidId !== bidId || reply.deletedAt) {
+      throw new AppError(404, "BID_REPLY_NOT_FOUND", "Bid reply not found");
+    }
+
+    if (reply.authorUserId !== auth.userId) {
+      throw new AppError(403, "FORBIDDEN", "You can only delete your own bid replies");
+    }
+
+    return repo.softDeleteReply(replyId);
   }
 
   async create(auth: AuthContext, body: CreateBidBody) {
@@ -449,6 +487,22 @@ export class BidsService {
     });
 
     return restored;
+  }
+
+  private async getAccessibleBid(auth: AuthContext, bidId: string, label: string) {
+    requireAuth(auth);
+    assertCompanyUser(auth);
+
+    const bid = await repo.findActiveById(bidId);
+    if (!bid) {
+      throw new AppError(404, "BID_NOT_FOUND", "Bid not found");
+    }
+
+    if (bid.carrierCompanyId !== auth.companyId && bid.post.companyId !== auth.companyId) {
+      throw new AppError(403, "FORBIDDEN", `You can only access bid ${label} in your company context`);
+    }
+
+    return bid;
   }
 }
 

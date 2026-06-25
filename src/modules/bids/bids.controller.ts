@@ -27,6 +27,21 @@ export async function listBidActivities(req: Request, res: Response) {
   return ok(res, data);
 }
 
+export async function listBidReplies(req: Request, res: Response) {
+  const data = await service.listReplies(authFromRequest(req), getStringParam(req.params.bidId));
+  return ok(res, data);
+}
+
+export async function createBidReply(req: Request, res: Response) {
+  const data = await service.createReply(authFromRequest(req), getStringParam(req.params.bidId), req.body);
+  return created(res, data);
+}
+
+export async function deleteBidReply(req: Request, res: Response) {
+  const data = await service.deleteReply(authFromRequest(req), getStringParam(req.params.bidId), getStringParam(req.params.replyId));
+  return ok(res, data);
+}
+
 export async function createBid(req: Request, res: Response) {
   const data = await service.create(authFromRequest(req), {
     postId: req.body.postId,

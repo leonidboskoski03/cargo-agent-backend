@@ -3,6 +3,7 @@ import { z } from "zod";
 import {
   createListingSchema,
   createListingInquirySchema,
+  createInquiryReplySchema,
   listInquiriesSchema,
   listListingsSchema,
   updateInquirySchema,
@@ -25,5 +26,6 @@ export type ListListingsQuery = z.infer<typeof listListingsSchema>["query"];
 export type CreateListingBody = z.infer<typeof createListingSchema>["body"];
 export type UpdateListingBody = z.infer<typeof updateListingSchema>["body"];
 export type CreateListingInquiryBody = z.infer<typeof createListingInquirySchema>["body"];
+export type CreateInquiryReplyBody = z.infer<typeof createInquiryReplySchema>["body"];
 export type ListInquiriesQuery = z.infer<typeof listInquiriesSchema>["query"];
 export type UpdateInquiryBody = z.infer<typeof updateInquirySchema>["body"];

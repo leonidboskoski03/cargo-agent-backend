@@ -112,3 +112,30 @@ export const restoreBidSchema = z.object({
   body: z.object({}),
 });
 
+export const bidRepliesSchema = z.object({
+  params: z.object({
+    bidId: cuidParam,
+  }),
+  query: z.object({}),
+  body: z.object({}),
+});
+
+export const createBidReplySchema = z.object({
+  params: z.object({
+    bidId: cuidParam,
+  }),
+  query: z.object({}),
+  body: z.object({
+    message: z.string().trim().min(1).max(2000),
+  }),
+});
+
+export const deleteBidReplySchema = z.object({
+  params: z.object({
+    bidId: cuidParam,
+    replyId: cuidParam,
+  }),
+  query: z.object({}),
+  body: z.object({}),
+});
+

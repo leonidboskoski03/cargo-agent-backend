@@ -90,3 +90,30 @@ export const promoteSubmissionSchema = z.object({
   }),
 });
 
+export const submissionRepliesSchema = z.object({
+  query: z.object({}),
+  params: z.object({
+    submissionId: z.string().trim().min(1),
+  }),
+  body: z.object({}),
+});
+
+export const createSubmissionReplySchema = z.object({
+  query: z.object({}),
+  params: z.object({
+    submissionId: z.string().trim().min(1),
+  }),
+  body: z.object({
+    message: z.string().trim().min(1).max(2000),
+  }),
+});
+
+export const deleteSubmissionReplySchema = z.object({
+  query: z.object({}),
+  params: z.object({
+    submissionId: z.string().trim().min(1),
+    replyId: z.string().trim().min(1),
+  }),
+  body: z.object({}),
+});
+

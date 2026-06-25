@@ -88,6 +88,8 @@ export const createListingSchema = z.object({
       year: z.number().int().min(1950).max(2100).optional(),
       countryCode: z.string().trim().length(2),
       city: z.string().trim().min(1).max(120),
+      isRegistered: z.boolean().optional(),
+      registrationExpiresAt: z.coerce.date().nullable().optional(),
       priceAmount: decimalLike.optional(),
       currency: z.string().trim().length(3).optional(),
       capacityKg: z.number().int().positive().optional(),
@@ -123,6 +125,8 @@ export const updateListingSchema = z.object({
       year: z.number().int().min(1950).max(2100).nullable().optional(),
       countryCode: z.string().trim().length(2).optional(),
       city: z.string().trim().min(1).max(120).optional(),
+      isRegistered: z.boolean().nullable().optional(),
+      registrationExpiresAt: z.coerce.date().nullable().optional(),
       priceAmount: decimalLike.nullable().optional(),
       currency: z.string().trim().length(3).nullable().optional(),
       capacityKg: z.number().int().positive().nullable().optional(),
@@ -167,4 +171,27 @@ export const updateInquirySchema = z.object({
   body: z.object({
     status: z.nativeEnum(VehicleMarketplaceInquiryStatus),
   }),
+});
+
+export const inquiryRepliesSchema = z.object({
+  params: z.object({ inquiryId: cuidParam }),
+  query: z.object({}),
+  body: z.object({}),
+});
+
+export const createInquiryReplySchema = z.object({
+  params: z.object({ inquiryId: cuidParam }),
+  query: z.object({}),
+  body: z.object({
+    message: z.string().trim().min(1).max(2000),
+  }),
+});
+
+export const deleteInquiryReplySchema = z.object({
+  params: z.object({
+    inquiryId: cuidParam,
+    replyId: cuidParam,
+  }),
+  query: z.object({}),
+  body: z.object({}),
 });

@@ -5,9 +5,12 @@ import { validate } from "../../shared/middleware/validate.middleware.js";
 import {
   applyToJobApplication,
   createJobApplication,
+  createSubmissionReply,
   deleteJobApplication,
+  deleteSubmissionReply,
   listJobApplicationFeed,
   listMyJobApplications,
+  listSubmissionReplies,
   listSubmissionsForMyListing,
   promoteJobApplication,
   promoteJobApplicationSubmission,
@@ -16,12 +19,15 @@ import {
 } from "./jobApplications.controller.js";
 import {
   applyToJobApplicationSchema,
+  createSubmissionReplySchema,
   createJobApplicationSchema,
+  deleteSubmissionReplySchema,
   listJobApplicationsSchema,
   listMySubmissionsSchema,
   mutateJobApplicationSchema,
   promoteJobApplicationSchema,
   promoteSubmissionSchema,
+  submissionRepliesSchema,
   updateJobApplicationSchema,
 } from "./jobApplications.validator.js";
 
@@ -30,6 +36,24 @@ export const jobApplicationsRouter = Router();
 jobApplicationsRouter.get("/", requireAuth, validate(listJobApplicationsSchema), asyncRoute(listJobApplicationFeed));
 jobApplicationsRouter.get("/mine", requireAuth, validate(listJobApplicationsSchema), asyncRoute(listMyJobApplications));
 jobApplicationsRouter.post("/", requireAuth, validate(createJobApplicationSchema), asyncRoute(createJobApplication));
+jobApplicationsRouter.get(
+  "/submissions/:submissionId/replies",
+  requireAuth,
+  validate(submissionRepliesSchema),
+  asyncRoute(listSubmissionReplies),
+);
+jobApplicationsRouter.post(
+  "/submissions/:submissionId/replies",
+  requireAuth,
+  validate(createSubmissionReplySchema),
+  asyncRoute(createSubmissionReply),
+);
+jobApplicationsRouter.delete(
+  "/submissions/:submissionId/replies/:replyId",
+  requireAuth,
+  validate(deleteSubmissionReplySchema),
+  asyncRoute(deleteSubmissionReply),
+);
 jobApplicationsRouter.patch("/:jobApplicationId", requireAuth, validate(updateJobApplicationSchema), asyncRoute(updateJobApplication));
 jobApplicationsRouter.delete("/:jobApplicationId", requireAuth, validate(mutateJobApplicationSchema), asyncRoute(deleteJobApplication));
 jobApplicationsRouter.post("/:jobApplicationId/restore", requireAuth, validate(mutateJobApplicationSchema), asyncRoute(restoreJobApplication));

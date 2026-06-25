@@ -53,6 +53,8 @@ export type ListingCreateData = {
   ownerCompanyId?: string | null;
   ownerUserId?: string | null;
   priceAmount?: string | number | Prisma.Decimal | null;
+  isRegistered?: boolean | null;
+  registrationExpiresAt?: Date | string | null;
   refrigerated?: boolean | null;
   sourceType: string;
   status?: string;
@@ -86,6 +88,8 @@ const listingSelect = {
   countryCode: true,
   city: true,
   priceAmount: true,
+  isRegistered: true,
+  registrationExpiresAt: true,
   currency: true,
   capacityKg: true,
   volumeM3: true,
@@ -153,6 +157,17 @@ const inquirySelect = {
       countryCode: true,
     },
   },
+} as const;
+
+const inquiryReplySelect = {
+  id: true,
+  inquiryId: true,
+  authorUserId: true,
+  authorCompanyId: true,
+  message: true,
+  deletedAt: true,
+  createdAt: true,
+  updatedAt: true,
 } as const;
 
 function listingWhere(filters: ListingFilters, forcePublished: boolean): Prisma.VehicleMarketplaceListingWhereInput {
@@ -362,6 +377,36 @@ export class VehicleMarketplaceRepository {
       where: { id: inquiryId },
       data: { status },
       select: inquirySelect,
+    });
+  }
+
+  async listInquiryReplies(inquiryId: string) {
+    return prisma.vehicleMarketplaceInquiryReply.findMany({
+      where: { inquiryId, deletedAt: null },
+      orderBy: { createdAt: "asc" },
+      select: inquiryReplySelect,
+    });
+  }
+
+  async createInquiryReply(input: { authorCompanyId?: string | null; authorUserId: string; inquiryId: string; message: string }) {
+    return prisma.vehicleMarketplaceInquiryReply.create({
+      data: input,
+      select: inquiryReplySelect,
+    });
+  }
+
+  async findInquiryReplyById(replyId: string) {
+    return prisma.vehicleMarketplaceInquiryReply.findUnique({
+      where: { id: replyId },
+      select: inquiryReplySelect,
+    });
+  }
+
+  async softDeleteInquiryReply(replyId: string) {
+    return prisma.vehicleMarketplaceInquiryReply.update({
+      where: { id: replyId },
+      data: { deletedAt: new Date() },
+      select: inquiryReplySelect,
     });
   }
 }

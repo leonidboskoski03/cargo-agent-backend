@@ -4,11 +4,14 @@ import { requireAuth } from "../../shared/middleware/auth.middleware.js";
 import { validate } from "../../shared/middleware/validate.middleware.js";
 import {
   createVehicleMarketplaceInquiry,
+  createVehicleMarketplaceInquiryReply,
+  deleteVehicleMarketplaceInquiryReply,
   createVehicleMarketplaceListing,
   deleteVehicleMarketplaceListing,
   getVehicleMarketplaceListing,
   listMyVehicleMarketplaceListings,
   listVehicleMarketplaceInquiries,
+  listVehicleMarketplaceInquiryReplies,
   listVehicleMarketplaceListings,
   restoreVehicleMarketplaceListing,
   updateVehicleMarketplaceInquiry,
@@ -16,9 +19,12 @@ import {
 } from "./vehicleMarketplace.controller.js";
 import {
   createListingInquirySchema,
+  createInquiryReplySchema,
   createListingSchema,
+  deleteInquiryReplySchema,
   deleteListingSchema,
   getListingSchema,
+  inquiryRepliesSchema,
   listInquiriesSchema,
   listListingsSchema,
   restoreListingSchema,
@@ -36,6 +42,24 @@ vehicleMarketplaceRouter.patch(
   requireAuth,
   validate(updateInquirySchema),
   asyncRoute(updateVehicleMarketplaceInquiry),
+);
+vehicleMarketplaceRouter.get(
+  "/inquiries/:inquiryId/replies",
+  requireAuth,
+  validate(inquiryRepliesSchema),
+  asyncRoute(listVehicleMarketplaceInquiryReplies),
+);
+vehicleMarketplaceRouter.post(
+  "/inquiries/:inquiryId/replies",
+  requireAuth,
+  validate(createInquiryReplySchema),
+  asyncRoute(createVehicleMarketplaceInquiryReply),
+);
+vehicleMarketplaceRouter.delete(
+  "/inquiries/:inquiryId/replies/:replyId",
+  requireAuth,
+  validate(deleteInquiryReplySchema),
+  asyncRoute(deleteVehicleMarketplaceInquiryReply),
 );
 vehicleMarketplaceRouter.post("/", requireAuth, validate(createListingSchema), asyncRoute(createVehicleMarketplaceListing));
 vehicleMarketplaceRouter.get("/:listingId", requireAuth, validate(getListingSchema), asyncRoute(getVehicleMarketplaceListing));

@@ -235,6 +235,61 @@ export class NotificationEventsService {
       return;
     }
 
+    if (event.type === "VEHICLE_MARKETPLACE_INQUIRY_REPLY_CREATED") {
+      const reply = await prisma.vehicleMarketplaceInquiryReply.findFirst({
+        where: { id: event.replyId, deletedAt: null },
+        select: {
+          id: true,
+          authorCompanyId: true,
+          authorUserId: true,
+          inquiryId: true,
+          inquiry: {
+            select: {
+              listingId: true,
+              senderCompanyId: true,
+              senderUserId: true,
+              listing: {
+                select: {
+                  ownerCompanyId: true,
+                  ownerUserId: true,
+                  title: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!reply) {
+        return;
+      }
+
+      const authorIsOwner =
+        (reply.authorCompanyId && reply.authorCompanyId === reply.inquiry.listing.ownerCompanyId) ||
+        reply.authorUserId === reply.inquiry.listing.ownerUserId;
+      const recipientCompanyId = authorIsOwner ? reply.inquiry.senderCompanyId : reply.inquiry.listing.ownerCompanyId;
+      const recipientUserId = recipientCompanyId
+        ? undefined
+        : authorIsOwner
+          ? reply.inquiry.senderUserId
+          : reply.inquiry.listing.ownerUserId ?? undefined;
+
+      await notificationsService.create({
+        type: NotificationType.VEHICLE_MARKETPLACE_INQUIRY_REPLY_CREATED,
+        recipientCompanyId: recipientCompanyId ?? undefined,
+        recipientUserId,
+        title: "Vehicle inquiry reply",
+        body: `New reply on ${reply.inquiry.listing.title}.`,
+        payloadJson: {
+          inquiryId: reply.inquiryId,
+          listingId: reply.inquiry.listingId,
+          replyId: reply.id,
+        },
+      });
+
+      return;
+    }
+
     if (event.type === "JOB_APPLICATION_SUBMITTED") {
       const submission = await prisma.jobApplicationSubmission.findUnique({
         where: { id: event.submissionId },
@@ -268,6 +323,107 @@ export class NotificationEventsService {
           jobApplicationId: submission.jobApplicationId,
           submittedByCompanyId: submission.submittedByCompanyId,
           submittedByUserId: submission.submittedByUserId,
+        },
+      });
+
+      return;
+    }
+
+    if (event.type === "JOB_APPLICATION_SUBMISSION_REPLY_CREATED") {
+      const reply = await prisma.jobApplicationSubmissionReply.findFirst({
+        where: { id: event.replyId, deletedAt: null },
+        select: {
+          id: true,
+          authorCompanyId: true,
+          authorUserId: true,
+          submissionId: true,
+          submission: {
+            select: {
+              jobApplicationId: true,
+              submittedByCompanyId: true,
+              submittedByUserId: true,
+              jobApplication: {
+                select: {
+                  createdByCompanyId: true,
+                  createdByUserId: true,
+                  title: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!reply) {
+        return;
+      }
+
+      const authorIsOwner =
+        (reply.authorCompanyId && reply.authorCompanyId === reply.submission.jobApplication.createdByCompanyId) ||
+        reply.authorUserId === reply.submission.jobApplication.createdByUserId;
+      const recipientCompanyId = authorIsOwner
+        ? reply.submission.submittedByCompanyId
+        : reply.submission.jobApplication.createdByCompanyId;
+      const recipientUserId = recipientCompanyId
+        ? undefined
+        : authorIsOwner
+          ? reply.submission.submittedByUserId
+          : reply.submission.jobApplication.createdByUserId;
+
+      await notificationsService.create({
+        type: NotificationType.JOB_APPLICATION_SUBMISSION_REPLY_CREATED,
+        recipientCompanyId: recipientCompanyId ?? undefined,
+        recipientUserId,
+        title: "Application reply",
+        body: `New reply on ${reply.submission.jobApplication.title}.`,
+        payloadJson: {
+          jobApplicationId: reply.submission.jobApplicationId,
+          replyId: reply.id,
+          submissionId: reply.submissionId,
+        },
+      });
+
+      return;
+    }
+
+    if (event.type === "BID_REPLY_CREATED") {
+      const reply = await prisma.bidReply.findFirst({
+        where: { id: event.replyId, deletedAt: null },
+        select: {
+          id: true,
+          authorCompanyId: true,
+          bidId: true,
+          bid: {
+            select: {
+              carrierCompanyId: true,
+              postId: true,
+              post: {
+                select: {
+                  companyId: true,
+                  title: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!reply) {
+        return;
+      }
+
+      const recipientCompanyId =
+        reply.authorCompanyId === reply.bid.carrierCompanyId ? reply.bid.post.companyId : reply.bid.carrierCompanyId;
+
+      await notificationsService.create({
+        type: NotificationType.BID_REPLY_CREATED,
+        recipientCompanyId,
+        title: "Bid reply",
+        body: `New reply on ${reply.bid.post.title ?? "a bid"}.`,
+        payloadJson: {
+          bidId: reply.bidId,
+          postId: reply.bid.postId,
+          replyId: reply.id,
         },
       });
 

@@ -64,5 +64,33 @@ describe("NotificationEventsService.handleEvent", () => {
       }),
     );
   });
+
+  it("notifies the opposite company when a bid reply is created", async () => {
+    vi.spyOn(prisma.bidReply, "findFirst").mockResolvedValue({
+      authorCompanyId: "company_carrier",
+      bid: {
+        carrierCompanyId: "company_carrier",
+        post: { companyId: "company_shipper", title: "Skopje to Sofia" },
+        postId: "post_1",
+      },
+      bidId: "bid_1",
+      id: "reply_1",
+    } as never);
+    const createSpy = vi.spyOn(NotificationsService.prototype, "create").mockResolvedValue({ id: "notif_1" } as never);
+
+    await service.handleEvent({ type: "BID_REPLY_CREATED", replyId: "reply_1" });
+
+    expect(createSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        payloadJson: expect.objectContaining({
+          bidId: "bid_1",
+          postId: "post_1",
+          replyId: "reply_1",
+        }),
+        recipientCompanyId: "company_shipper",
+        type: NotificationType.BID_REPLY_CREATED,
+      }),
+    );
+  });
 });
 

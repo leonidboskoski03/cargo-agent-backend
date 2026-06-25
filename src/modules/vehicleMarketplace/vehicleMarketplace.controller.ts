@@ -54,3 +54,22 @@ export async function updateVehicleMarketplaceInquiry(req: Request, res: Respons
   const data = await service.updateInquiry(authFromRequest(req), getStringParam(req.params.inquiryId), req.body);
   return ok(res, data);
 }
+
+export async function listVehicleMarketplaceInquiryReplies(req: Request, res: Response) {
+  const data = await service.listInquiryReplies(authFromRequest(req), getStringParam(req.params.inquiryId));
+  return ok(res, data);
+}
+
+export async function createVehicleMarketplaceInquiryReply(req: Request, res: Response) {
+  const data = await service.createInquiryReply(authFromRequest(req), getStringParam(req.params.inquiryId), req.body);
+  return created(res, data);
+}
+
+export async function deleteVehicleMarketplaceInquiryReply(req: Request, res: Response) {
+  const data = await service.deleteInquiryReply(
+    authFromRequest(req),
+    getStringParam(req.params.inquiryId),
+    getStringParam(req.params.replyId),
+  );
+  return ok(res, data);
+}
