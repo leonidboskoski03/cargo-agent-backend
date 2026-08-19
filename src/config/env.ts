@@ -16,7 +16,7 @@ const envSchema = z.object({
   JWT_REFRESH_SECRET: z.string().min(16).default("change-me-refresh-secret-123"),
   JWT_REFRESH_COOKIE_NAME: z.string().default("ca_refresh_token"),
   JWT_REFRESH_SESSION_DAYS: z.coerce.number().int().min(1).max(365).default(30),
-  CORS_ORIGIN: z.string().default("http://localhost:3000"),
+  CORS_ORIGIN: z.string().default("http://localhost:5173"),
   LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"]).default("info"),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().default(60_000),
   RATE_LIMIT_MAX: z.coerce.number().default(100),
@@ -60,7 +60,7 @@ const envSchema = z.object({
     .string()
     .default("false")
     .transform((value) => value.toLowerCase() === "true"),
-  INVITE_ACCEPT_URL_BASE: z.string().url().default("http://localhost:3000/invites/accept"),
+  INVITE_ACCEPT_URL_BASE: z.string().url().default("http://localhost:5173/invites/accept"),
   EMAIL_PROVIDER: z.enum(["simulated", "resend"]).default("simulated"),
   RESEND_API_KEY: z.preprocess(emptyStringToUndefined, z.string().optional()),
   RESEND_FROM_EMAIL: z.preprocess(emptyStringToUndefined, z.string().email().optional()),
@@ -78,6 +78,7 @@ const envSchema = z.object({
   AUTH_OTP_CODE_LENGTH: z.coerce.number().int().min(4).max(8).default(6),
   AUTH_OTP_TTL_MINUTES: z.coerce.number().int().min(1).max(30).default(10),
   AUTH_OTP_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(10).default(5),
+  AUTH_OTP_MAX_RESENDS: z.coerce.number().int().min(0).max(10).default(3),
   AUTH_OTP_RESEND_COOLDOWN_SECONDS: z.coerce.number().int().min(10).max(300).default(60),
   AUTH_OTP_PREVIEW_IN_NON_PROD: z
     .string()

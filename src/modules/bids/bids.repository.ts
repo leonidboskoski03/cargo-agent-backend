@@ -3,6 +3,7 @@ import { prisma } from "../../shared/prisma/prismaClient.js";
 
 type ListFilters = {
   companyId: string;
+  deleted?: "active" | "only" | "include";
   scope?: "received" | "sent" | "all";
   status?: BidStatus;
   postId?: string;
@@ -148,7 +149,11 @@ export class BidsRepository {
     const now = new Date();
     return prisma.bid.findMany({
       where: {
-        deletedAt: null,
+        ...(filters.deleted === "only"
+          ? { deletedAt: { not: null } }
+          : filters.deleted === "include"
+            ? {}
+            : { deletedAt: null }),
         ...(filters.status ? { status: filters.status } : {}),
         ...(filters.postId ? { postId: filters.postId } : {}),
         ...(filters.scope === "sent"
